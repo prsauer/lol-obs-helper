@@ -13,6 +13,7 @@ import {
   NativeBridgeModule,
 } from "./module";
 import { obsWSModule } from "./modules/obsWSModule";
+import { trayIconModule } from "./modules/trayIconModule";
 
 export class NativeBridgeRegistry {
   private modules: NativeBridgeModule[] = [];
@@ -98,4 +99,5 @@ export class NativeBridgeRegistry {
 
 export const nativeBridgeRegistry = new NativeBridgeRegistry();
 
+nativeBridgeRegistry.registerModule(trayIconModule);
 nativeBridgeRegistry.registerModule(obsWSModule);

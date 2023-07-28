@@ -14,8 +14,8 @@ if (require("electron-squirrel-startup")) {
 
 const createWindow = (): void => {
   const mainWindow = new BrowserWindow({
-    height: 800,
-    width: 1200,
+    height: 400,
+    width: 180,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -25,6 +25,11 @@ const createWindow = (): void => {
   });
 
   nativeBridgeRegistry.startListeners(mainWindow);
+
+  mainWindow.on("minimize", function (event: { preventDefault: () => void }) {
+    event.preventDefault();
+    mainWindow.hide();
+  });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   mainWindow.setMenuBarVisibility(false);

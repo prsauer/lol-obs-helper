@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 import {
   moduleEvent,
   moduleFunction,
@@ -8,6 +8,7 @@ import {
 import { FSWatcher, watch } from "chokidar";
 import OBSWebSocket, { EventSubscription } from "obs-websocket-js";
 import { R3DLogWatcher } from "../../nativeUtils/logWatcher";
+import { Events } from "../ipcEvents";
 
 const FOLDER_AGE_THRESHOLD = 5;
 
@@ -161,6 +162,11 @@ export class obsWSModule extends NativeBridgeModule {
         _mainWindow,
         `Recording state changed to ${args.outputState}`
       );
+      if (isRecording) {
+        ipcMain.emit(Events.RecordingStarted);
+      } else {
+        ipcMain.emit(Events.RecordingStopped);
+      }
       this.onRecordingStateChange(_mainWindow, args);
     });
   }

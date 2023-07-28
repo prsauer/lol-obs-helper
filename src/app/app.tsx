@@ -51,7 +51,6 @@ declare global {
 }
 
 export const App = () => {
-  const [logLines, setLogLines] = useState<string[]>([]);
   const [connState, setConnState] = useState<ConnectionState>({
     connected: false,
   });
@@ -65,8 +64,6 @@ export const App = () => {
     console.log("starting listeners");
     window.native.obs.logMessage((_evt, logline) => {
       console.log(`${new Date()} ${logline}`);
-      console.log(logLines);
-      setLogLines((state) => [...state, logline]);
     });
 
     window.native.obs.onConnectionStateChange((_evt, state) => {
@@ -87,7 +84,6 @@ export const App = () => {
   useEffect(() => {
     console.log("starting watchdog");
     const watchdogTimer = setInterval(() => {
-      console.log(`${new Date()} 1`);
       if (!connState.connected) {
         window.native.obs.startListening(
           "ws://192.168.1.203:4455",
@@ -106,19 +102,6 @@ export const App = () => {
     <div className="m-3">
       <div className="flex flex-col gap-3">
         <button
-          disabled={connState.connected}
-          className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => {
-            window.native.obs.startListening(
-              "ws://192.168.1.203:4455",
-              "KbJ1AWlo7yEAVBNn",
-              "C:\\Riot Games\\League of Legends\\Logs\\GameLogs"
-            );
-          }}
-        >
-          Connect
-        </button>
-        <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={() => {
             window.native.obs.synchronize();
@@ -126,11 +109,10 @@ export const App = () => {
         >
           synchronize
         </button>
-        <div>Connected: {connState.connected.toString()}</div>
+        <div>Connected: {connState.connected ? "Yes" : "No"}</div>
         <div>
-          <div>Record state {recState.outputActive.toString()}</div>
+          <div>Recording: {recState.outputActive ? "Yes" : "No"}</div>
         </div>
-        <textarea value={logLines.join("\n")} readOnly />
       </div>
     </div>
   );
