@@ -91,15 +91,24 @@ export class obsWSModule extends NativeBridgeModule {
   }
 
   private startRecording() {
+    if (!obs) {
+      return;
+    }
     obs.call("StartRecord");
   }
 
   private stopRecording() {
+    if (!obs) {
+      return;
+    }
     obs.call("StopRecord");
   }
 
   @moduleFunction()
   public async synchronize(_mainWindow: BrowserWindow) {
+    if (!obs) {
+      return;
+    }
     const recStatus = await obs.call("GetRecordStatus");
     const recDir = await obs.call("GetRecordDirectory");
     this.onRecordingStateChange(_mainWindow, {
