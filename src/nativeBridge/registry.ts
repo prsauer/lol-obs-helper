@@ -14,6 +14,7 @@ import {
 } from "./module";
 import { obsWSModule } from "./modules/obsWSModule";
 import { trayIconModule } from "./modules/trayIconModule";
+import { vodFilesModule } from "./modules/vodFilesModule";
 
 export class NativeBridgeRegistry {
   private modules: NativeBridgeModule[] = [];
@@ -99,5 +100,6 @@ export class NativeBridgeRegistry {
 
 export const nativeBridgeRegistry = new NativeBridgeRegistry();
 
+nativeBridgeRegistry.registerModule(vodFilesModule);
 nativeBridgeRegistry.registerModule(trayIconModule);
 nativeBridgeRegistry.registerModule(obsWSModule);

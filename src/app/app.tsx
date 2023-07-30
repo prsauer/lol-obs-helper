@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import { createHashRouter, RouterProvider } from "react-router-dom";
+import { IndexPage } from "./pages";
+import { ReviewPage, reviewLoader } from "./pages/review";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 type ElectronOpaqueEvent = {
   senderId: number;
@@ -42,6 +46,9 @@ export type INativeBridge = {
       callback: (event: ElectronOpaqueEvent, state: RecordingState) => void
     ) => void;
   };
+  vods?: {
+    getVodsInfo: () => Promise<{ name: string; ended: string }[]>;
+  };
 };
 
 declare global {
@@ -50,7 +57,46 @@ declare global {
   }
 }
 
+const router = createHashRouter([
+  {
+    path: "/",
+    element: <IndexPage />,
+  },
+  {
+    path: "/vod/:id",
+    element: <ReviewPage />,
+    loader: reviewLoader,
+  },
+]);
+
 export const App = () => {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            staleTime: 600,
+            retry: (failureCount, error) => {
+              console.log("inner", { failureCount, error });
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              if ((error as Error)?.message === "Fetch error 404") {
+                console.log("Skipping, 404");
+                return false;
+              }
+              if ((error as Error)?.message === "Fetch error 403") {
+                console.log("Skipping, 403");
+                return false;
+              }
+              if ((error as Error)?.message === "Could not find account data") {
+                return false;
+              }
+              return true;
+            },
+          },
+        },
+      })
+  );
   const [connState, setConnState] = useState<ConnectionState>({
     connected: false,
   });
@@ -62,22 +108,22 @@ export const App = () => {
 
   useEffect(() => {
     console.log("starting listeners");
-    window.native.obs.logMessage((_evt, logline) => {
+    window.native.obs?.logMessage((_evt, logline) => {
       console.log(`${new Date()} ${logline}`);
     });
 
-    window.native.obs.onConnectionStateChange((_evt, state) => {
+    window.native.obs?.onConnectionStateChange((_evt, state) => {
       setConnState(state);
     });
 
-    window.native.obs.onRecordingStateChange((_evt, state) => {
+    window.native.obs?.onRecordingStateChange((_evt, state) => {
       console.log("new rec state", state);
       setRecState(state);
     });
 
     return () => {
       console.log("closing listeners");
-      window.native.obs.removeAll_logMessage_listeners();
+      window.native.obs?.removeAll_logMessage_listeners();
     };
   }, []);
 
@@ -85,7 +131,7 @@ export const App = () => {
     console.log("starting watchdog");
     const watchdogTimer = setInterval(() => {
       if (!connState.connected) {
-        window.native.obs.startListening(
+        window.native.obs?.startListening(
           "ws://192.168.1.203:4455",
           "KbJ1AWlo7yEAVBNn",
           "C:\\Riot Games\\League of Legends\\Logs\\GameLogs"
@@ -99,21 +145,16 @@ export const App = () => {
   }, [connState]);
 
   return (
-    <div className="m-3">
-      <div className="flex flex-col gap-3">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => {
-            window.native.obs.synchronize();
-          }}
-        >
-          synchronize
-        </button>
-        <div>Connected: {connState.connected ? "Yes" : "No"}</div>
-        <div>
-          <div>Recording: {recState.outputActive ? "Yes" : "No"}</div>
+    <QueryClientProvider client={queryClient}>
+      <div className="m-3 text-gray-100">
+        <div className="flex flex-row gap-3">
+          <div>OBS Connected: {connState.connected ? "Yes" : "No"}</div>
+          <div>
+            <div>Recording: {recState.outputActive ? "Yes" : "No"}</div>
+          </div>
         </div>
+        <RouterProvider router={router} />
       </div>
-    </div>
+    </QueryClientProvider>
   );
 };
