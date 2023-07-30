@@ -9,8 +9,8 @@ import { readdirSync, statSync } from "fs-extra";
 @nativeBridgeModule("vods")
 export class vodFilesModule extends NativeBridgeModule {
   @moduleFunction()
-  public async getVodsInfo(_mainWindow: BrowserWindow) {
-    const rootPath = "D:\\Video";
+  public async getVodsInfo(_mainWindow: BrowserWindow, vodPath: string) {
+    const rootPath = vodPath;
     const dir = readdirSync(rootPath);
     const res = dir.filter((fn) => fn.length === 23);
     const stats = res

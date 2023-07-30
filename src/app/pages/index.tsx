@@ -7,7 +7,7 @@ export const IndexPage = () => {
     getGamesForSummoner(
       "GIXYzTG-5rkDdXoHtOWsKxB7cPG79VSFlXmP03t75iHWAongY7t4HDfLyxsksjINazSUTrUK9sjxBQ",
       0,
-      3
+      5
     )
   );
 
@@ -16,6 +16,7 @@ export const IndexPage = () => {
 
   return (
     <div>
+      <Link to="/setup">Go Setup</Link>
       <div>
         {gamesQuery.isLoading && <div>loading...</div>}
         {err && <pre>{err}</pre>}

@@ -52,7 +52,9 @@ function maybeGetVod(vods: VodInfo[], gameCreationTime: number) {
 
 export const ReviewPage = () => {
   const { id } = useLoaderData() as ReturnType<typeof reviewLoader>;
-  const videos = useQuery(`vod-list`, () => window.native.vods?.getVodsInfo());
+  const videos = useQuery(`vod-list`, () =>
+    window.native.vods?.getVodsInfo("D:\\Video")
+  );
 
   console.log({ videos });
 

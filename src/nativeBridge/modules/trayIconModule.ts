@@ -44,10 +44,10 @@ export class trayIconModule extends NativeBridgeModule {
     }
 
     ipcMain.on(Events.RecordingStarted, () => {
-      this.trayIcon.setImage(path.resolve(__dirname, "assets/icon_red.ico"));
+      this.trayIcon?.setImage(path.resolve(__dirname, "assets/icon_red.ico"));
     });
     ipcMain.on(Events.RecordingStopped, () => {
-      this.trayIcon.setImage(path.resolve(__dirname, "assets/icon.ico"));
+      this.trayIcon?.setImage(path.resolve(__dirname, "assets/icon.ico"));
     });
   }
 }
