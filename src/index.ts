@@ -44,7 +44,7 @@ const createWindow = (): void => {
       responseHeaders: {
         ...details.responseHeaders,
         "Content-Security-Policy": [
-          "default-src 'self' 'unsafe-inline' 'unsafe-eval'; media-src vod:; connect-src *",
+          "default-src 'self' 'unsafe-inline' 'unsafe-eval'; media-src vod:; connect-src *; img-src *",
         ],
       },
     });

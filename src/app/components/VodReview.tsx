@@ -10,7 +10,16 @@ const secondsToMinutesString = (secs: number) => {
   }
   const mins = Math.floor(secs / 60);
   const secondsRemaining = secs - mins * 60;
-  return `${mins}:${secondsRemaining.toFixed(0)}`;
+  return `${mins}:${secondsRemaining < 10 ? "0" : ""}${secondsRemaining.toFixed(
+    0
+  )}`;
+};
+
+const MONSTER_NAMES: Record<string, string> = {
+  none: "Unknown",
+  DRAGON: "Drag",
+  RIFTHERALD: "Rift",
+  BARON_NASHOR: "Baron",
 };
 
 export const VodReview = ({
@@ -39,6 +48,8 @@ export const VodReview = ({
   )?.participantId;
 
   const gameInfo = gamesQuery.data?.data?.info;
+
+  const myPart = gameInfo?.participants.find((e) => e.puuid === myId);
 
   const vodStartTime = created;
   const vodEndTime = ended ? new Date(ended) : null;
@@ -120,6 +131,7 @@ export const VodReview = ({
         {killTimes &&
           killTimes.map((k) => (
             <div
+              className="text-green-200"
               key={k}
               onClick={() => {
                 console.log(`click ${vidRef.current}`);
@@ -129,12 +141,13 @@ export const VodReview = ({
                 }
               }}
             >
-              kill: {k}
+              Kill: {secondsToMinutesString(k)}
             </div>
           ))}
         {deathTimes &&
           deathTimes.map((d) => (
             <div
+              className="text-purple-400"
               key={d}
               onClick={() => {
                 console.log(`click ${vidRef.current}`);
@@ -144,26 +157,31 @@ export const VodReview = ({
                 }
               }}
             >
-              death: {d}
+              Death: {secondsToMinutesString(d)}
             </div>
           ))}
-        {eliteMobEvts?.map((evt) => (
-          <div
-            key={evt.timestamp}
-            onClick={() => {
-              if (vidRef.current) {
-                const timelineTime = timeConvert(evt.timestamp);
-                vidRef.current.currentTime = timelineTime;
-                console.log(
-                  `set ${vidRef.current.currentTime} ${timelineTime}`
-                );
-              }
-            }}
-          >
-            {evt.monsterType} {evt.timestamp}{" "}
-            {secondsToMinutesString(timeConvert(evt.timestamp))}
-          </div>
-        ))}
+        {eliteMobEvts?.map((evt) => {
+          const myKill = evt.killerTeamId == myPart?.teamId;
+          return (
+            <div
+              className={myKill ? "text-green-400" : "text-purple-400"}
+              key={evt.timestamp}
+              onClick={() => {
+                if (vidRef.current) {
+                  const timelineTime = timeConvert(evt.timestamp);
+
+                  vidRef.current.currentTime = timelineTime;
+                  console.log(
+                    `set ${vidRef.current.currentTime} ${timelineTime}`
+                  );
+                }
+              }}
+            >
+              {MONSTER_NAMES[evt.monsterType || "none"]}{" "}
+              {secondsToMinutesString(timeConvert(evt.timestamp))}
+            </div>
+          );
+        })}
       </div>
       {vod && (
         <video
@@ -172,6 +190,7 @@ export const VodReview = ({
           src={`vod://${vod}`}
           controls
           style={{
+            width: "100%",
             objectFit: "contain",
           }}
         />

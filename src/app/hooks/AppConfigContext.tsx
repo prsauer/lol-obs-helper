@@ -29,12 +29,7 @@ interface IProps {
 }
 
 export const AppConfigContextProvider = (props: IProps) => {
-  const [appConfig, setAppConfig] = useState<IAppConfig>({
-    obsWSURL: "ws://192.168.1.203:4455",
-    obsWSPassword: "KbJ1AWlo7yEAVBNn",
-    vodStoragePath: "D:\\Video",
-    riotLogsPath: "C:\\Riot Games\\League of Legends\\Logs\\GameLogs",
-  });
+  const [appConfig, setAppConfig] = useState<IAppConfig>({});
   const [isLoading, setLoading] = useState(true);
 
   const updateAppConfig = (
@@ -77,7 +72,6 @@ export const AppConfigContextProvider = (props: IProps) => {
       if (appConfigJson) {
         const storedConfig = JSON.parse(appConfigJson) as IAppConfig;
 
-        console.log({ storedConfig });
         // const [windowX, windowY] =
         //   (await window.wowarenalogs.win?.getWindowPosition()) ?? [];
         // const [windowWidth, windowHeight] =
@@ -85,8 +79,9 @@ export const AppConfigContextProvider = (props: IProps) => {
 
         const newState: IAppConfig = {
           riotLogsPath: storedConfig.riotLogsPath,
-          obsWSURL: "ws://192.168.1.203:4455",
-          obsWSPassword: "KbJ1AWlo7yEAVBNn",
+          obsWSURL: storedConfig.obsWSURL,
+          obsWSPassword: storedConfig.obsWSPassword,
+          vodStoragePath: storedConfig.vodStoragePath,
           // lastWindowX:
           //   storedConfig.lastWindowX === undefined
           //     ? windowX

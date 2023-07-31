@@ -1,7 +1,8 @@
-import { useLoaderData, LoaderFunctionArgs, Link } from "react-router-dom";
+import { useLoaderData, LoaderFunctionArgs } from "react-router-dom";
 import { VodReview } from "../components/VodReview";
 import { useQuery } from "react-query";
 import { getGameData } from "../proxy/riotApi";
+import { Button } from "../components/Button";
 
 export function reviewLoader({ params }: LoaderFunctionArgs) {
   return { id: params.id };
@@ -72,8 +73,8 @@ export const ReviewPage = () => {
 
   return (
     <div>
-      <div className="flex flex-row gap-2">
-        <Link to={"/"}>Go Back</Link>
+      <div className="flex flex-row gap-2 mb-2 items-center">
+        <Button linkTo="/">BACK</Button>
         <div>{id}</div>
         {gameInfo && (
           <div>
