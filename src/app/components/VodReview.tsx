@@ -1,8 +1,10 @@
 import React, { useRef } from "react";
 import { getGameData, getGameTimeline } from "../proxy/riotApi";
 import { useQuery } from "react-query";
+import { Event, MatchParticipant } from "../proxy/types";
+import { ChampIcon } from "./ChampIcon";
 
-const KILL_UNDERCUT_TIME = 8000;
+const KILL_UNDERCUT_TIME = 10000;
 
 const secondsToMinutesString = (secs: number) => {
   if (secs <= 60) {
@@ -20,6 +22,63 @@ const MONSTER_NAMES: Record<string, string> = {
   DRAGON: "Drag",
   RIFTHERALD: "Rift",
   BARON_NASHOR: "Baron",
+};
+
+const EventStub = ({
+  participants,
+  event,
+  myParticipantId,
+  onClick,
+  timeConverter,
+}: {
+  participants: MatchParticipant[];
+  event: Event;
+  myParticipantId: number | undefined;
+  onClick: (ts: number) => void;
+  timeConverter: (ts: number) => number;
+}) => {
+  if (event.type === "CHAMPION_KILL" && event.killerId === myParticipantId) {
+    console.log({ event, participants });
+    return (
+      <div
+        className="text-green-400 cursor-pointer flex flex-row gap-1"
+        onClick={() => onClick(timeConverter(event.timestamp))}
+      >
+        Kill: {secondsToMinutesString(timeConverter(event.timestamp))}{" "}
+        <ChampIcon
+          size={20}
+          championId={participants[(event.victimId || 0) - 1].championId}
+        />
+      </div>
+    );
+  }
+  if (event.type === "CHAMPION_KILL" && event.victimId === myParticipantId) {
+    return (
+      <div
+        className="text-purple-400 font-bold cursor-pointer"
+        onClick={() => onClick(timeConverter(event.timestamp))}
+      >
+        Death: {secondsToMinutesString(timeConverter(event.timestamp))}
+      </div>
+    );
+  }
+  if (event.type === "ELITE_MONSTER_KILL") {
+    const myKill = event.killerId === myParticipantId;
+    return (
+      <div
+        onClick={() => onClick(timeConverter(event.timestamp))}
+        className={
+          myKill
+            ? "text-green-400 cursor-pointer"
+            : "text-purple-400 cursor-pointer"
+        }
+      >
+        {MONSTER_NAMES[event.monsterType || "none"]}{" "}
+        {secondsToMinutesString(timeConverter(event.timestamp))}
+      </div>
+    );
+  }
+  return <div>{event.type}</div>;
 };
 
 export const VodReview = ({
@@ -49,8 +108,6 @@ export const VodReview = ({
 
   const gameInfo = gamesQuery.data?.data?.info;
 
-  const myPart = gameInfo?.participants.find((e) => e.puuid === myId);
-
   const vodStartTime = created;
   const vodEndTime = ended ? new Date(ended) : null;
 
@@ -72,14 +129,24 @@ export const VodReview = ({
   const allEvts = gameTimelineQuery.data?.data?.info.frames
     .map((e) => e.events)
     .flat();
-  const killEvts = allEvts?.filter((e) => e.type === "CHAMPION_KILL");
 
   const eliteMobEvts = allEvts?.filter((e) => e.type === "ELITE_MONSTER_KILL");
   console.log({
     eliteMobEvts,
   });
-  const myKills = killEvts?.filter((e) => e.killerId === myParticipantId);
-  const myDeaths = killEvts?.filter((e) => e.victimId === myParticipantId);
+
+  const importantEvents = allEvts?.filter((evt) => {
+    if (evt.type === "ELITE_MONSTER_KILL") {
+      return true;
+    }
+    if (evt.type === "CHAMPION_KILL" && evt.killerId === myParticipantId) {
+      return true;
+    }
+    if (evt.type === "CHAMPION_KILL" && evt.victimId === myParticipantId) {
+      return true;
+    }
+    return false;
+  });
 
   const timeConvert = (eventTimestamp: number) => {
     return (
@@ -95,102 +162,34 @@ export const VodReview = ({
     );
   };
 
-  const deathTimes = myDeaths?.map(
-    (e) =>
-      (new Date(
-        e.timestamp +
-          gameInfo?.gameCreation +
-          vodStartOffset -
-          timeCorrectionMs -
-          KILL_UNDERCUT_TIME
-      ).getTime() -
-        vodStartTime.getTime()) /
-      1000
-  );
-
-  const killTimes = myKills?.map(
-    (e) =>
-      (new Date(
-        e.timestamp +
-          gameInfo?.gameCreation +
-          vodStartOffset -
-          timeCorrectionMs -
-          KILL_UNDERCUT_TIME
-      ).getTime() -
-        vodStartTime.getTime()) /
-      1000
-  );
-  console.log({ gameInfo, myKills, myDeaths, killTimes });
-  console.log({
-    kills: killTimes?.map(secondsToMinutesString),
-  });
-
   return (
     <div className="flex flex-row gap-2">
-      <div>
-        {killTimes &&
-          killTimes.map((k) => (
-            <div
-              className="text-green-200"
-              key={k}
-              onClick={() => {
-                console.log(`click ${vidRef.current}`);
-                if (vidRef.current) {
-                  vidRef.current.currentTime = k;
-                  console.log(`set ${vidRef.current.currentTime} ${k}`);
-                }
-              }}
-            >
-              Kill: {secondsToMinutesString(k)}
-            </div>
-          ))}
-        {deathTimes &&
-          deathTimes.map((d) => (
-            <div
-              className="text-purple-400"
-              key={d}
-              onClick={() => {
-                console.log(`click ${vidRef.current}`);
-                if (vidRef.current) {
-                  vidRef.current.currentTime = d;
-                  console.log(`set ${vidRef.current.currentTime} ${d}`);
-                }
-              }}
-            >
-              Death: {secondsToMinutesString(d)}
-            </div>
-          ))}
-        {eliteMobEvts?.map((evt) => {
-          const myKill = evt.killerTeamId == myPart?.teamId;
+      <div className="flex flex-col gap-1">
+        {importantEvents?.map((evt) => {
           return (
-            <div
-              className={myKill ? "text-green-400" : "text-purple-400"}
+            <EventStub
               key={evt.timestamp}
-              onClick={() => {
+              participants={gameInfo.participants}
+              event={evt}
+              myParticipantId={myParticipantId}
+              onClick={(ts) => {
+                console.log(`click ${vidRef.current}`);
                 if (vidRef.current) {
-                  const timelineTime = timeConvert(evt.timestamp);
-
-                  vidRef.current.currentTime = timelineTime;
-                  console.log(
-                    `set ${vidRef.current.currentTime} ${timelineTime}`
-                  );
+                  vidRef.current.currentTime = ts;
                 }
               }}
-            >
-              {MONSTER_NAMES[evt.monsterType || "none"]}{" "}
-              {secondsToMinutesString(timeConvert(evt.timestamp))}
-            </div>
+              timeConverter={timeConvert}
+            />
           );
         })}
       </div>
       {vod && (
         <video
-          className="flex-1"
           ref={vidRef}
           src={`vod://${vod}`}
           controls
           style={{
-            width: "100%",
+            width: "85%",
             objectFit: "contain",
           }}
         />

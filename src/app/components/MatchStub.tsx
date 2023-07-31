@@ -9,7 +9,6 @@ export const MatchStub = ({ matchId }: { matchId: string }) => {
   );
   const game = gamesQuery.data?.data;
   const myPart = game?.info.participants.find((e) => e.puuid === myId);
-  console.log({ game, myPart });
   const winnerId = game?.info.teams.filter((e) => e.win)[0].teamId;
   const didWin = myPart?.teamId === winnerId;
   return (
