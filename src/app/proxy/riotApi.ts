@@ -16,7 +16,6 @@ export const getGamesForSummoner = async (
   const result = await fetch(
     `${baseApiRoute}/lol/match/v5/matches/by-puuid/${puuid}/ids?start=${start}&count=${count}`
   );
-  console.log({ result });
   if (result.status != 200) {
     return {
       data: null,

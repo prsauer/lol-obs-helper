@@ -1,5 +1,4 @@
 import { useCallback, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { IAppConfig, useAppConfig } from "../hooks/AppConfigContext";
 import { Button } from "../components/Button";
 
@@ -30,10 +29,8 @@ export const SetupPage = () => {
   );
 
   return (
-    <div className="m-3 text-gray-100 max-w-xl">
-      <div>
-        <Link to="/">Go Back</Link>
-      </div>
+    <div className="m-3 text-gray-100 max-w-full">
+      <Button linkTo="/">BACK</Button>
       <h2>Setup</h2>
       <div className="mt-2">
         OBS WebSocket Address
@@ -87,6 +84,20 @@ export const SetupPage = () => {
             setAppConfigState((s) => ({
               ...s,
               vodStoragePath: e.target.value,
+            }))
+          }
+        />
+      </div>
+      <div className="mt-2">
+        Summoner ID
+        <input
+          className="bg-cyan-800 text-slate-100 border border-l-violet-200 w-full"
+          type="text"
+          defaultValue={appConfigState.summonerId}
+          onChange={(e) =>
+            setAppConfigState((s) => ({
+              ...s,
+              summonerId: e.target.value,
             }))
           }
         />

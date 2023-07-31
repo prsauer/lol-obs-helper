@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { getGameData, getGameTimeline } from "../proxy/riotApi";
 import { useQuery } from "react-query";
 import { Event, MatchParticipant } from "../proxy/types";
 import { ChampIcon } from "./ChampIcon";
+import { useAppConfig } from "../hooks/AppConfigContext";
 
 const KILL_UNDERCUT_TIME = 10000;
 
@@ -99,9 +100,8 @@ export const VodReview = ({
   const gamesQuery = useQuery(`game-${matchId}`, () =>
     getGameData(matchId || "no-id")
   );
-
-  const myId =
-    "GIXYzTG-5rkDdXoHtOWsKxB7cPG79VSFlXmP03t75iHWAongY7t4HDfLyxsksjINazSUTrUK9sjxBQ";
+  const config = useAppConfig();
+  const myId = config.appConfig.summonerId;
   const myParticipantId = gameTimelineQuery.data?.data?.info.participants.find(
     (p) => p.puuid === myId
   )?.participantId;
@@ -163,8 +163,8 @@ export const VodReview = ({
   };
 
   return (
-    <div className="flex flex-row gap-2">
-      <div className="flex flex-col gap-1">
+    <div className="flex-1 flex flex-row gap-2 h-full">
+      <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto">
         {importantEvents?.map((evt) => {
           return (
             <EventStub
@@ -189,8 +189,10 @@ export const VodReview = ({
           src={`vod://${vod}`}
           controls
           style={{
-            width: "85%",
+            height: "95%",
+            flex: 1,
             objectFit: "contain",
+            minWidth: 0,
           }}
         />
       )}

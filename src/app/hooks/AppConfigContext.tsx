@@ -7,6 +7,7 @@ export interface IAppConfig {
   riotLogsPath?: string;
   obsWSURL?: string;
   obsWSPassword?: string;
+  summonerId?: string;
 }
 
 interface IAppConfigContextData {
@@ -82,6 +83,7 @@ export const AppConfigContextProvider = (props: IProps) => {
           obsWSURL: storedConfig.obsWSURL,
           obsWSPassword: storedConfig.obsWSPassword,
           vodStoragePath: storedConfig.vodStoragePath,
+          summonerId: storedConfig.summonerId,
           // lastWindowX:
           //   storedConfig.lastWindowX === undefined
           //     ? windowX
@@ -130,7 +132,9 @@ export const AppConfigContextProvider = (props: IProps) => {
       appConfig.riotLogsPath &&
       appConfig.riotLogsPath.length > 8 &&
       appConfig.obsWSPassword?.length > 4 &&
-      appConfig.obsWSURL?.length > 4
+      appConfig.obsWSURL?.length > 4 &&
+      appConfig.summonerId &&
+      appConfig.summonerId.length > 5
   );
 
   return (

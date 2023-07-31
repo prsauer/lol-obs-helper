@@ -1,9 +1,21 @@
 import { useQuery } from "react-query";
 import { getGameData } from "../proxy/riotApi";
+import { maybeGetVod } from "../utils/vod";
+import { useAppConfig } from "../hooks/AppConfigContext";
+import { ChampIcon } from "./ChampIcon";
 
-export const MatchStub = ({ matchId }: { matchId: string }) => {
-  const myId =
-    "GIXYzTG-5rkDdXoHtOWsKxB7cPG79VSFlXmP03t75iHWAongY7t4HDfLyxsksjINazSUTrUK9sjxBQ";
+export const MatchStub = ({
+  matchId,
+  videos,
+}: {
+  matchId: string;
+  videos?: {
+    name: string;
+    ended: string;
+  }[];
+}) => {
+  const config = useAppConfig();
+  const myId = config.appConfig.summonerId;
   const gamesQuery = useQuery(`game-${matchId}`, () =>
     getGameData(matchId || "no-id")
   );
@@ -11,6 +23,12 @@ export const MatchStub = ({ matchId }: { matchId: string }) => {
   const myPart = game?.info.participants.find((e) => e.puuid === myId);
   const winnerId = game?.info.teams.filter((e) => e.win)[0].teamId;
   const didWin = myPart?.teamId === winnerId;
+
+  let vod = null;
+  if (videos && game?.info?.gameCreation) {
+    vod = maybeGetVod(videos, game?.info?.gameCreation);
+  }
+
   return (
     <div className="flex flex-row gap-1 items-center">
       <div>
@@ -18,29 +36,18 @@ export const MatchStub = ({ matchId }: { matchId: string }) => {
           {game?.info.participants
             .filter((e) => e.teamId == 100)
             .map((e) => (
-              <img
-                key={e.puuid}
-                className="h-8 w-8"
-                src={`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${e?.championId}.png`}
-              />
+              <ChampIcon key={e.puuid} championId={e?.championId} size={32} />
             ))}
         </div>
         <div className="flex flex-row">
           {game?.info.participants
             .filter((e) => e.teamId == 200)
             .map((e) => (
-              <img
-                key={e.puuid}
-                className="h-8 w-8"
-                src={`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${e?.championId}.png`}
-              />
+              <ChampIcon key={e.puuid} championId={e?.championId} size={32} />
             ))}
         </div>
       </div>
-      <img
-        className="h-10 w-10"
-        src={`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${myPart?.championId}.png`}
-      />
+      <ChampIcon championId={myPart?.championId} size={64} />
       <div className="flex flex-col items-center">
         <div className="flex flex-row items-center gap-2">
           <div className="text-lg text-orange-500">
@@ -54,6 +61,7 @@ export const MatchStub = ({ matchId }: { matchId: string }) => {
           {new Date(game?.info.gameCreation || 0).toLocaleString()}
         </div>
       </div>
+      {vod && <div className="text-[2em]">&#128249;</div>}
     </div>
   );
 };

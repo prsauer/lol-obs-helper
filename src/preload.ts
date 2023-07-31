@@ -4,8 +4,6 @@ import { contextBridge } from "electron";
 
 import { nativeBridgeRegistry } from "./nativeBridge/registry";
 
-console.log(nativeBridgeRegistry.generateAPIObject());
-
 contextBridge.exposeInMainWorld("native", {
   ...nativeBridgeRegistry.generateAPIObject(),
   platform: process.platform,

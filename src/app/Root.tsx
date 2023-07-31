@@ -1,9 +1,9 @@
 import { RouterProvider, createHashRouter } from "react-router-dom";
-import { IndexPage } from "./pages";
-import { ReviewPage, reviewLoader } from "./pages/review";
+import { IndexPage } from "./pages/IndexPage";
+import { ReviewPage, reviewLoader } from "./pages/ReviewPage";
 import { useEffect, useState } from "react";
 import { useAppConfig } from "./hooks/AppConfigContext";
-import { SetupPage } from "./pages/setup";
+import { SetupPage } from "./pages/SetupPage";
 
 type RecordingState = {
   outputActive: boolean;
@@ -34,7 +34,6 @@ const router = createHashRouter([
 export const Root = () => {
   const config = useAppConfig();
 
-  console.log({ config });
   const [connState, setConnState] = useState<ConnectionState>({
     connected: false,
   });
@@ -45,7 +44,6 @@ export const Root = () => {
   });
 
   useEffect(() => {
-    console.log("starting listeners");
     window.native.obs?.logMessage((_evt, logline) => {
       console.log(`${new Date()} ${logline}`);
     });
@@ -60,13 +58,11 @@ export const Root = () => {
     });
 
     return () => {
-      console.log("closing listeners");
       window.native.obs?.removeAll_logMessage_listeners();
     };
   }, []);
 
   useEffect(() => {
-    console.log("starting watchdog");
     const watchdogTimer = setInterval(() => {
       if (
         !connState.connected &&
@@ -83,7 +79,6 @@ export const Root = () => {
       }
     }, 1000);
     return () => {
-      console.log("clearing watchdog");
       clearInterval(watchdogTimer);
     };
   }, [
@@ -95,7 +90,7 @@ export const Root = () => {
   ]);
 
   return (
-    <div className="m-3 text-gray-100">
+    <div className="p-3 text-gray-100 h-screen overflow-hidden">
       <div className="flex flex-row gap-3">
         <div>OBS Connected: {connState.connected ? "Yes" : "No"}</div>
         <div>Recording: {recState.outputActive ? "Yes" : "No"}</div>
