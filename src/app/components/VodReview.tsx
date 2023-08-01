@@ -3,7 +3,6 @@ import { getGameData, getGameTimeline } from "../proxy/riotApi";
 import { useQuery } from "react-query";
 import { Event, MatchParticipant } from "../proxy/types";
 import { ChampIcon } from "./ChampIcon";
-import { useAppConfig } from "../hooks/AppConfigContext";
 
 const KILL_UNDERCUT_TIME = 10000;
 
@@ -87,7 +86,9 @@ export const VodReview = ({
   matchId,
   created,
   ended,
+  summonerPuuid,
 }: {
+  summonerPuuid: string | undefined;
   vod: string | undefined;
   matchId: string | undefined;
   created: Date | undefined;
@@ -100,8 +101,8 @@ export const VodReview = ({
   const gamesQuery = useQuery(`game-${matchId}`, () =>
     getGameData(matchId || "no-id")
   );
-  const config = useAppConfig();
-  const myId = config.appConfig.summonerId;
+  const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
+
   const myParticipantId = gameTimelineQuery.data?.data?.info.participants.find(
     (p) => p.puuid === myId
   )?.participantId;
@@ -189,7 +190,7 @@ export const VodReview = ({
           src={`vod://${vod}`}
           controls
           style={{
-            height: "95%",
+            height: "90%",
             flex: 1,
             objectFit: "contain",
             minWidth: 0,

@@ -1,25 +1,17 @@
 import { useQuery } from "react-query";
-import { getGamesForSummoner } from "../proxy/riotApi";
 import { Button } from "../components/Button";
 import { MatchStub } from "../components/MatchStub";
-import { useAppConfig } from "../hooks/AppConfigContext";
 
 export const IndexPage = () => {
+  const localMatches = useQuery("local-matches", async () => {
+    return window.native?.vods?.scanFolderForMatches(
+      "C:\\Riot Games\\League of Legends\\Logs\\GameLogs"
+    );
+  });
+
   const videos = useQuery(`vod-list`, () =>
     window.native.vods?.getVodsInfo("D:\\Video")
   );
-  const config = useAppConfig();
-  const myId = config.appConfig.summonerId;
-  const gamesQuery = useQuery(
-    "games",
-    () => getGamesForSummoner(myId || "no-id", 0, 10),
-    {
-      enabled: myId !== undefined,
-    }
-  );
-
-  const games = gamesQuery?.data?.data;
-  const err = gamesQuery?.data?.err;
 
   return (
     <div className="flex flex-col max-w-xl h-full">
@@ -27,19 +19,24 @@ export const IndexPage = () => {
         <Button linkTo="/setup">Setup</Button>
         <Button
           onClick={() => {
-            gamesQuery.refetch();
+            localMatches.refetch();
           }}
         >
           Refresh
         </Button>
       </div>
       <div className="flex flex-col gap-2 overflow-y-auto pb-4">
-        {gamesQuery.isLoading && <div>loading...</div>}
-        {err && <pre>{err}</pre>}
-        {games &&
-          games.map((d) => (
-            <Button key={d} linkTo={`vod/${d}`}>
-              <MatchStub matchId={d} videos={videos.data} />
+        {localMatches.data &&
+          localMatches.data.slice(0, 8).map((d) => (
+            <Button
+              key={d.matchId}
+              linkTo={`vod/${d.platformId + "_" + d.matchId}/${d.summonerName}`}
+            >
+              <MatchStub
+                matchId={d.platformId + "_" + d.matchId}
+                summonerName={d.summonerName}
+                videos={videos.data}
+              />
             </Button>
           ))}
       </div>

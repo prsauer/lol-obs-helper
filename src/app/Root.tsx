@@ -21,7 +21,7 @@ const router = createHashRouter([
     element: <IndexPage />,
   },
   {
-    path: "/vod/:id",
+    path: "/vod/:id/:summonerName",
     element: <ReviewPage />,
     loader: reviewLoader,
   },

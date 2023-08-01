@@ -1,26 +1,39 @@
 import { useQuery } from "react-query";
-import { getGameData } from "../proxy/riotApi";
+import { getGameData, getSummonerByName } from "../proxy/riotApi";
 import { maybeGetVod } from "../utils/vod";
-import { useAppConfig } from "../hooks/AppConfigContext";
 import { ChampIcon } from "./ChampIcon";
 
 export const MatchStub = ({
   matchId,
   videos,
+  summonerName,
 }: {
   matchId: string;
+  summonerName?: string;
   videos?: {
     name: string;
     ended: string;
   }[];
 }) => {
-  const config = useAppConfig();
-  const myId = config.appConfig.summonerId;
   const gamesQuery = useQuery(`game-${matchId}`, () =>
     getGameData(matchId || "no-id")
   );
+  const summonerQuery = useQuery(
+    `sum-${summonerName}`,
+    () => getSummonerByName(summonerName || "no-name"),
+    {
+      enabled: Boolean(summonerName),
+    }
+  );
+
+  const myPuuid = summonerQuery.data?.data?.puuid;
+
   const game = gamesQuery.data?.data;
-  const myPart = game?.info.participants.find((e) => e.puuid === myId);
+  const myPart = game?.info.participants.find((e) => e.puuid === myPuuid);
+  console.log({
+    game: game?.info.participants,
+    summonerQuery,
+  });
   const winnerId = game?.info.teams.filter((e) => e.win)[0].teamId;
   const didWin = myPart?.teamId === winnerId;
 
@@ -57,6 +70,7 @@ export const MatchStub = ({
             {didWin ? "WIN" : "LOSS"}
           </div>
         </div>
+        <div>{summonerName}</div>
         <div className="text-gray-500">
           {new Date(game?.info.gameCreation || 0).toLocaleString()}
         </div>

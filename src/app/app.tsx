@@ -45,7 +45,20 @@ export type INativeBridge = {
       callback: (event: ElectronOpaqueEvent, state: RecordingState) => void
     ) => void;
   };
+  links: {
+    openExternalURL: (url: string) => void;
+  };
   vods?: {
+    scanFolderForMatches: (riotPath: string) => Promise<
+      {
+        matchId?: string;
+        summonerName?: string;
+        summonerPuuid?: string;
+        platformId?: string;
+        region?: string;
+        logPath: string;
+      }[]
+    >;
     getVodsInfo: (
       vodPath: string
     ) => Promise<{ name: string; ended: string }[]>;

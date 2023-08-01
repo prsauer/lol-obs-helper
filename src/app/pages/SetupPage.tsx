@@ -88,20 +88,6 @@ export const SetupPage = () => {
           }
         />
       </div>
-      <div className="mt-2">
-        Summoner ID
-        <input
-          className="bg-cyan-800 text-slate-100 border border-l-violet-200 w-full"
-          type="text"
-          defaultValue={appConfigState.summonerId}
-          onChange={(e) =>
-            setAppConfigState((s) => ({
-              ...s,
-              summonerId: e.target.value,
-            }))
-          }
-        />
-      </div>
       <Button className="mt-4" onClick={writeState}>
         SAVE
       </Button>

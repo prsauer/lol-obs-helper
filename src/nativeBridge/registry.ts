@@ -15,6 +15,7 @@ import {
 import { obsWSModule } from "./modules/obsWSModule";
 import { trayIconModule } from "./modules/trayIconModule";
 import { vodFilesModule } from "./modules/vodFilesModule";
+import { ExternalLinksModule } from "./modules/externalLinksModule";
 
 export class NativeBridgeRegistry {
   private modules: NativeBridgeModule[] = [];
@@ -49,8 +50,8 @@ export class NativeBridgeRegistry {
         });
 
         Object.values(moduleMetadata.events).forEach((evt) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           moduleApi[evt.name] = (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             callback: (event: IpcRendererEvent, ...args: any[]) => void
           ) =>
             evt.type === "on"
@@ -100,6 +101,7 @@ export class NativeBridgeRegistry {
 
 export const nativeBridgeRegistry = new NativeBridgeRegistry();
 
+nativeBridgeRegistry.registerModule(ExternalLinksModule);
 nativeBridgeRegistry.registerModule(vodFilesModule);
 nativeBridgeRegistry.registerModule(trayIconModule);
 nativeBridgeRegistry.registerModule(obsWSModule);
