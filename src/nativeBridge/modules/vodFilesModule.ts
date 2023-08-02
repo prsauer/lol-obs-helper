@@ -1,10 +1,17 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, protocol } from "electron";
 import {
   nativeBridgeModule,
   NativeBridgeModule,
   moduleFunction,
 } from "../module";
-import { openSync, readdirSync, statSync, readFileSync } from "fs-extra";
+import {
+  openSync,
+  readdirSync,
+  statSync,
+  readFileSync,
+  readSync,
+  closeSync,
+} from "fs-extra";
 
 const gameIdRegex = /GameID=([0-9]*)"/;
 const platformIdRegex = /PlatformID=([0-9a-zA-Z]*)"/;
@@ -73,6 +80,8 @@ type FolderInfo = {
 const folderNamesCached: Record<string, boolean> = {};
 const folderInfoCache: FolderInfo[] = [];
 
+const fnSeparator = process.platform === "darwin" ? "/" : "\\";
+
 @nativeBridgeModule("vods")
 export class vodFilesModule extends NativeBridgeModule {
   @moduleFunction()
@@ -85,9 +94,9 @@ export class vodFilesModule extends NativeBridgeModule {
       if (dirListing[i] in folderNamesCached) continue;
       const potentialLogFile =
         riotLogsFolder +
-        "\\" +
+        fnSeparator +
         dirListing[i] +
-        "\\" +
+        fnSeparator +
         dirListing[i] +
         "_r3dlog.txt";
       const fd = openSync(potentialLogFile, "r");
@@ -114,12 +123,54 @@ export class vodFilesModule extends NativeBridgeModule {
   }
 
   @moduleFunction()
+  public async configureVodsFolderProtocol(
+    _mainWindow: BrowserWindow,
+    vodsFolder: string
+  ) {
+    if (protocol.isProtocolHandled("vod")) {
+      protocol.unhandle("vod");
+    }
+    protocol.handle("vod", async (request) => {
+      const filename = decodeURI(request.url).slice(
+        "vod://".length,
+        request.url.length - 3
+      );
+
+      const localFilePath = `${vodsFolder}${fnSeparator}${filename}`;
+
+      const rangeReq = request.headers.get("Range") || "bytes=0-";
+      const parts = rangeReq.split("=");
+      const numbers = parts[1].split("-").map((p) => parseInt(p));
+
+      const fp = openSync(localFilePath, "r");
+      const size = 2500000; // ~2.5mb chunks
+      const start = numbers[0] || 0;
+      const buffer = Buffer.alloc(size);
+      readSync(fp, buffer, 0, size, start);
+
+      const stats = statSync(localFilePath);
+      const totalSize = stats.size;
+      closeSync(fp);
+
+      return new Response(buffer, {
+        status: 206,
+        statusText: "Partial Content",
+        headers: {
+          "Content-Length": `${totalSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Range": `bytes ${start}-${totalSize}`,
+        },
+      });
+    });
+  }
+
+  @moduleFunction()
   public async getVodsInfo(_mainWindow: BrowserWindow, vodPath: string) {
     const rootPath = vodPath;
     const dir = readdirSync(rootPath);
     const res = dir.filter((fn) => fn.length === 23);
     const stats = res
-      .map((fn) => ({ name: fn, stats: statSync(rootPath + "\\" + fn) }))
+      .map((fn) => ({ name: fn, stats: statSync(rootPath + "/" + fn) }))
       .map((fd) => {
         return {
           name: fd.name,

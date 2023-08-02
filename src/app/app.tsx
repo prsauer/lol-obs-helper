@@ -49,6 +49,7 @@ export type INativeBridge = {
     openExternalURL: (url: string) => void;
   };
   vods?: {
+    configureVodsFolderProtocol: (riotPath: string) => void;
     scanFolderForMatches: (riotPath: string) => Promise<
       {
         matchId?: string;

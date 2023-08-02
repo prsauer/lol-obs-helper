@@ -1,16 +1,30 @@
 import { useQuery } from "react-query";
 import { Button } from "../components/Button";
 import { MatchStub } from "../components/MatchStub";
+import { useAppConfig } from "../hooks/AppConfigContext";
 
 export const IndexPage = () => {
-  const localMatches = useQuery("local-matches", async () => {
-    return window.native?.vods?.scanFolderForMatches(
-      "C:\\Riot Games\\League of Legends\\Logs\\GameLogs"
-    );
-  });
+  const config = useAppConfig();
 
-  const videos = useQuery(`vod-list`, () =>
-    window.native.vods?.getVodsInfo("D:\\Video")
+  const localMatches = useQuery(
+    "local-matches",
+    async () => {
+      return window.native?.vods?.scanFolderForMatches(
+        config.appConfig.riotLogsPath || ""
+      );
+    },
+    {
+      enabled: Boolean(config.appConfig.riotLogsPath),
+    }
+  );
+
+  const videos = useQuery(
+    `vod-list`,
+    () =>
+      window.native.vods?.getVodsInfo(config.appConfig.vodStoragePath || ""),
+    {
+      enabled: Boolean(config.appConfig.vodStoragePath),
+    }
   );
 
   return (

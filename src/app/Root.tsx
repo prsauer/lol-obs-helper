@@ -89,6 +89,14 @@ export const Root = () => {
     config.appConfig.riotLogsPath,
   ]);
 
+  useEffect(() => {
+    if (config.appConfig.riotLogsPath) {
+      window.native.vods?.configureVodsFolderProtocol(
+        config.appConfig.riotLogsPath
+      );
+    }
+  }, [config.appConfig.riotLogsPath]);
+
   return (
     <div className="p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
       <div className="flex flex-row gap-3 mb-2">

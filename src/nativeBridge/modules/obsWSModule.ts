@@ -21,7 +21,7 @@ let isRecording = false;
 function parseRiotFolderDate(path: string) {
   if (!path.includes("T")) return null;
   try {
-    const folderParts = path.split("\\");
+    const folderParts = path.split("/");
     const folderName = folderParts[folderParts.length - 1];
     const [dateStr, timeStr] = folderName.split("T");
     const [year, month, day] = dateStr.split("-");
