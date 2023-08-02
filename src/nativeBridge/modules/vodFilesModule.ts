@@ -20,6 +20,10 @@ const scanLogFileForInfo = (lines: string[]) => {
   let platformId: string | undefined;
   let region: string | undefined;
 
+  /** Bot games only have TeamOrder, no TeamChaos members */
+  /** we would like to exclude them */
+  let hasTeamChaos = false;
+
   lines.forEach((line) => {
     if (line.includes("**LOCAL**") && line.includes("ROST")) {
       const puuidSearch = puuidRegex.exec(line);
@@ -38,9 +42,13 @@ const scanLogFileForInfo = (lines: string[]) => {
       const regionSearch = regionRegex.exec(line);
       region = regionSearch?.[1];
     }
+
+    if (line.includes("TeamChaos")) {
+      hasTeamChaos = true;
+    }
   });
 
-  if (summonerPuuid && matchId) {
+  if (summonerPuuid && matchId && hasTeamChaos) {
     return {
       matchId,
       summonerName,
