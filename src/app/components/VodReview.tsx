@@ -181,6 +181,7 @@ export const VodReview = ({
             ref={vidRef}
             src={`vod://${vod}`}
             style={{
+              margin: "auto",
               height: "93%",
               flex: 1,
               objectFit: "contain",

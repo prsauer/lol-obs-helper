@@ -21,6 +21,7 @@ export const EventTimelineIcon = ({
           position: "absolute",
           left,
           top: 5,
+          marginLeft: -ICON_SIZE / 2,
         }}
         className={"cursor-pointer border-green-400 border"}
       >
@@ -38,6 +39,7 @@ export const EventTimelineIcon = ({
         style={{
           position: "absolute",
           left,
+          marginLeft: -8,
         }}
       >
         D
@@ -56,6 +58,7 @@ export const EventTimelineIcon = ({
           position: "absolute",
           left,
           top: 7,
+          marginLeft: -ICON_SIZE / 2,
         }}
       >
         <ChampIcon
@@ -79,6 +82,7 @@ export const EventTimelineIcon = ({
             position: "absolute",
             left,
             top: 14,
+            marginLeft: -ICON_SIZE / 2,
           }}
         >
           <img
@@ -102,6 +106,7 @@ export const EventTimelineIcon = ({
             position: "absolute",
             left,
             top: 14,
+            marginLeft: -ICON_SIZE / 2,
           }}
         >
           <img
