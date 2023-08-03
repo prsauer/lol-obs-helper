@@ -174,7 +174,11 @@ export const VodReview = ({
         })}
       </div>
       {vod && (
-        <figure id="videoContainer" data-fullscreen="false" className="flex-1">
+        <figure
+          id="videoContainer"
+          data-fullscreen="false"
+          className="flex flex-col flex-1"
+        >
           <video
             controls
             id="video"
@@ -182,15 +186,15 @@ export const VodReview = ({
             src={`vod://${vod}`}
             style={{
               margin: "auto",
-              height: "93%",
               flex: 1,
               objectFit: "contain",
               minWidth: 0,
+              minHeight: 0,
             }}
           />
           <div
             id="video-controls"
-            className="controls w-full "
+            className="controls w-full"
             data-state="hidden"
           >
             <div className="progress w-full ">
@@ -204,7 +208,7 @@ export const VodReview = ({
               >
                 <span id="progress-bar"></span>
               </progress>
-              <div className="flex flex-row relative bg-black mr-1">
+              <div className="flex flex-row relative mr-1 h-[41px]">
                 {importantEvents?.map((e) => {
                   return (
                     <EventTimelineIcon
