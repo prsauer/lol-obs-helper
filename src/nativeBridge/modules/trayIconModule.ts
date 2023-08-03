@@ -19,7 +19,7 @@ export class trayIconModule extends NativeBridgeModule {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const path = require("path");
     try {
-      this.trayIcon = new Tray(path.resolve("assets/icon.ico"));
+      this.trayIcon = new Tray(path.resolve("./.webpack/main/assets/icon.ico"));
       const trayMenu = Menu.buildFromTemplate([
         {
           label: "Show",
@@ -44,10 +44,12 @@ export class trayIconModule extends NativeBridgeModule {
     }
 
     ipcMain.on(Events.RecordingStarted, () => {
-      this.trayIcon?.setImage(path.resolve("assets/icon_red.ico"));
+      this.trayIcon?.setImage(
+        path.resolve("./.webpack/main/assets/icon_red.ico")
+      );
     });
     ipcMain.on(Events.RecordingStopped, () => {
-      this.trayIcon?.setImage(path.resolve("assets/icon.ico"));
+      this.trayIcon?.setImage(path.resolve("./.webpack/main/assets/icon.ico"));
     });
   }
 }
