@@ -90,12 +90,12 @@ export const Root = () => {
   ]);
 
   useEffect(() => {
-    if (config.appConfig.riotLogsPath) {
+    if (config.appConfig.vodStoragePath) {
       window.native.vods?.configureVodsFolderProtocol(
-        config.appConfig.riotLogsPath
+        config.appConfig.vodStoragePath
       );
     }
-  }, [config.appConfig.riotLogsPath]);
+  }, [config.appConfig.vodStoragePath]);
 
   return (
     <div className="p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
