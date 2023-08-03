@@ -13,7 +13,7 @@ import { rendererConfig } from "./webpack.renderer.config";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: true,
+    asar: false,
   },
   rebuildConfig: {},
   makers: [
@@ -23,7 +23,7 @@ const config: ForgeConfig = {
     new MakerDeb({}),
   ],
   plugins: [
-    new AutoUnpackNativesPlugin({}),
+    // new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
       mainConfig,
       renderer: {
@@ -42,22 +42,22 @@ const config: ForgeConfig = {
               config: {
                 module: {
                   rules: [
-                    {
-                      // We're specifying native_modules in the test because the asset relocator loader generates a
-                      // "fake" .node file which is really a cjs file.
-                      test: /native_modules[/\\].+\.node$/,
-                      use: "node-loader",
-                    },
-                    {
-                      test: /[/\\]node_modules[/\\].+\.(m?js|node)$/,
-                      parser: { amd: false },
-                      use: {
-                        loader: "@vercel/webpack-asset-relocator-loader",
-                        options: {
-                          outputAssetBase: "native_modules",
-                        },
-                      },
-                    },
+                    // {
+                    //   // We're specifying native_modules in the test because the asset relocator loader generates a
+                    //   // "fake" .node file which is really a cjs file.
+                    //   test: /native_modules[/\\].+\.node$/,
+                    //   use: "node-loader",
+                    // },
+                    // {
+                    //   test: /[/\\]node_modules[/\\].+\.(m?js|node)$/,
+                    //   parser: { amd: false },
+                    //   use: {
+                    //     loader: "@vercel/webpack-asset-relocator-loader",
+                    //     options: {
+                    //       outputAssetBase: "native_modules",
+                    //     },
+                    //   },
+                    // },
                     {
                       test: /\.tsx?$/,
                       exclude: /(node_modules|\.webpack)/,

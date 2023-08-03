@@ -149,8 +149,8 @@ export class obsWSModule extends NativeBridgeModule {
       this.onConnectionStateChange(_mainWindow, { connected: true });
     });
 
-    obs.on("ConnectionClosed", (args) => {
-      console.log(`${new Date()}: ConnectionClosed cause=${args.cause}`);
+    obs.on("ConnectionClosed", () => {
+      console.log(`${new Date()}: ConnectionClosed`);
       this.onConnectionStateChange(_mainWindow, { connected: false });
     });
 
