@@ -15,9 +15,7 @@ export const MatchStub = ({
     ended: string;
   }[];
 }) => {
-  const gamesQuery = useQuery(`game-${matchId}`, () =>
-    getGameData(matchId || "no-id")
-  );
+  const gamesQuery = useQuery(`game-${matchId}`, () => getGameData(matchId));
   const summonerQuery = useQuery(
     `sum-${summonerName}`,
     () => getSummonerByName(summonerName || "no-name"),
@@ -29,9 +27,10 @@ export const MatchStub = ({
   const myPuuid = summonerQuery.data?.data?.puuid;
 
   const game = gamesQuery.data?.data;
-  const myPart = game?.info.participants.find((e) => e.puuid === myPuuid);
+  const participants = game?.info?.participants || [];
+  const myPart = participants.find((e) => e.puuid === myPuuid);
   console.log({
-    game: game?.info.participants,
+    participants,
     summonerQuery,
   });
   const winnerId = game?.info.teams.filter((e) => e.win)[0].teamId;
@@ -46,14 +45,14 @@ export const MatchStub = ({
     <div className="flex flex-row gap-1 items-center">
       <div>
         <div className="flex flex-row">
-          {game?.info.participants
+          {participants
             .filter((e) => e.teamId == 100)
             .map((e) => (
               <ChampIcon key={e.puuid} championId={e?.championId} size={32} />
             ))}
         </div>
         <div className="flex flex-row">
-          {game?.info.participants
+          {participants
             .filter((e) => e.teamId == 200)
             .map((e) => (
               <ChampIcon key={e.puuid} championId={e?.championId} size={32} />

@@ -10,19 +10,21 @@ import OBSWebSocket, { EventSubscription } from "obs-websocket-js";
 import { R3DLogWatcher } from "../../nativeUtils/logWatcher";
 import { Events } from "../ipcEvents";
 
-const FOLDER_AGE_THRESHOLD = 5;
+const FOLDER_AGE_THRESHOLD = 10;
 
 let obs: OBSWebSocket | null = null;
 let folderWatcher: FSWatcher | null = null;
 let r3dWatcher: R3DLogWatcher | null = null;
 
 let isRecording = false;
+const folderPathSeparator = process.platform === "darwin" ? "/" : "\\";
 
 function parseRiotFolderDate(path: string) {
   if (!path.includes("T")) return null;
   try {
-    const folderParts = path.split("/");
+    const folderParts = path.split(folderPathSeparator);
     const folderName = folderParts[folderParts.length - 1];
+    // console.log({ folderParts, folderName });
     const [dateStr, timeStr] = folderName.split("T");
     const [year, month, day] = dateStr.split("-");
     const [hour, min, sec] = timeStr.split("-");
@@ -69,6 +71,7 @@ export class obsWSModule extends NativeBridgeModule {
   }
 
   public startFolderWatching(folder: string) {
+    console.log(`Starting log folder watching: ${folder}`);
     if (folderWatcher) {
       folderWatcher.close();
     }
@@ -79,11 +82,12 @@ export class obsWSModule extends NativeBridgeModule {
     });
 
     folderWatcher.on("addDir", (path) => {
+      // console.log("addDir", path);
       const date = parseRiotFolderDate(path);
       if (!date) return;
       const startTime = new Date();
       const ageInSeconds = diffDates(date, startTime);
-      // console.log("addDir", path, ageInSeconds);
+      // console.log("addDir", path, date, ageInSeconds);
       if (ageInSeconds < FOLDER_AGE_THRESHOLD) {
         this.startLogWatching(path);
       }

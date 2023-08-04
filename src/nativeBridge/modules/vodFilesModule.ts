@@ -89,6 +89,7 @@ export class vodFilesModule extends NativeBridgeModule {
     _mainWindow: BrowserWindow,
     riotLogsFolder: string
   ) {
+    console.log(`Scanning ${riotLogsFolder} for matches`);
     const dirListing = readdirSync(riotLogsFolder);
     for (let i = 0; i < dirListing.length; i++) {
       if (dirListing[i] in folderNamesCached) continue;
@@ -105,10 +106,6 @@ export class vodFilesModule extends NativeBridgeModule {
       const lines = data.toString().split("\n");
       const info = scanLogFileForInfo(lines);
       if (info === null) continue;
-      console.log({
-        info,
-        logPath: dirListing[i],
-      });
 
       folderNamesCached[dirListing[i]] = true;
       folderInfoCache.push({
