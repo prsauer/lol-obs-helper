@@ -28,8 +28,12 @@ interface IProps {
   children: React.ReactNode | React.ReactNode[];
 }
 
+const defaultAppConfig = {
+  obsWSURL: "ws://localhost:4455",
+};
+
 export const AppConfigContextProvider = (props: IProps) => {
-  const [appConfig, setAppConfig] = useState<IAppConfig>({});
+  const [appConfig, setAppConfig] = useState<IAppConfig>(defaultAppConfig);
   const [isLoading, setLoading] = useState(true);
 
   const updateAppConfig = (

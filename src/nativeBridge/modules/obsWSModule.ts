@@ -55,7 +55,7 @@ function logLineHasExitMessage(logLine: string) {
 }
 
 @nativeBridgeModule("obs")
-export class obsWSModule extends NativeBridgeModule {
+export class OBSWSModule extends NativeBridgeModule {
   public startLogWatching(folder: string) {
     console.log(`New directory found: ${folder}`);
     this.startRecording();

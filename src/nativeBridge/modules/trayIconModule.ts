@@ -7,7 +7,7 @@ import {
 import { Events } from "../ipcEvents";
 
 @nativeBridgeModule("trayIcon")
-export class trayIconModule extends NativeBridgeModule {
+export class TrayIconModule extends NativeBridgeModule {
   private trayIcon: Tray | null = null;
 
   @moduleFunction()

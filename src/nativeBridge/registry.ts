@@ -12,10 +12,10 @@ import {
   MODULE_METADATA,
   NativeBridgeModule,
 } from "./module";
-import { obsWSModule } from "./modules/obsWSModule";
-import { trayIconModule } from "./modules/trayIconModule";
-import { vodFilesModule } from "./modules/vodFilesModule";
-import { ExternalLinksModule } from "./modules/externalLinksModule";
+import { OBSWSModule } from "./modules/OBSWSModule";
+import { TrayIconModule } from "./modules/TrayIconModule";
+import { VodFilesModule } from "./modules/VodFilesModule";
+import { ExternalLinksModule } from "./modules/ExternalLinksModule";
 
 export class NativeBridgeRegistry {
   private modules: NativeBridgeModule[] = [];
@@ -102,6 +102,6 @@ export class NativeBridgeRegistry {
 export const nativeBridgeRegistry = new NativeBridgeRegistry();
 
 nativeBridgeRegistry.registerModule(ExternalLinksModule);
-nativeBridgeRegistry.registerModule(vodFilesModule);
-nativeBridgeRegistry.registerModule(trayIconModule);
-nativeBridgeRegistry.registerModule(obsWSModule);
+nativeBridgeRegistry.registerModule(VodFilesModule);
+nativeBridgeRegistry.registerModule(TrayIconModule);
+nativeBridgeRegistry.registerModule(OBSWSModule);

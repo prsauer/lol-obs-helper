@@ -83,7 +83,7 @@ const folderInfoCache: FolderInfo[] = [];
 const fnSeparator = process.platform === "darwin" ? "/" : "\\";
 
 @nativeBridgeModule("vods")
-export class vodFilesModule extends NativeBridgeModule {
+export class VodFilesModule extends NativeBridgeModule {
   @moduleFunction()
   public async scanFolderForMatches(
     _mainWindow: BrowserWindow,
