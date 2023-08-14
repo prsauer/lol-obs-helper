@@ -4,6 +4,7 @@ import { ReviewPage, reviewLoader } from "./pages/ReviewPage";
 import { useEffect, useState } from "react";
 import { useAppConfig } from "./hooks/AppConfigContext";
 import { SetupPage } from "./pages/SetupPage";
+import { MatchInspectPage, matchLoader } from "./pages/MatchInspectPage";
 
 type RecordingState = {
   outputActive: boolean;
@@ -28,6 +29,11 @@ const router = createHashRouter([
   {
     path: "/setup",
     element: <SetupPage />,
+  },
+  {
+    path: "/inspect/:matchId",
+    element: <MatchInspectPage />,
+    loader: matchLoader,
   },
 ]);
 

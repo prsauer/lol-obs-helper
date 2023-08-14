@@ -39,6 +39,7 @@ export const IndexPage = () => {
           Refresh
         </Button>
       </div>
+      <Button linkTo={`/inspect/NA1_4733739660`}>Test Inspect</Button>
       <div className="flex flex-col gap-2 overflow-y-auto pb-4">
         {localMatches.data &&
           localMatches.data.slice(0, 8).map((d) => (

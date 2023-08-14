@@ -2,7 +2,7 @@ import { MatchDto, MatchTimelineDto, SummonerDto } from "./types";
 
 const baseApiRoute = "https://spires-lol.vercel.app/api/lol";
 
-type DataPacket<T> = {
+export type DataPacket<T> = {
   data: T | null;
   err: string | null;
   status: number | null;
