@@ -78,6 +78,13 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
     (p) => p.puuid === selectedChamp
   );
 
+  const minsOfGame = (gameInfoQuery.data?.data?.info.gameDuration || 1) / 60;
+  const selectedTotalCS =
+    (selectedInfo?.neutralMinionsKilled || 0) +
+    (selectedInfo?.totalMinionsKilled || 0);
+
+  const selectedAvgCSm = selectedTotalCS / minsOfGame;
+
   return (
     <div className="flex flex-col flex-1">
       <div className="flex flex-row gap-2 ">
@@ -109,6 +116,9 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
         <div>
           {selectedInfo?.kills} / {selectedInfo?.deaths} /{" "}
           {selectedInfo?.assists}
+        </div>
+        <div>
+          {selectedAvgCSm.toFixed(1)}cs/m {selectedTotalCS}cs
         </div>
       </div>
       <div className="flex-1 max-h-[300px] pt-2 pb-8 bg-zinc-900">

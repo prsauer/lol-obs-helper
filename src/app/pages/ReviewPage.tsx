@@ -54,6 +54,7 @@ export const ReviewPage = () => {
         >
           {summonerQuery.data?.data?.name} at u.gg
         </Button>
+        <Button linkTo={`/inspect/${id}`}>Inspect</Button>
       </div>
       {noVodExists && <div>No video recorded for this match :( </div>}
       {vod && (

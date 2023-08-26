@@ -106,7 +106,14 @@ export const Root = () => {
   return (
     <div className="p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
       <div className="flex flex-row gap-3 mb-2">
-        <div>OBS Connected: {connState.connected ? "Yes" : "No"}</div>
+        <div>
+          OBS Connected:{" "}
+          {connState.connected ? (
+            "Yes"
+          ) : (
+            <span className="bg-red-800 pl-8 pr-8 pt-1 pb-1 border">NO</span>
+          )}
+        </div>
         <div>Recording: {recState.outputActive ? "Yes" : "No"}</div>
         <div>Config OK: {config.isValidConfig ? "Yes" : "No"} </div>
       </div>

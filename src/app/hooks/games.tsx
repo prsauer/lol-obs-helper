@@ -4,7 +4,7 @@ import gdata from "../../../mock/NA1_4733739660.game.json";
 import tdata from "../../../mock/NA1_4733739660.timeline.json";
 import { MatchDto, MatchTimelineDto } from "../proxy/types";
 
-const MOCK_RETURN = true;
+const MOCK_RETURN = false;
 
 export const useGameTimelineQuery = (matchId: string) =>
   useQuery(`game-timeline-${matchId}`, () => {
