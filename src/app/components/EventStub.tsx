@@ -7,12 +7,14 @@ export const EventStub = ({
   participants,
   event,
   myParticipantId,
+  myTeamId,
   onClick,
   timeConverter,
 }: {
   participants: MatchParticipant[];
   event: Event;
   myParticipantId: number | undefined;
+  myTeamId: number | undefined;
   onClick: (ts: number) => void;
   timeConverter: (ts: number) => number;
 }) => {
@@ -60,7 +62,7 @@ export const EventStub = ({
     );
   }
   if (event.type === "ELITE_MONSTER_KILL") {
-    const myKill = event.killerId === myParticipantId;
+    const myKill = event.killerTeamId === myTeamId;
     return (
       <div
         onClick={() => onClick(timeConverter(event.timestamp))}

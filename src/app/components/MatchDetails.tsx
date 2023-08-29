@@ -48,6 +48,12 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
 
   const earlyGameFrames = gameTimeline.info.frames.slice(0, 25);
 
+  const min10Frame = earlyGameFrames[10].participantFrames[partIndex];
+  const min15Frame = earlyGameFrames[15].participantFrames[partIndex];
+
+  const csAt10 = min10Frame.minionsKilled + min10Frame.jungleMinionsKilled;
+  const csAt15 = min15Frame.minionsKilled + min15Frame.jungleMinionsKilled;
+
   const delta8Series = earlyGameFrames.map((f) => ({
     timestamp: Math.round(f.timestamp / 60000),
     minionsKilled: Math.round(
@@ -118,7 +124,8 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
           {selectedInfo?.assists}
         </div>
         <div>
-          {selectedAvgCSm.toFixed(1)}cs/m {selectedTotalCS}cs
+          {selectedAvgCSm.toFixed(1)}cs/m {selectedTotalCS}cs {csAt10}cs@10{" "}
+          {csAt15}cs@15
         </div>
       </div>
       <div className="flex-1 max-h-[300px] pt-2 pb-8 bg-zinc-900">

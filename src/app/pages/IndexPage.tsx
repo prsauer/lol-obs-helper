@@ -41,7 +41,7 @@ export const IndexPage = () => {
       </div>
       <div className="flex flex-col gap-2 overflow-y-auto pb-4">
         {localMatches.data &&
-          localMatches.data.slice(0, 8).map((d) => (
+          localMatches.data.slice(0, 1).map((d) => (
             <Button
               key={d.matchId}
               linkTo={`vod/${d.platformId + "_" + d.matchId}/${d.summonerName}`}

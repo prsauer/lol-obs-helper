@@ -38,7 +38,11 @@ export const MatchStub = ({
 
   let vod = null;
   if (videos && game?.info?.gameCreation) {
-    vod = maybeGetVod(videos, game?.info?.gameCreation);
+    vod = maybeGetVod(
+      videos,
+      game?.info?.gameCreation,
+      game?.info?.gameEndTimestamp
+    );
   }
 
   return (
@@ -63,7 +67,7 @@ export const MatchStub = ({
       <div className="flex flex-col items-center">
         <div className="flex flex-row items-center gap-2">
           <div className="text-lg text-orange-500">
-            {myPart?.kills}/{myPart?.assists}/{myPart?.deaths}
+            {myPart?.kills}/{myPart?.deaths}/{myPart?.assists}
           </div>
           <div className={didWin ? "text-green-400" : "text-purple-700"}>
             {didWin ? "WIN" : "LOSS"}

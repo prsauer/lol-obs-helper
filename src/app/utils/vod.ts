@@ -10,7 +10,7 @@ function getTimeFromVideoName(info: VodInfo) {
 
   return {
     info,
-    date: new Date(
+    startDatetime: new Date(
       parseInt(year),
       parseInt(month) - 1,
       parseInt(day),
@@ -25,15 +25,27 @@ function videoListToTimes(vods: VodInfo[]) {
   return vods.map(getTimeFromVideoName);
 }
 
-const VOD_OFFSET_THRESHOLD = 20000; // 20s
+const VOD_OFFSET_THRESHOLD = 22000; // milliseconds
 
-export function maybeGetVod(vods: VodInfo[], gameCreationTime: number) {
+export function maybeGetVod(
+  vods: VodInfo[],
+  gameCreationTime: number,
+  gameEndTime: number
+) {
   const times = videoListToTimes(vods);
   for (let i = 0; i < times.length; i++) {
     const time = times[i];
-    if (
-      Math.abs(time.date.getTime() - gameCreationTime) < VOD_OFFSET_THRESHOLD
-    ) {
+    const vodEndedTime = new Date(time.info.ended).getTime();
+    const endDelta = Math.abs(vodEndedTime - gameEndTime);
+    const startDelta = Math.abs(
+      time.startDatetime.getTime() - gameCreationTime
+    );
+
+    if (endDelta < VOD_OFFSET_THRESHOLD) {
+      return time;
+    }
+
+    if (startDelta < VOD_OFFSET_THRESHOLD) {
       return time;
     }
   }

@@ -4,6 +4,7 @@ import { useQuery } from "react-query";
 import { getGameData, getSummonerByName } from "../proxy/riotApi";
 import { Button } from "../components/Button";
 import { maybeGetVod } from "../utils/vod";
+import { useState } from "react";
 
 export function reviewLoader({ params }: LoaderFunctionArgs) {
   return { id: params.id, summonerName: params.summonerName };
@@ -20,6 +21,7 @@ export const ReviewPage = () => {
       enabled: Boolean(summonerName),
     }
   );
+  const [focusSummonerId, setFocusSummonerId] = useState<string | null>(null);
   const videos = useQuery(`vod-list`, () =>
     window.native.vods?.getVodsInfo("D:\\Video")
   );
@@ -30,7 +32,11 @@ export const ReviewPage = () => {
 
   let vod = null;
   if (videos?.data && gameInfo?.info?.gameCreation) {
-    vod = maybeGetVod(videos.data, gameInfo?.info?.gameCreation);
+    vod = maybeGetVod(
+      videos.data,
+      gameInfo?.info?.gameCreation,
+      gameInfo?.info?.gameEndTimestamp
+    );
   }
 
   const noVodExists = Boolean(!vod && gameInfo?.info.gameCreation);
@@ -55,15 +61,25 @@ export const ReviewPage = () => {
           {summonerQuery.data?.data?.name} at u.gg
         </Button>
         <Button linkTo={`/inspect/${id}`}>Inspect</Button>
+        {gameInfo?.info.participants.map((p) => (
+          <div
+            key={p.puuid}
+            onClick={() => {
+              setFocusSummonerId(p.puuid);
+            }}
+          >
+            {p.championName}
+          </div>
+        ))}
       </div>
       {noVodExists && <div>No video recorded for this match :( </div>}
       {vod && (
         <VodReview
           vod={vod?.info.name}
-          created={vod?.date}
+          created={vod?.startDatetime}
           matchId={id}
           ended={vod?.info.ended}
-          summonerPuuid={summonerQuery.data?.data?.puuid}
+          summonerPuuid={focusSummonerId || summonerQuery.data?.data?.puuid}
         />
       )}
     </>

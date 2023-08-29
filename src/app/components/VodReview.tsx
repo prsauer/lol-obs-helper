@@ -46,6 +46,9 @@ export const VodReview = ({
     return <div>loading</div>;
   }
 
+  const myTeamId = myParticipantId
+    ? gameInfo.participants[myParticipantId].teamId
+    : -1;
   const gameEndTime = new Date(gameInfo?.gameEndTimestamp);
 
   const gameStartConvert = new Date(
@@ -162,6 +165,7 @@ export const VodReview = ({
               key={evt.timestamp}
               participants={gameInfo.participants}
               event={evt}
+              myTeamId={myTeamId}
               myParticipantId={myParticipantId}
               onClick={(ts) => {
                 if (vidRef.current) {
