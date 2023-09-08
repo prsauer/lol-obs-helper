@@ -32,11 +32,7 @@ export const ReviewPage = () => {
 
   let vod = null;
   if (videos?.data && gameInfo?.info?.gameCreation) {
-    vod = maybeGetVod(
-      videos.data,
-      gameInfo?.info?.gameCreation,
-      gameInfo?.info?.gameEndTimestamp
-    );
+    vod = maybeGetVod(videos.data, gameInfo?.info?.gameId);
   }
 
   const noVodExists = Boolean(!vod && gameInfo?.info.gameCreation);

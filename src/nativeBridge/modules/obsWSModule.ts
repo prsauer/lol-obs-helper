@@ -47,6 +47,18 @@ function diffDates(d1: Date, d2: Date) {
   return (d2.getTime() - d1.getTime()) / 1000;
 }
 
+function logLineExtractGameId(logLine: string): string | null {
+  const pidRegex = /"-PlatformID=([a-zA-Z0-9]*)"/;
+  const gidRegex = /"-GameID=([0-9]*)"/;
+  const matchPID = pidRegex.exec(logLine);
+  const matchGameID = gidRegex.exec(logLine);
+
+  if (matchPID !== null && matchPID[1] && matchGameID && matchGameID[1]) {
+    return `${matchPID[1]}_${matchGameID[1]}`;
+  }
+  return null;
+}
+
 function logLineHasExitMessage(logLine: string) {
   if (logLine.includes('"message_body":"Game exited"')) {
     return true;
@@ -58,12 +70,19 @@ function logLineHasExitMessage(logLine: string) {
 export class OBSWSModule extends NativeBridgeModule {
   public startLogWatching(folder: string) {
     console.log(`New directory found: ${folder}`);
-    this.startRecording();
+    // this.startRecording();
     if (r3dWatcher) {
       r3dWatcher.close();
     }
     r3dWatcher = new R3DLogWatcher(folder);
     r3dWatcher.on("new_line", (newline) => {
+      console.log(newline);
+      const maybeGameId = logLineExtractGameId(newline);
+      console.log("gameId?", maybeGameId);
+      if (maybeGameId !== null) {
+        this.setRecordingNamePrefix(maybeGameId);
+        this.startRecording();
+      }
       if (isRecording && logLineHasExitMessage(newline)) {
         this.stopRecording();
       }
@@ -106,6 +125,17 @@ export class OBSWSModule extends NativeBridgeModule {
       return;
     }
     obs.call("StopRecord");
+  }
+
+  public async setRecordingNamePrefix(prefix: string) {
+    if (!obs) {
+      return;
+    }
+    obs.call("SetProfileParameter", {
+      parameterCategory: "Output",
+      parameterName: "FilenameFormatting",
+      parameterValue: `${prefix} %CCYY-%MM-%DD %hh-%mm-%ss`,
+    });
   }
 
   @moduleFunction()

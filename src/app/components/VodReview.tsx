@@ -47,7 +47,7 @@ export const VodReview = ({
   }
 
   const myTeamId = myParticipantId
-    ? gameInfo.participants[myParticipantId].teamId
+    ? gameInfo.participants[myParticipantId]?.teamId
     : -1;
   const gameEndTime = new Date(gameInfo?.gameEndTimestamp);
 
@@ -56,6 +56,7 @@ export const VodReview = ({
   );
 
   const timeCorrectionMs = gameEndTime.getTime() - vodEndTime.getTime();
+  console.log("## TIME CORRECTION", timeCorrectionMs);
 
   const vodStartOffset =
     gameStartConvert.getTime() - vodStartTime.getTime() - timeCorrectionMs;

@@ -55,6 +55,7 @@ const scanLogFileForInfo = (lines: string[]) => {
     }
   });
 
+  console.log({ summonerPuuid, matchId, hasTeamChaos });
   if (summonerPuuid && matchId && hasTeamChaos) {
     return {
       matchId,
@@ -89,7 +90,7 @@ export class VodFilesModule extends NativeBridgeModule {
     _mainWindow: BrowserWindow,
     riotLogsFolder: string
   ) {
-    console.log(`Scanning ${riotLogsFolder} for matches`);
+    // console.log(`Scanning ${riotLogsFolder} for matches`);
     const dirListing = readdirSync(riotLogsFolder);
     for (let i = 0; i < dirListing.length; i++) {
       if (dirListing[i] in folderNamesCached) continue;
@@ -100,6 +101,7 @@ export class VodFilesModule extends NativeBridgeModule {
         fnSeparator +
         dirListing[i] +
         "_r3dlog.txt";
+      // console.log("reading", potentialLogFile);
       const fd = openSync(potentialLogFile, "r");
       const stats = statSync(potentialLogFile);
       const data = readFileSync(fd);
@@ -165,7 +167,7 @@ export class VodFilesModule extends NativeBridgeModule {
   public async getVodsInfo(_mainWindow: BrowserWindow, vodPath: string) {
     const rootPath = vodPath;
     const dir = readdirSync(rootPath);
-    const res = dir.filter((fn) => fn.length === 23);
+    const res = dir.filter((fn) => fn.length >= 23);
     const stats = res
       .map((fn) => ({ name: fn, stats: statSync(rootPath + "/" + fn) }))
       .map((fd) => {

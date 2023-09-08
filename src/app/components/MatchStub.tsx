@@ -33,16 +33,14 @@ export const MatchStub = ({
     participants,
     summonerQuery,
   });
-  const winnerId = game?.info.teams.filter((e) => e.win)[0].teamId;
+  const winnerId = game?.info
+    ? game?.info.teams.filter((e) => e.win)[0].teamId
+    : null;
   const didWin = myPart?.teamId === winnerId;
 
   let vod = null;
   if (videos && game?.info?.gameCreation) {
-    vod = maybeGetVod(
-      videos,
-      game?.info?.gameCreation,
-      game?.info?.gameEndTimestamp
-    );
+    vod = maybeGetVod(videos, game?.info?.gameId);
   }
 
   return (
@@ -75,7 +73,7 @@ export const MatchStub = ({
         </div>
         <div>{summonerName}</div>
         <div className="text-gray-500">
-          {new Date(game?.info.gameCreation || 0).toLocaleString()}
+          {new Date(game?.info?.gameCreation || 0).toLocaleString()}
         </div>
       </div>
       {vod && <div className="text-[2em]">&#128249;</div>}

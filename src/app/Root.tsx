@@ -1,10 +1,11 @@
 import { RouterProvider, createHashRouter } from "react-router-dom";
 import { IndexPage } from "./pages/IndexPage";
 import { ReviewPage, reviewLoader } from "./pages/ReviewPage";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppConfig } from "./hooks/AppConfigContext";
 import { SetupPage } from "./pages/SetupPage";
 import { MatchInspectPage, matchLoader } from "./pages/MatchInspectPage";
+import { useQuery } from "react-query";
 
 type RecordingState = {
   outputActive: boolean;
@@ -15,6 +16,9 @@ type RecordingState = {
 type ConnectionState = {
   connected: boolean;
 };
+
+const startSound = new Audio("static://StartSound.wav");
+const stopSound = new Audio("static://StopSound.wav");
 
 const router = createHashRouter([
   {
@@ -48,6 +52,19 @@ export const Root = () => {
     outputPath: "",
     outputState: "",
   });
+  const recordingActiveRef = useRef(false);
+
+  const localMatches = useQuery(
+    "local-matches",
+    async () => {
+      return window.native?.vods?.scanFolderForMatches(
+        config.appConfig.riotLogsPath || ""
+      );
+    },
+    {
+      enabled: Boolean(config.appConfig.riotLogsPath),
+    }
+  );
 
   useEffect(() => {
     window.native.obs?.logMessage((_evt, logline) => {
@@ -59,7 +76,16 @@ export const Root = () => {
     });
 
     window.native.obs?.onRecordingStateChange((_evt, state) => {
-      console.log("new rec state", state);
+      console.log("new rec state", { state, recState });
+      if (state.outputActive !== recordingActiveRef.current) {
+        if (state.outputActive) {
+          startSound.play();
+        } else {
+          stopSound.play();
+          setTimeout(() => localMatches.refetch(), 5000);
+        }
+      }
+      recordingActiveRef.current = state.outputActive;
       setRecState(state);
     });
 
