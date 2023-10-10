@@ -19,8 +19,7 @@ import { google } from "googleapis";
 async function insert(body: ReadStream, title: string, description: string) {
   const service = google.youtube("v3");
   const res = await service.videos.insert({
-    access_token:
-      "ya29.a0AfB_byBaI3gTZPt-JmxlM-VzvUZ1SvtTqE99VOTBYUUg9b3GFAArrFU938UOnsPf1-YbaqoziO0jubZz-_comgIrhP40xqFwKXNn1XS1TZDPQspQf26fmG1HJrMTjVQIi88UVQ8FzFf48sEMY6NWoqbQV-PBsHDkeH_jaCgYKAfsSARMSFQGOcNnCTKXa5cLv1hdo17MaUEx5tw0171",
+    access_token: "redacted",
     part: ["snippet"],
     requestBody: {
       snippet: {
