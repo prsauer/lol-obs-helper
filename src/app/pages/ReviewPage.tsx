@@ -5,12 +5,15 @@ import { getGameData, getSummonerByName } from "../proxy/riotApi";
 import { Button } from "../components/Button";
 import { maybeGetVod } from "../utils/vod";
 import { useState } from "react";
+import { useAppConfig } from "../hooks/AppConfigContext";
 
 export function reviewLoader({ params }: LoaderFunctionArgs) {
   return { id: params.id, summonerName: params.summonerName };
 }
 
 export const ReviewPage = () => {
+  const config = useAppConfig();
+
   const { id, summonerName } = useLoaderData() as ReturnType<
     typeof reviewLoader
   >;
@@ -30,7 +33,15 @@ export const ReviewPage = () => {
 
   const gameInfo = gamesQuery?.data?.data || null;
 
-  let vod = null;
+  const myId = summonerQuery.data?.data?.puuid;
+  console.log({ summonerQuery });
+  const myParticipantId = gameInfo?.info.participants.find(
+    (p) => p.puuid === myId
+  )?.participantId;
+
+  const myTeamId = gameInfo?.info.participants[myParticipantId || 0].teamId;
+
+  let vod: ReturnType<typeof maybeGetVod> | null = null;
   if (videos?.data && gameInfo?.info?.gameCreation) {
     vod = maybeGetVod(videos.data, gameInfo?.info?.gameId);
   }
@@ -47,6 +58,7 @@ export const ReviewPage = () => {
             created: {new Date(gameInfo?.info?.gameCreation).toLocaleString()}
           </div>
         )}
+
         <Button
           onClick={() => {
             window.native.links.openExternalURL(
@@ -67,6 +79,32 @@ export const ReviewPage = () => {
             {p.championName}
           </div>
         ))}
+        <Button
+          onClick={async () => {
+            const didWin = gameInfo?.info.teams.find(
+              (t) => t.teamId === myTeamId
+            )?.win;
+            const title = `${
+              gameInfo?.info.participants[(myParticipantId || 0) - 1]
+                .championName
+            } ${didWin ? "W" : "L"} ${new Date(
+              gameInfo?.info.gameCreation || ""
+            ).toLocaleDateString()}`;
+
+            console.log({
+              vod: config.appConfig.vodStoragePath + "\\" + vod?.info.name,
+              title,
+              description: "test",
+            });
+            window.native.vods?.insertVod(
+              config.appConfig.vodStoragePath + "\\" + vod?.info.name,
+              title,
+              "Test description"
+            );
+          }}
+        >
+          UPLOAD
+        </Button>
       </div>
       {noVodExists && <div>No video recorded for this match :( </div>}
       {vod && (

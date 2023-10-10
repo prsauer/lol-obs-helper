@@ -1,4 +1,10 @@
-import { MouseEvent, useCallback, useEffect, useRef } from "react";
+import {
+  KeyboardEvent,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { getGameData, getGameTimeline } from "../proxy/riotApi";
 import { useQuery } from "react-query";
 import { EventStub } from "./EventStub";
@@ -46,6 +52,7 @@ export const VodReview = ({
     return <div>loading</div>;
   }
 
+  console.log({ vod });
   const myTeamId = myParticipantId
     ? gameInfo.participants[myParticipantId]?.teamId
     : -1;
@@ -110,6 +117,35 @@ export const VodReview = ({
     [progressBar.current, vidRef.current]
   );
 
+  // vidRef.current?.playbackRate = 2;
+
+  const setWhileHeld = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if (!vidRef.current) return;
+      if (e.code === "Digit2") {
+        vidRef.current.playbackRate = 2;
+      }
+      if (e.code === "Digit3") {
+        vidRef.current.playbackRate = 3;
+      }
+      if (e.code === "Digit4") {
+        vidRef.current.playbackRate = 4;
+      }
+      if (e.code === "Digit5") {
+        vidRef.current.playbackRate = 5;
+      }
+    },
+    [progressBar.current, vidRef.current]
+  );
+
+  const unsetHold = useCallback(
+    (_e: KeyboardEvent<HTMLDivElement>) => {
+      if (!vidRef.current) return;
+      vidRef.current.playbackRate = 1;
+    },
+    [progressBar.current, vidRef.current]
+  );
+
   const progressBarDrag = useCallback(
     (e: MouseEvent<HTMLProgressElement>) => {
       if (!vidRef.current) return;
@@ -158,7 +194,11 @@ export const VodReview = ({
   }, [vidRef.current, progressBar.current]);
 
   return (
-    <div className="flex-1 flex flex-row gap-2 overflow-auto">
+    <div
+      className="flex-1 flex flex-row gap-2 overflow-auto"
+      onKeyDown={setWhileHeld}
+      onKeyUp={unsetHold}
+    >
       <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto text-sm">
         {importantEvents?.map((evt) => {
           return (

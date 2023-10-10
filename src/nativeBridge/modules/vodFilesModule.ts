@@ -1,4 +1,4 @@
-import { BrowserWindow, protocol } from "electron";
+import { BrowserWindow, net, protocol } from "electron";
 import {
   nativeBridgeModule,
   NativeBridgeModule,
@@ -11,7 +11,31 @@ import {
   readFileSync,
   readSync,
   closeSync,
+  createReadStream,
+  ReadStream,
 } from "fs-extra";
+import { google } from "googleapis";
+
+async function insert(body: ReadStream, title: string, description: string) {
+  const service = google.youtube("v3");
+  const res = await service.videos.insert({
+    access_token:
+      "ya29.a0AfB_byBaI3gTZPt-JmxlM-VzvUZ1SvtTqE99VOTBYUUg9b3GFAArrFU938UOnsPf1-YbaqoziO0jubZz-_comgIrhP40xqFwKXNn1XS1TZDPQspQf26fmG1HJrMTjVQIi88UVQ8FzFf48sEMY6NWoqbQV-PBsHDkeH_jaCgYKAfsSARMSFQGOcNnCTKXa5cLv1hdo17MaUEx5tw0171",
+    part: ["snippet"],
+    requestBody: {
+      snippet: {
+        title,
+        description,
+      },
+    },
+    media: {
+      mimeType: "video/x-matroska",
+      body,
+    },
+  });
+  console.log({ res });
+  return res;
+}
 
 const gameIdRegex = /GameID=([0-9]*)"/;
 const platformIdRegex = /PlatformID=([0-9a-zA-Z]*)"/;
@@ -161,6 +185,18 @@ export class VodFilesModule extends NativeBridgeModule {
         },
       });
     });
+  }
+
+  @moduleFunction()
+  public async insertVod(
+    _mainWindow: BrowserWindow,
+    vodPath: string,
+    title: string,
+    description: string
+  ) {
+    console.log("reading", vodPath);
+    const res = createReadStream(vodPath);
+    await insert(res, title, description);
   }
 
   @moduleFunction()

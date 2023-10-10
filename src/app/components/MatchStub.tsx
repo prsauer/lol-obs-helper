@@ -15,7 +15,9 @@ export const MatchStub = ({
     ended: string;
   }[];
 }) => {
-  const gamesQuery = useQuery(`game-${matchId}`, () => getGameData(matchId));
+  const gamesQuery = useQuery(["game-data", { match: matchId }], () =>
+    getGameData(matchId)
+  );
   const summonerQuery = useQuery(
     `sum-${summonerName}`,
     () => getSummonerByName(summonerName || "no-name"),

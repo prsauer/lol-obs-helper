@@ -63,6 +63,11 @@ export type INativeBridge = {
     getVodsInfo: (
       vodPath: string
     ) => Promise<{ name: string; ended: string }[]>;
+    insertVod: (
+      vodPath: string,
+      title: string,
+      description: string
+    ) => Promise<void>;
   };
 };
 

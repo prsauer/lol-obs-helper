@@ -78,6 +78,20 @@ const config: ForgeConfig = {
                 },
                 plugins: [
                   new webpack.NormalModuleReplacementPlugin(
+                    /^googleapis$/,
+                    path.resolve(
+                      __dirname,
+                      "./.webpack/renderer/empty_poly/index.js"
+                    )
+                  ),
+                  new webpack.NormalModuleReplacementPlugin(
+                    /^child_process$/,
+                    path.resolve(
+                      __dirname,
+                      "./.webpack/renderer/empty_poly/index.js"
+                    )
+                  ),
+                  new webpack.NormalModuleReplacementPlugin(
                     /^path$/,
                     path.resolve(
                       __dirname,

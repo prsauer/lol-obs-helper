@@ -1,10 +1,11 @@
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { Button } from "../components/Button";
 import { MatchStub } from "../components/MatchStub";
 import { useAppConfig } from "../hooks/AppConfigContext";
 
 export const IndexPage = () => {
   const config = useAppConfig();
+  const queryClient = useQueryClient();
 
   const localMatches = useQuery(
     "local-matches",
@@ -34,6 +35,8 @@ export const IndexPage = () => {
         <Button
           onClick={() => {
             localMatches.refetch();
+            videos.refetch();
+            queryClient.invalidateQueries({ queryKey: ["game-data"] });
           }}
         >
           Refresh
