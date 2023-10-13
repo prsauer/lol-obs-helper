@@ -8,6 +8,9 @@ import { LoginModule } from "./nativeBridge/modules/loginModule";
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R
   ? (...args: P) => R
   : never;
+type AsEventFunction<F> = F extends (x: any, ...args: infer P) => infer R
+  ? (event: ElectronOpaqueEvent, ...args: P) => R
+  : never;
 
 type NativeApi = {
   links: {
@@ -27,32 +30,18 @@ type NativeApi = {
   obs: {
     synchronize: OmitFirstArg<OBSWSModule["synchronize"]>;
     startListening: OmitFirstArg<OBSWSModule["startListening"]>;
-    logMessage: (
-      callback: (
-        evt: ElectronOpaqueEvent,
-        a: Parameters<OBSWSModule["logMessage"]>,
-      ) => void,
-    ) => void;
+    logMessage: (callback: AsEventFunction<OBSWSModule["logMessage"]>) => void;
     removeAll_logMessage_listeners: () => void;
     onConnectionError: (
-      callback: (
-        evt: ElectronOpaqueEvent,
-        a: Parameters<OBSWSModule["onConnectionError"]>,
-      ) => void,
+      callback: AsEventFunction<OBSWSModule["onConnectionError"]>
     ) => void;
     removeAll_onConnectionError_listeners: () => void;
     onConnectionStateChange: (
-      callback: (
-        evt: ElectronOpaqueEvent,
-        a: Parameters<OBSWSModule["onConnectionStateChange"]>,
-      ) => void,
+      callback: AsEventFunction<OBSWSModule["onConnectionStateChange"]>
     ) => void;
     removeAll_onConnectionStateChange_listeners: () => void;
     onRecordingStateChange: (
-      callback: (
-        evt: ElectronOpaqueEvent,
-        a: Parameters<OBSWSModule["onRecordingStateChange"]>,
-      ) => void,
+      callback: AsEventFunction<OBSWSModule["onRecordingStateChange"]>
     ) => void;
     removeAll_onRecordingStateChange_listeners: () => void;
   };

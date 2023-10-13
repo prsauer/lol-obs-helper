@@ -89,7 +89,10 @@ export class NativeBridgeRegistry {
       typeString += `import { ${moduleMetadata.constructor.name} } from "${modulesPath}${casedName}";\n`;
     });
 
-    typeString += `\ntype OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;\n\n`;
+    typeString += `\ntype OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;\n`;
+    typeString += `type AsEventFunction<F> = F extends (x: any, ...args: infer P) => infer R
+    ? (event: ElectronOpaqueEvent, ...args: P) => R
+    : never;\n\n`;
 
     typeString += `type NativeApi = {`;
     this.modules.forEach((module) => {
@@ -105,7 +108,7 @@ export class NativeBridgeRegistry {
       });
 
       Object.values(moduleMetadata.events).forEach((evt) => {
-        typeString += `${evt.name}: (callback: (evt: ElectronOpaqueEvent, a: Parameters<${moduleMetadata.constructor.name}["${evt.name}"]>) => void) => void,`;
+        typeString += `${evt.name}: (callback: AsEventFunction<${moduleMetadata.constructor.name}["${evt.name}"]>) => void,`;
         typeString += `removeAll_${evt.name}_listeners: () => void,`;
       });
 
