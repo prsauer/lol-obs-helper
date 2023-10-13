@@ -23,7 +23,7 @@ export const VodReview = ({
   vod: string | undefined;
   matchId: string | undefined;
   created: Date | undefined;
-  ended: string | undefined;
+  ended: Date | undefined;
 }) => {
   const vidRef = useRef<HTMLVideoElement>(null);
   const progressBar = useRef<HTMLProgressElement>(null);
@@ -42,7 +42,7 @@ export const VodReview = ({
   const gameInfo = gamesQuery.data?.data?.info;
 
   const vodStartTime = created;
-  const vodEndTime = ended ? new Date(ended) : null;
+  const vodEndTime = ended;
   const vodDuration =
     vodStartTime && vodEndTime
       ? vodEndTime.getTime() - vodStartTime.getTime()

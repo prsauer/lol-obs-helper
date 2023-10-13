@@ -7,6 +7,7 @@ export interface IAppConfig {
   riotLogsPath?: string;
   obsWSURL?: string;
   obsWSPassword?: string;
+  googleToken?: string;
 }
 
 interface IAppConfigContextData {
@@ -86,6 +87,7 @@ export const AppConfigContextProvider = (props: IProps) => {
           obsWSURL: storedConfig.obsWSURL,
           obsWSPassword: storedConfig.obsWSPassword,
           vodStoragePath: storedConfig.vodStoragePath,
+          googleToken: storedConfig.googleToken,
           // lastWindowX:
           //   storedConfig.lastWindowX === undefined
           //     ? windowX

@@ -48,6 +48,9 @@ export type INativeBridge = {
   links: {
     openExternalURL: (url: string) => void;
   };
+  login: {
+    login(absoluteAuthUrl: string, windowTitle: string): Promise<string>;
+  };
   vods?: {
     configureVodsFolderProtocol: (riotPath: string) => void;
     scanFolderForMatches: (riotPath: string) => Promise<
@@ -64,18 +67,13 @@ export type INativeBridge = {
       vodPath: string
     ) => Promise<{ name: string; ended: string }[]>;
     insertVod: (
+      token: string,
       vodPath: string,
       title: string,
       description: string
     ) => Promise<void>;
   };
 };
-
-declare global {
-  interface Window {
-    native: INativeBridge;
-  }
-}
 
 export const App = () => {
   const [queryClient] = useState(

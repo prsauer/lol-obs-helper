@@ -1,6 +1,6 @@
 type VodInfo = {
   name: string;
-  ended: string;
+  ended: Date;
 };
 
 function getTimeFromVideoName(info: VodInfo) {

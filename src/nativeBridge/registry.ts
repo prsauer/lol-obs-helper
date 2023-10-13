@@ -1,21 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import {
-  BrowserWindow,
-  ipcMain,
-  ipcRenderer,
-  IpcRendererEvent,
-} from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 
 import {
-  getModuleEventKey,
   getModuleFunctionKey,
   MODULE_METADATA,
   NativeBridgeModule,
 } from "./module";
-import { OBSWSModule } from "./modules/OBSWSModule";
-import { TrayIconModule } from "./modules/TrayIconModule";
-import { VodFilesModule } from "./modules/VodFilesModule";
-import { ExternalLinksModule } from "./modules/ExternalLinksModule";
+import { OBSWSModule } from "./modules/obsWSModule";
+import { TrayIconModule } from "./modules/trayIconModule";
+import { VodFilesModule } from "./modules/vodFilesModule";
+import { ExternalLinksModule } from "./modules/externalLinksModule";
+import { LoginModule } from "./modules/loginModule";
 
 export class NativeBridgeRegistry {
   private modules: NativeBridgeModule[] = [];
@@ -27,54 +22,94 @@ export class NativeBridgeRegistry {
     this.modules.push(module);
   }
 
-  public generateAPIObject(): Object {
-    return Object.assign(
-      {},
-      ...this.modules.map((module) => {
-        const ctor = Object.getPrototypeOf(module).constructor;
-        const moduleMetadata = MODULE_METADATA.get(ctor);
-        if (!moduleMetadata) {
-          throw new Error("module metadata not found");
+  public generateAPIObject() {
+    console.log(`const genApi = {`);
+    this.modules.forEach((module) => {
+      const ctor = Object.getPrototypeOf(module).constructor;
+      const moduleMetadata = MODULE_METADATA.get(ctor);
+      if (!moduleMetadata) {
+        throw new Error("module metadata not found");
+      }
+
+      console.log(`${moduleMetadata.name}: {`);
+      Object.values(moduleMetadata.functions).forEach((func) => {
+        console.log(
+          `${
+            func.name
+          }: (...args: any[]) => ipcRenderer.invoke("${getModuleFunctionKey(
+            moduleMetadata.name,
+            func.name
+          )}", ...args),`
+        );
+      });
+
+      Object.values(moduleMetadata.events).forEach((evt) => {
+        if (evt.type === "on") {
+          console.log(
+            `${
+              evt.name
+            }: (callback: (event: IpcRendererEvent, ...args: any[]) => void) => ipcRenderer.on("${getModuleFunctionKey(
+              moduleMetadata.name,
+              evt.name
+            )}", callback),`
+          );
+        } else {
+          console.log(
+            `${
+              evt.name
+            }: (callback: (event: IpcRendererEvent, ...args: any[]) => void) => ipcRenderer.once("${getModuleFunctionKey(
+              moduleMetadata.name,
+              evt.name
+            )}", callback),`
+          );
         }
+        console.log(
+          `removeAll_${
+            evt.name
+          }_listeners: () => ipcRenderer.removeAllListeners("${getModuleFunctionKey(
+            moduleMetadata.name,
+            evt.name
+          )}"),`
+        );
+      });
 
-        const moduleApi: Record<string, Object> = {};
+      console.log(`},`);
+    });
+    console.log("};");
+  }
 
-        Object.values(moduleMetadata.functions).forEach((func) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          moduleApi[func.name] = (...args: any[]) => {
-            return ipcRenderer.invoke(
-              getModuleFunctionKey(moduleMetadata.name, func.name),
-              ...args
-            );
-          };
-        });
+  public generateAPIType() {
+    console.log("========================================");
 
-        Object.values(moduleMetadata.events).forEach((evt) => {
-          moduleApi[evt.name] = (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            callback: (event: IpcRendererEvent, ...args: any[]) => void
-          ) =>
-            evt.type === "on"
-              ? ipcRenderer.on(
-                  getModuleEventKey(moduleMetadata.name, evt.name),
-                  callback
-                )
-              : ipcRenderer.once(
-                  getModuleEventKey(moduleMetadata.name, evt.name),
-                  callback
-                );
-
-          moduleApi[`removeAll_${evt.name}_listeners`] = () =>
-            ipcRenderer.removeAllListeners(
-              getModuleEventKey(moduleMetadata.name, evt.name)
-            );
-        });
-
-        return {
-          [moduleMetadata.name]: moduleApi,
-        };
-      })
+    console.log(
+      `type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;`
     );
+
+    console.log(`type NativeApi = {`);
+    this.modules.forEach((module) => {
+      const ctor = Object.getPrototypeOf(module).constructor;
+      const moduleMetadata = MODULE_METADATA.get(ctor);
+      if (!moduleMetadata) {
+        throw new Error("module metadata not found");
+      }
+
+      console.log(`${moduleMetadata.name}: {`);
+      Object.values(moduleMetadata.functions).forEach((func) => {
+        console.log(
+          `${func.name}: OmitFirstArg<${moduleMetadata.constructor.name}["${func.name}"]>,`
+        );
+      });
+
+      Object.values(moduleMetadata.events).forEach((evt) => {
+        console.log(
+          `${evt.name}: (callback: (evt: ElectronOpaqueEvent, a: Parameters<${moduleMetadata.constructor.name}["${evt.name}"]>) => void) => void,`
+        );
+        console.log(`removeAll_${evt.name}_listeners: () => void,`);
+      });
+
+      console.log(`},`);
+    });
+    console.log("};");
   }
 
   public startListeners(mainWindow: BrowserWindow): void {
@@ -105,3 +140,4 @@ nativeBridgeRegistry.registerModule(ExternalLinksModule);
 nativeBridgeRegistry.registerModule(VodFilesModule);
 nativeBridgeRegistry.registerModule(TrayIconModule);
 nativeBridgeRegistry.registerModule(OBSWSModule);
+nativeBridgeRegistry.registerModule(LoginModule);

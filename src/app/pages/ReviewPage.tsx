@@ -96,11 +96,16 @@ export const ReviewPage = () => {
               title,
               description: "test",
             });
-            window.native.vods?.insertVod(
-              config.appConfig.vodStoragePath + "\\" + vod?.info.name,
-              title,
-              "Test description"
-            );
+            if (config.appConfig.googleToken) {
+              window.native.vods?.insertVod(
+                config.appConfig.googleToken,
+                config.appConfig.vodStoragePath + "\\" + vod?.info.name,
+                title,
+                "Test description"
+              );
+            } else {
+              alert("Not logged in!");
+            }
           }}
         >
           UPLOAD

@@ -1,4 +1,4 @@
-import { BrowserWindow, net, protocol } from "electron";
+import { BrowserWindow, protocol } from "electron";
 import {
   nativeBridgeModule,
   NativeBridgeModule,
@@ -16,10 +16,15 @@ import {
 } from "fs-extra";
 import { google } from "googleapis";
 
-async function insert(body: ReadStream, title: string, description: string) {
+async function insert(
+  token: string,
+  body: ReadStream,
+  title: string,
+  description: string
+) {
   const service = google.youtube("v3");
   const res = await service.videos.insert({
-    access_token: "redacted",
+    access_token: token,
     part: ["snippet"],
     requestBody: {
       snippet: {
@@ -189,13 +194,14 @@ export class VodFilesModule extends NativeBridgeModule {
   @moduleFunction()
   public async insertVod(
     _mainWindow: BrowserWindow,
+    token: string,
     vodPath: string,
     title: string,
     description: string
   ) {
     console.log("reading", vodPath);
     const res = createReadStream(vodPath);
-    await insert(res, title, description);
+    await insert(token, res, title, description);
   }
 
   @moduleFunction()

@@ -33,6 +33,25 @@ export const IndexPage = () => {
       <div className="mb-2 flex flex-row gap-2 items-center">
         <Button linkTo="/setup">Setup</Button>
         <Button
+          onClick={async () => {
+            try {
+              const at = await window.native.login.login(
+                "http://localhost/greet",
+                "Login with Google"
+              );
+              console.log({ at });
+              config.updateAppConfig(() => ({
+                ...config.appConfig,
+                googleToken: at,
+              }));
+            } catch (error) {
+              console.log("login failed", error);
+            }
+          }}
+        >
+          Login Test
+        </Button>
+        <Button
           onClick={() => {
             localMatches.refetch();
             videos.refetch();

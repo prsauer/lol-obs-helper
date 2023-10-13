@@ -12,7 +12,7 @@ export const MatchStub = ({
   summonerName?: string;
   videos?: {
     name: string;
-    ended: string;
+    ended: Date;
   }[];
 }) => {
   const gamesQuery = useQuery(["game-data", { match: matchId }], () =>
