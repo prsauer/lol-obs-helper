@@ -133,6 +133,7 @@ export const Root = () => {
     <div className="p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
       <div className="flex flex-row gap-3 mb-2">
         <div>
+          <div>Google API Token: {config.appConfig.googleToken}</div>
           OBS Connected:{" "}
           {connState.connected ? (
             "Yes"

@@ -1,5 +1,4 @@
 import type { ModuleOptions } from "webpack";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 export const rules: Required<ModuleOptions>["rules"] = [
   // Add support for native node modules
@@ -29,20 +28,4 @@ export const rules: Required<ModuleOptions>["rules"] = [
       },
     },
   },
-  // {
-  //   test: /\.s?(a|c)ss$/,
-  //   use: [
-  //     MiniCssExtractPlugin.loader,
-  //     "css-loader",
-  //     {
-  //       loader: "postcss-loader",
-  //       options: {
-  //         postcssOptions: {
-  //           plugins: [require("tailwindcss"), require("autoprefixer")],
-  //         },
-  //       },
-  //     },
-  //   ],
-  //   exclude: /\.module\.s?(c|a)ss$/,
-  // },
 ];

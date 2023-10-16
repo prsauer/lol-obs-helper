@@ -14,6 +14,16 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("lol-obs-helper", process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient("lol-obs-helper");
+}
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "vod",
@@ -34,7 +44,7 @@ protocol.registerSchemesAsPrivileged([
   },
 ]);
 
-const createWindow = (): void => {
+const createWindow = () => {
   const mainWindow = new BrowserWindow({
     height: 935,
     width: 1800,
@@ -111,29 +121,48 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   mainWindow.setMenuBarVisibility(false);
   mainWindow.webContents.openDevTools();
+
+  return mainWindow;
 };
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+const isFirstInstance = app.requestSingleInstanceLock();
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+if (!isFirstInstance) {
+  app.quit();
+} else {
+  let win: BrowserWindow;
+  app.on("ready", () => {
+    win = createWindow();
+
+    app.on("second-instance", () => {
+      if (!win.isVisible()) {
+        win.show();
+      }
+      win.focus();
+    });
+  });
+
+  app.on("window-all-closed", () => {
     app.quit();
-  }
-});
+  });
 
-app.on("activate", () => {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
+  app.on("activate", () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
+  app.on("open-url", (event, url) => {
+    console.log("open-url", { event, url });
+    try {
+      win.webContents.send(
+        "native:login:didLogin",
+        atob(url.replace(/^lol-obs-helper:\/\//g, ""))
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  });
+}

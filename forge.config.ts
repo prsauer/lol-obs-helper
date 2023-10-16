@@ -15,6 +15,12 @@ const config: ForgeConfig = {
     asar: false,
     icon: "resources/icon",
     extraResource: ["resources/icon.ico", "resources/icon.icns"],
+    protocols: [
+      {
+        name: "LoL OBS Helper",
+        schemes: ["lol-obs-helper"],
+      },
+    ],
   },
   rebuildConfig: {},
   makers: [

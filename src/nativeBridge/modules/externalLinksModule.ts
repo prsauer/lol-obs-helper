@@ -13,8 +13,8 @@ export class ExternalLinksModule extends NativeBridgeModule {
     // Security ref: https://benjamin-altpeter.de/shell-openexternal-dangers/
     if (typeof url !== "string")
       throw new Error("openExternalURL limited to strings");
-    if (!url.startsWith("https://"))
-      throw new Error("openExternalURL limited to https protocol");
+    // if (process.env.NODE_ENV !== "development" && !url.startsWith("https://"))
+    //   throw new Error("openExternalURL limited to https protocol");
     return shell.openExternal(url);
   }
 }

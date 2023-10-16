@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { Button } from "../components/Button";
 import { MatchStub } from "../components/MatchStub";
 import { useAppConfig } from "../hooks/AppConfigContext";
+import { useEffect } from "react";
 
 export const IndexPage = () => {
   const config = useAppConfig();
@@ -28,6 +29,17 @@ export const IndexPage = () => {
     }
   );
 
+  useEffect(() => {
+    window.native.login.didLogin((_evt, token) => {
+      console.log(token);
+      config.updateAppConfig(() => ({
+        ...config.appConfig,
+        googleToken: token,
+      }));
+    });
+    return () => window.native.login.removeAll_didLogin_listeners();
+  }, [config]);
+
   return (
     <div className="flex flex-col max-w-xl h-full">
       <div className="mb-2 flex flex-row gap-2 items-center">
@@ -35,15 +47,9 @@ export const IndexPage = () => {
         <Button
           onClick={async () => {
             try {
-              const at = await window.native.login.login(
-                "http://localhost/greet",
-                "Login with Google"
+              await window.native.links.openExternalURL(
+                "http://localhost:3001/greet"
               );
-              console.log({ at });
-              config.updateAppConfig(() => ({
-                ...config.appConfig,
-                googleToken: at,
-              }));
             } catch (error) {
               console.log("login failed", error);
             }
