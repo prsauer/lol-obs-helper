@@ -9,7 +9,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx . --fix",
-    "genPreload": "cross-env ts-node script/generate.ts && npm run lint"
+    "gen:preload": "cross-env ts-node script/generate.ts && npm run lint"
   },
   "keywords": [],
   "author": {
