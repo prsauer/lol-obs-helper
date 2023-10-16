@@ -1,23 +1,17 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { BrowserWindow, ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from 'electron';
 
-import {
-  getModuleFunctionKey,
-  MODULE_METADATA,
-  NativeBridgeModule,
-} from "./module";
-import { OBSWSModule } from "./modules/oBSWSModule";
-import { TrayIconModule } from "./modules/trayIconModule";
-import { VodFilesModule } from "./modules/vodFilesModule";
-import { ExternalLinksModule } from "./modules/externalLinksModule";
-import { LoginModule } from "./modules/loginModule";
+import { getModuleFunctionKey, MODULE_METADATA, NativeBridgeModule } from './module';
+import { OBSWSModule } from './modules/oBSWSModule';
+import { TrayIconModule } from './modules/trayIconModule';
+import { VodFilesModule } from './modules/vodFilesModule';
+import { ExternalLinksModule } from './modules/externalLinksModule';
+import { LoginModule } from './modules/loginModule';
 
 export class NativeBridgeRegistry {
   private modules: NativeBridgeModule[] = [];
 
-  public registerModule<T extends NativeBridgeModule>(
-    moduleClass: new () => T
-  ): void {
+  public registerModule<T extends NativeBridgeModule>(moduleClass: new () => T): void {
     const module = new moduleClass();
     this.modules.push(module);
   }
@@ -28,46 +22,42 @@ export class NativeBridgeRegistry {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
-        throw new Error("module metadata not found");
+        throw new Error('module metadata not found');
       }
 
       apiString += `${moduleMetadata.name}: {`;
       Object.values(moduleMetadata.functions).forEach((func) => {
-        apiString += `${
-          func.name
-        }: (...args: any[]) => ipcRenderer.invoke("${getModuleFunctionKey(
+        apiString += `${func.name}: (...args: any[]) => ipcRenderer.invoke("${getModuleFunctionKey(
           moduleMetadata.name,
-          func.name
+          func.name,
         )}", ...args),`;
       });
 
       Object.values(moduleMetadata.events).forEach((evt) => {
-        if (evt.type === "on") {
+        if (evt.type === 'on') {
           apiString += `${
             evt.name
           }: (callback: (event: IpcRendererEvent, ...args: any[]) => void) => ipcRenderer.on("${getModuleFunctionKey(
             moduleMetadata.name,
-            evt.name
+            evt.name,
           )}", callback),`;
         } else {
           apiString += `${
             evt.name
           }: (callback: (event: IpcRendererEvent, ...args: any[]) => void) => ipcRenderer.once("${getModuleFunctionKey(
             moduleMetadata.name,
-            evt.name
+            evt.name,
           )}", callback),`;
         }
-        apiString += `removeAll_${
-          evt.name
-        }_listeners: () => ipcRenderer.removeAllListeners("${getModuleFunctionKey(
+        apiString += `removeAll_${evt.name}_listeners: () => ipcRenderer.removeAllListeners("${getModuleFunctionKey(
           moduleMetadata.name,
-          evt.name
+          evt.name,
         )}"),`;
       });
 
       apiString += `},`;
     });
-    apiString += "};";
+    apiString += '};';
     return apiString;
   }
 
@@ -77,14 +67,11 @@ export class NativeBridgeRegistry {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
-        throw new Error("module metadata not found");
+        throw new Error('module metadata not found');
       }
       const casedName =
         moduleMetadata.constructor.name[0].toLowerCase() +
-        moduleMetadata.constructor.name.slice(
-          1,
-          moduleMetadata.constructor.name.length
-        );
+        moduleMetadata.constructor.name.slice(1, moduleMetadata.constructor.name.length);
 
       typeString += `import { ${moduleMetadata.constructor.name} } from "${modulesPath}${casedName}";\n`;
     });
@@ -99,7 +86,7 @@ export class NativeBridgeRegistry {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
-        throw new Error("module metadata not found");
+        throw new Error('module metadata not found');
       }
 
       typeString += `${moduleMetadata.name}: {`;
@@ -114,7 +101,7 @@ export class NativeBridgeRegistry {
 
       typeString += `},`;
     });
-    typeString += "};\n\n";
+    typeString += '};\n\n';
     typeString += `declare global {
       interface Window {
         native: NativeApi;
@@ -130,16 +117,13 @@ export class NativeBridgeRegistry {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
-        throw new Error("module metadata not found");
+        throw new Error('module metadata not found');
       }
 
       Object.values(moduleMetadata.functions).forEach((func) => {
-        ipcMain.handle(
-          getModuleFunctionKey(moduleMetadata.name, func.name),
-          async (_event, ...args) => {
-            return func.value.bind(module)(mainWindow, ...args);
-          }
-        );
+        ipcMain.handle(getModuleFunctionKey(moduleMetadata.name, func.name), async (_event, ...args) => {
+          return func.value.bind(module)(mainWindow, ...args);
+        });
       });
 
       module.onRegistered(mainWindow);

@@ -8,7 +8,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx .",
+    "lint": "eslint --ext .ts,.tsx . --fix",
     "genPreload": "cross-env ts-node script/generate.ts && npm run lint"
   },
   "keywords": [],
@@ -62,5 +62,12 @@
     "react-query": "3.39.1",
     "react-router-dom": "^6.14.2",
     "recharts": "^2.7.3"
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "printWidth": 120,
+    "tabWidth": 2
   }
 }

@@ -1,12 +1,10 @@
-import { useCallback, useState, useEffect } from "react";
-import { IAppConfig, useAppConfig } from "../hooks/AppConfigContext";
-import { Button } from "../components/Button";
+import { useCallback, useState, useEffect } from 'react';
+import { IAppConfig, useAppConfig } from '../hooks/AppConfigContext';
+import { Button } from '../components/Button';
 
 export const SetupPage = () => {
   const config = useAppConfig();
-  const [appConfigState, setAppConfigState] = useState<IAppConfig>(
-    config.appConfig
-  );
+  const [appConfigState, setAppConfigState] = useState<IAppConfig>(config.appConfig);
 
   useEffect(() => {
     setAppConfigState(config.appConfig);
@@ -25,7 +23,7 @@ export const SetupPage = () => {
     config.appConfig.obsWSPassword != appConfigState.obsWSPassword ||
       config.appConfig.obsWSURL != appConfigState.obsWSURL ||
       config.appConfig.riotLogsPath != appConfigState.riotLogsPath ||
-      config.appConfig.vodStoragePath != appConfigState.vodStoragePath
+      config.appConfig.vodStoragePath != appConfigState.vodStoragePath,
   );
 
   return (
@@ -91,11 +89,7 @@ export const SetupPage = () => {
       <Button className="mt-4" onClick={writeState}>
         SAVE
       </Button>
-      {configHasEdits && (
-        <div className="mt-2 bg-red-400 p-2 text-red-950 rounded-md font-bold">
-          UNSAVED CHANGES
-        </div>
-      )}
+      {configHasEdits && <div className="mt-2 bg-red-400 p-2 text-red-950 rounded-md font-bold">UNSAVED CHANGES</div>}
     </div>
   );
 };

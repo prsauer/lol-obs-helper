@@ -1,9 +1,9 @@
-import { BrowserWindow } from "electron";
-import { moduleEvent, NativeBridgeModule, nativeBridgeModule } from "../module";
+import { BrowserWindow } from 'electron';
+import { moduleEvent, NativeBridgeModule, nativeBridgeModule } from '../module';
 
-@nativeBridgeModule("login")
+@nativeBridgeModule('login')
 export class LoginModule extends NativeBridgeModule {
-  @moduleEvent("on")
+  @moduleEvent('on')
   public didLogin(_mainWindow: BrowserWindow, _token: string) {
     return;
   }

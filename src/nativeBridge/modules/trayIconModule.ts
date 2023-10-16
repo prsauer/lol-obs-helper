@@ -1,12 +1,8 @@
-import { app, ipcMain, BrowserWindow, Menu, Tray } from "electron";
-import {
-  NativeBridgeModule,
-  moduleFunction,
-  nativeBridgeModule,
-} from "../module";
-import { Events } from "../ipcEvents";
+import { app, ipcMain, BrowserWindow, Menu, Tray } from 'electron';
+import { NativeBridgeModule, moduleFunction, nativeBridgeModule } from '../module';
+import { Events } from '../ipcEvents';
 
-@nativeBridgeModule("trayIcon")
+@nativeBridgeModule('trayIcon')
 export class TrayIconModule extends NativeBridgeModule {
   private trayIcon: Tray | null = null;
 
@@ -17,26 +13,26 @@ export class TrayIconModule extends NativeBridgeModule {
 
   public onRegistered(mainWindow: BrowserWindow): void {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const path = require("path");
+    const path = require('path');
     try {
-      this.trayIcon = new Tray(path.resolve("./.webpack/main/assets/icon.ico"));
+      this.trayIcon = new Tray(path.resolve('./.webpack/main/assets/icon.ico'));
       const trayMenu = Menu.buildFromTemplate([
         {
-          label: "Show",
+          label: 'Show',
           click: () => {
             mainWindow.show();
           },
         },
         {
-          label: "Quit",
+          label: 'Quit',
           click: () => {
             app.quit();
           },
         },
       ]);
       this.trayIcon.setContextMenu(trayMenu);
-      this.trayIcon.setToolTip("LoL OBS Helper");
-      this.trayIcon.on("click", () => {
+      this.trayIcon.setToolTip('LoL OBS Helper');
+      this.trayIcon.on('click', () => {
         mainWindow.show();
       });
     } catch (e) {
@@ -44,12 +40,10 @@ export class TrayIconModule extends NativeBridgeModule {
     }
 
     ipcMain.on(Events.RecordingStarted, () => {
-      this.trayIcon?.setImage(
-        path.resolve("./.webpack/main/assets/icon_red.ico")
-      );
+      this.trayIcon?.setImage(path.resolve('./.webpack/main/assets/icon_red.ico'));
     });
     ipcMain.on(Events.RecordingStopped, () => {
-      this.trayIcon?.setImage(path.resolve("./.webpack/main/assets/icon.ico"));
+      this.trayIcon?.setImage(path.resolve('./.webpack/main/assets/icon.ico'));
     });
   }
 }

@@ -170,7 +170,7 @@ export interface MatchParticipant {
 }
 
 export interface Challenges {
-  "12AssistStreakCount": number;
+  '12AssistStreakCount': number;
   abilityUses: number;
   acesBefore15Minutes: number;
   alliedJungleMonsterKills: number;

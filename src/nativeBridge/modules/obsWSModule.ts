@@ -1,14 +1,9 @@
-import { BrowserWindow, ipcMain } from "electron";
-import {
-  moduleEvent,
-  moduleFunction,
-  nativeBridgeModule,
-  NativeBridgeModule,
-} from "../module";
-import { FSWatcher, watch } from "chokidar";
-import OBSWebSocket, { EventSubscription } from "obs-websocket-js";
-import { R3DLogWatcher } from "../../nativeUtils/logWatcher";
-import { Events } from "../ipcEvents";
+import { BrowserWindow, ipcMain } from 'electron';
+import { moduleEvent, moduleFunction, nativeBridgeModule, NativeBridgeModule } from '../module';
+import { FSWatcher, watch } from 'chokidar';
+import OBSWebSocket, { EventSubscription } from 'obs-websocket-js';
+import { R3DLogWatcher } from '../../nativeUtils/logWatcher';
+import { Events } from '../ipcEvents';
 
 const FOLDER_AGE_THRESHOLD = 10;
 
@@ -17,25 +12,18 @@ let folderWatcher: FSWatcher | null = null;
 let r3dWatcher: R3DLogWatcher | null = null;
 
 let isRecording = false;
-const folderPathSeparator = process.platform === "darwin" ? "/" : "\\";
+const folderPathSeparator = process.platform === 'darwin' ? '/' : '\\';
 
 function parseRiotFolderDate(path: string) {
-  if (!path.includes("T")) return null;
+  if (!path.includes('T')) return null;
   try {
     const folderParts = path.split(folderPathSeparator);
     const folderName = folderParts[folderParts.length - 1];
     // console.log({ folderParts, folderName });
-    const [dateStr, timeStr] = folderName.split("T");
-    const [year, month, day] = dateStr.split("-");
-    const [hour, min, sec] = timeStr.split("-");
-    return new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(min),
-      parseInt(sec)
-    );
+    const [dateStr, timeStr] = folderName.split('T');
+    const [year, month, day] = dateStr.split('-');
+    const [hour, min, sec] = timeStr.split('-');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(min), parseInt(sec));
   } catch (error) {
     console.log(`Failed to parse: ${path}`);
     console.log(error);
@@ -66,7 +54,7 @@ function logLineHasExitMessage(logLine: string) {
   return false;
 }
 
-@nativeBridgeModule("obs")
+@nativeBridgeModule('obs')
 export class OBSWSModule extends NativeBridgeModule {
   public startLogWatching(folder: string) {
     console.log(`New directory found: ${folder}`);
@@ -75,10 +63,10 @@ export class OBSWSModule extends NativeBridgeModule {
       r3dWatcher.close();
     }
     r3dWatcher = new R3DLogWatcher(folder);
-    r3dWatcher.on("new_line", (newline) => {
+    r3dWatcher.on('new_line', (newline) => {
       console.log(newline);
       const maybeGameId = logLineExtractGameId(newline);
-      console.log("gameId?", maybeGameId);
+      console.log('gameId?', maybeGameId);
       if (maybeGameId !== null) {
         this.setRecordingNamePrefix(maybeGameId);
         this.startRecording();
@@ -100,7 +88,7 @@ export class OBSWSModule extends NativeBridgeModule {
       awaitWriteFinish: true,
     });
 
-    folderWatcher.on("addDir", (path) => {
+    folderWatcher.on('addDir', (path) => {
       // console.log("addDir", path);
       const date = parseRiotFolderDate(path);
       if (!date) return;
@@ -117,23 +105,23 @@ export class OBSWSModule extends NativeBridgeModule {
     if (!obs) {
       return;
     }
-    obs.call("StartRecord");
+    obs.call('StartRecord');
   }
 
   private stopRecording() {
     if (!obs) {
       return;
     }
-    obs.call("StopRecord");
+    obs.call('StopRecord');
   }
 
   public async setRecordingNamePrefix(prefix: string) {
     if (!obs) {
       return;
     }
-    obs.call("SetProfileParameter", {
-      parameterCategory: "Output",
-      parameterName: "FilenameFormatting",
+    obs.call('SetProfileParameter', {
+      parameterCategory: 'Output',
+      parameterName: 'FilenameFormatting',
       parameterValue: `${prefix} %CCYY-%MM-%DD %hh-%mm-%ss`,
     });
   }
@@ -143,68 +131,56 @@ export class OBSWSModule extends NativeBridgeModule {
     if (!obs) {
       return;
     }
-    const recStatus = await obs.call("GetRecordStatus");
-    const recDir = await obs.call("GetRecordDirectory");
+    const recStatus = await obs.call('GetRecordStatus');
+    const recDir = await obs.call('GetRecordDirectory');
     this.onRecordingStateChange(_mainWindow, {
       outputActive: recStatus.outputActive,
       outputPath: recDir.recordDirectory,
-      outputState: "",
+      outputState: '',
     });
     isRecording = recStatus.outputActive;
   }
 
   @moduleFunction()
-  public async startListening(
-    _mainWindow: BrowserWindow,
-    url: string,
-    password: string,
-    riotFolder: string
-  ) {
+  public async startListening(_mainWindow: BrowserWindow, url: string, password: string, riotFolder: string) {
     this.startFolderWatching(riotFolder);
 
     if (obs != null) {
-      console.log("Disconnecting");
+      console.log('Disconnecting');
       await obs.disconnect();
       obs.removeAllListeners();
     } else {
-      console.log("Starting new socket");
+      console.log('Starting new socket');
       obs = new OBSWebSocket();
     }
 
-    console.log("Connecting to", url, password);
+    console.log('Connecting to', url, password);
     obs.connect(url, password, {
-      eventSubscriptions:
-        EventSubscription.All | EventSubscription.InputVolumeMeters,
+      eventSubscriptions: EventSubscription.All | EventSubscription.InputVolumeMeters,
     });
 
-    obs.on("ConnectionOpened", async () => {
-      console.log("ConnectionOpened");
+    obs.on('ConnectionOpened', async () => {
+      console.log('ConnectionOpened');
       this.logMessage(_mainWindow, `Connection to OBS opened`);
       this.onConnectionStateChange(_mainWindow, { connected: true });
     });
 
-    obs.on("ConnectionClosed", () => {
+    obs.on('ConnectionClosed', () => {
       console.log(`${new Date()}: ConnectionClosed`);
       this.onConnectionStateChange(_mainWindow, { connected: false });
     });
 
-    obs.on("ConnectionError", (args) => {
-      console.log("ConnectionError", args);
-      this.logMessage(
-        _mainWindow,
-        `Connection error (${args.code}) ${args.name}: ${args.message}`
-      );
+    obs.on('ConnectionError', (args) => {
+      console.log('ConnectionError', args);
+      this.logMessage(_mainWindow, `Connection error (${args.code}) ${args.name}: ${args.message}`);
       this.onConnectionStateChange(_mainWindow, { connected: false });
-      this.onConnectionError(_mainWindow, args.name + ": " + args.message);
+      this.onConnectionError(_mainWindow, args.name + ': ' + args.message);
     });
 
-    obs.on("RecordStateChanged", (args) => {
-      console.log("RecordStateChanged", args);
+    obs.on('RecordStateChanged', (args) => {
+      console.log('RecordStateChanged', args);
       isRecording = args.outputActive;
-      this.logMessage(
-        _mainWindow,
-        `Recording state changed to ${args.outputState}`
-      );
+      this.logMessage(_mainWindow, `Recording state changed to ${args.outputState}`);
       if (isRecording) {
         ipcMain.emit(Events.RecordingStarted);
       } else {
@@ -214,28 +190,25 @@ export class OBSWSModule extends NativeBridgeModule {
     });
   }
 
-  @moduleEvent("on")
+  @moduleEvent('on')
   public logMessage(_mainWindow: BrowserWindow, _message: string) {
     return;
   }
 
-  @moduleEvent("on")
+  @moduleEvent('on')
   public onConnectionError(_mainWindow: BrowserWindow, _error: string) {
     return;
   }
 
-  @moduleEvent("on")
-  public onConnectionStateChange(
-    _mainWindow: BrowserWindow,
-    _state: { connected: boolean }
-  ) {
+  @moduleEvent('on')
+  public onConnectionStateChange(_mainWindow: BrowserWindow, _state: { connected: boolean }) {
     return;
   }
 
-  @moduleEvent("on")
+  @moduleEvent('on')
   public onRecordingStateChange(
     _mainWindow: BrowserWindow,
-    _state: { outputActive: boolean; outputState: string; outputPath: string }
+    _state: { outputActive: boolean; outputState: string; outputPath: string },
   ) {
     return;
   }

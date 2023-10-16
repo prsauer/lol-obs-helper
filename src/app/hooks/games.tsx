@@ -1,8 +1,8 @@
-import { useQuery } from "react-query";
-import { DataPacket, getGameData, getGameTimeline } from "../proxy/riotApi";
-import gdata from "../../../mock/NA1_4733739660.game.json";
-import tdata from "../../../mock/NA1_4733739660.timeline.json";
-import { MatchDto, MatchTimelineDto } from "../proxy/types";
+import { useQuery } from 'react-query';
+import { DataPacket, getGameData, getGameTimeline } from '../proxy/riotApi';
+import gdata from '../../../mock/NA1_4733739660.game.json';
+import tdata from '../../../mock/NA1_4733739660.timeline.json';
+import { MatchDto, MatchTimelineDto } from '../proxy/types';
 
 const MOCK_RETURN = false;
 
@@ -27,5 +27,5 @@ export const useGameQuery = (matchId: string) =>
         err: null,
       }) as Promise<DataPacket<MatchDto>>;
     }
-    return getGameData(matchId || "no-id");
+    return getGameData(matchId || 'no-id');
   });

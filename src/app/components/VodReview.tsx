@@ -1,14 +1,8 @@
-import {
-  KeyboardEvent,
-  MouseEvent,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
-import { getGameData, getGameTimeline } from "../proxy/riotApi";
-import { useQuery } from "react-query";
-import { EventStub } from "./EventStub";
-import { EventTimelineIcon } from "./EventTimelineIcon";
+import { KeyboardEvent, MouseEvent, useCallback, useEffect, useRef } from 'react';
+import { getGameData, getGameTimeline } from '../proxy/riotApi';
+import { useQuery } from 'react-query';
+import { EventStub } from './EventStub';
+import { EventTimelineIcon } from './EventTimelineIcon';
 
 const KILL_UNDERCUT_TIME = 10;
 
@@ -27,66 +21,46 @@ export const VodReview = ({
 }) => {
   const vidRef = useRef<HTMLVideoElement>(null);
   const progressBar = useRef<HTMLProgressElement>(null);
-  const gameTimelineQuery = useQuery(`game-timeline-${matchId}`, () =>
-    getGameTimeline(matchId || "no-id")
-  );
-  const gamesQuery = useQuery(`game-${matchId}`, () =>
-    getGameData(matchId || "no-id")
-  );
+  const gameTimelineQuery = useQuery(`game-timeline-${matchId}`, () => getGameTimeline(matchId || 'no-id'));
+  const gamesQuery = useQuery(`game-${matchId}`, () => getGameData(matchId || 'no-id'));
   const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
 
-  const myParticipantId = gameTimelineQuery.data?.data?.info.participants.find(
-    (p) => p.puuid === myId
-  )?.participantId;
+  const myParticipantId = gameTimelineQuery.data?.data?.info.participants.find((p) => p.puuid === myId)?.participantId;
 
   const gameInfo = gamesQuery.data?.data?.info;
 
   const vodStartTime = created;
   const vodEndTime = ended;
-  const vodDuration =
-    vodStartTime && vodEndTime
-      ? vodEndTime.getTime() - vodStartTime.getTime()
-      : 1;
+  const vodDuration = vodStartTime && vodEndTime ? vodEndTime.getTime() - vodStartTime.getTime() : 1;
 
   if (!gameInfo || !vodEndTime || !vodStartTime) {
     return <div>loading</div>;
   }
 
   console.log({ vod });
-  const myTeamId = myParticipantId
-    ? gameInfo.participants[myParticipantId]?.teamId
-    : -1;
+  const myTeamId = myParticipantId ? gameInfo.participants[myParticipantId]?.teamId : -1;
   const gameEndTime = new Date(gameInfo?.gameEndTimestamp);
 
-  const gameStartConvert = new Date(
-    gameEndTime.getTime() - gameInfo?.gameDuration * 1000
-  );
+  const gameStartConvert = new Date(gameEndTime.getTime() - gameInfo?.gameDuration * 1000);
 
   const timeCorrectionMs = gameEndTime.getTime() - vodEndTime.getTime();
-  console.log("## TIME CORRECTION", timeCorrectionMs);
+  console.log('## TIME CORRECTION', timeCorrectionMs);
 
-  const vodStartOffset =
-    gameStartConvert.getTime() - vodStartTime.getTime() - timeCorrectionMs;
+  const vodStartOffset = gameStartConvert.getTime() - vodStartTime.getTime() - timeCorrectionMs;
 
-  const allEvts = gameTimelineQuery.data?.data?.info.frames
-    .map((e) => e.events)
-    .flat();
+  const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
 
   const importantEvents = allEvts?.filter((evt) => {
-    if (evt.type === "ELITE_MONSTER_KILL") {
+    if (evt.type === 'ELITE_MONSTER_KILL') {
       return true;
     }
-    if (evt.type === "CHAMPION_KILL" && evt.killerId === myParticipantId) {
+    if (evt.type === 'CHAMPION_KILL' && evt.killerId === myParticipantId) {
       return true;
     }
-    if (evt.type === "CHAMPION_KILL" && evt.victimId === myParticipantId) {
+    if (evt.type === 'CHAMPION_KILL' && evt.victimId === myParticipantId) {
       return true;
     }
-    if (
-      evt.type === "CHAMPION_KILL" &&
-      myParticipantId &&
-      evt.assistingParticipantIds?.includes(myParticipantId)
-    ) {
+    if (evt.type === 'CHAMPION_KILL' && myParticipantId && evt.assistingParticipantIds?.includes(myParticipantId)) {
       return true;
     }
     return false;
@@ -94,12 +68,7 @@ export const VodReview = ({
 
   const timeConvert = (eventTimestamp: number) => {
     return (
-      (new Date(
-        eventTimestamp +
-          gameInfo?.gameCreation +
-          vodStartOffset -
-          timeCorrectionMs
-      ).getTime() -
+      (new Date(eventTimestamp + gameInfo?.gameCreation + vodStartOffset - timeCorrectionMs).getTime() -
         vodStartTime.getTime()) /
       1000
     );
@@ -109,12 +78,10 @@ export const VodReview = ({
     (e: MouseEvent<HTMLProgressElement>) => {
       if (!vidRef.current) return;
       if (!progressBar.current) return;
-      const pos =
-        (e.pageX - progressBar.current.offsetLeft) /
-        progressBar.current.offsetWidth;
+      const pos = (e.pageX - progressBar.current.offsetLeft) / progressBar.current.offsetWidth;
       vidRef.current.currentTime = pos * vidRef.current.duration;
     },
-    [progressBar.current, vidRef.current]
+    [progressBar.current, vidRef.current],
   );
 
   // vidRef.current?.playbackRate = 2;
@@ -122,20 +89,20 @@ export const VodReview = ({
   const setWhileHeld = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (!vidRef.current) return;
-      if (e.code === "Digit2") {
+      if (e.code === 'Digit2') {
         vidRef.current.playbackRate = 2;
       }
-      if (e.code === "Digit3") {
+      if (e.code === 'Digit3') {
         vidRef.current.playbackRate = 3;
       }
-      if (e.code === "Digit4") {
+      if (e.code === 'Digit4') {
         vidRef.current.playbackRate = 4;
       }
-      if (e.code === "Digit5") {
+      if (e.code === 'Digit5') {
         vidRef.current.playbackRate = 5;
       }
     },
-    [progressBar.current, vidRef.current]
+    [progressBar.current, vidRef.current],
   );
 
   const unsetHold = useCallback(
@@ -143,7 +110,7 @@ export const VodReview = ({
       if (!vidRef.current) return;
       vidRef.current.playbackRate = 1;
     },
-    [progressBar.current, vidRef.current]
+    [progressBar.current, vidRef.current],
   );
 
   const progressBarDrag = useCallback(
@@ -153,11 +120,10 @@ export const VodReview = ({
       if (!(e.buttons === 1)) return;
       const pos =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((e as unknown as any).pageX - progressBar.current.offsetLeft) /
-        progressBar.current.offsetWidth;
+        ((e as unknown as any).pageX - progressBar.current.offsetLeft) / progressBar.current.offsetWidth;
       vidRef.current.currentTime = pos * vidRef.current.duration;
     },
-    [progressBar.current, vidRef.current]
+    [progressBar.current, vidRef.current],
   );
 
   useEffect(() => {
@@ -165,16 +131,13 @@ export const VodReview = ({
     const signal = controller.signal;
     if (vidRef.current && progressBar.current) {
       vidRef.current.addEventListener(
-        "timeupdate",
+        'timeupdate',
         () => {
           if (!progressBar.current) return;
           if (!vidRef.current) return;
           // For mobile browsers, ensure that the progress element's max attribute is set
-          if (!progressBar.current.getAttribute("max")) {
-            progressBar.current.setAttribute(
-              "max",
-              vidRef.current.duration.toString()
-            );
+          if (!progressBar.current.getAttribute('max')) {
+            progressBar.current.setAttribute('max', vidRef.current.duration.toString());
           }
           progressBar.current.value = vidRef.current.currentTime;
           // progressBar.current.style.width =
@@ -184,7 +147,7 @@ export const VodReview = ({
         },
         {
           signal,
-        }
+        },
       );
     }
 
@@ -194,11 +157,7 @@ export const VodReview = ({
   }, [vidRef.current, progressBar.current]);
 
   return (
-    <div
-      className="flex-1 flex flex-row gap-2 overflow-auto"
-      onKeyDown={setWhileHeld}
-      onKeyUp={unsetHold}
-    >
+    <div className="flex-1 flex flex-row gap-2 overflow-auto" onKeyDown={setWhileHeld} onKeyUp={unsetHold}>
       <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto text-sm">
         {importantEvents?.map((evt) => {
           return (
@@ -219,29 +178,21 @@ export const VodReview = ({
         })}
       </div>
       {vod && (
-        <figure
-          id="videoContainer"
-          data-fullscreen="false"
-          className="flex flex-col flex-1"
-        >
+        <figure id="videoContainer" data-fullscreen="false" className="flex flex-col flex-1">
           <video
             controls
             id="video"
             ref={vidRef}
             src={`vod://${vod}`}
             style={{
-              margin: "auto",
+              margin: 'auto',
               flex: 1,
-              objectFit: "contain",
+              objectFit: 'contain',
               minWidth: 0,
               minHeight: 0,
             }}
           />
-          <div
-            id="video-controls"
-            className="controls w-full"
-            data-state="hidden"
-          >
+          <div id="video-controls" className="controls w-full" data-state="hidden">
             <div className="progress w-full ">
               <progress
                 ref={progressBar}
@@ -261,9 +212,7 @@ export const VodReview = ({
                       participants={gameInfo.participants}
                       myParticipantId={myParticipantId}
                       key={e.timestamp}
-                      left={`${
-                        (100 * 1000 * timeConvert(e.timestamp)) / vodDuration
-                      }%`}
+                      left={`${(100 * 1000 * timeConvert(e.timestamp)) / vodDuration}%`}
                     />
                   );
                 })}

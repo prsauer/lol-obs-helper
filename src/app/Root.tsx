@@ -1,11 +1,11 @@
-import { RouterProvider, createHashRouter } from "react-router-dom";
-import { IndexPage } from "./pages/IndexPage";
-import { ReviewPage, reviewLoader } from "./pages/ReviewPage";
-import { useEffect, useRef, useState } from "react";
-import { useAppConfig } from "./hooks/AppConfigContext";
-import { SetupPage } from "./pages/SetupPage";
-import { MatchInspectPage, matchLoader } from "./pages/MatchInspectPage";
-import { useQuery } from "react-query";
+import { RouterProvider, createHashRouter } from 'react-router-dom';
+import { IndexPage } from './pages/IndexPage';
+import { ReviewPage, reviewLoader } from './pages/ReviewPage';
+import { useEffect, useRef, useState } from 'react';
+import { useAppConfig } from './hooks/AppConfigContext';
+import { SetupPage } from './pages/SetupPage';
+import { MatchInspectPage, matchLoader } from './pages/MatchInspectPage';
+import { useQuery } from 'react-query';
 
 type RecordingState = {
   outputActive: boolean;
@@ -17,25 +17,25 @@ type ConnectionState = {
   connected: boolean;
 };
 
-const startSound = new Audio("static://StartSound.wav");
-const stopSound = new Audio("static://StopSound.wav");
+const startSound = new Audio('static://StartSound.wav');
+const stopSound = new Audio('static://StopSound.wav');
 
 const router = createHashRouter([
   {
-    path: "/",
+    path: '/',
     element: <IndexPage />,
   },
   {
-    path: "/vod/:id/:summonerName",
+    path: '/vod/:id/:summonerName',
     element: <ReviewPage />,
     loader: reviewLoader,
   },
   {
-    path: "/setup",
+    path: '/setup',
     element: <SetupPage />,
   },
   {
-    path: "/inspect/:matchId",
+    path: '/inspect/:matchId',
     element: <MatchInspectPage />,
     loader: matchLoader,
   },
@@ -49,21 +49,19 @@ export const Root = () => {
   });
   const [recState, setRecState] = useState<RecordingState>({
     outputActive: false,
-    outputPath: "",
-    outputState: "",
+    outputPath: '',
+    outputState: '',
   });
   const recordingActiveRef = useRef(false);
 
   const localMatches = useQuery(
-    "local-matches",
+    'local-matches',
     async () => {
-      return window.native?.vods?.scanFolderForMatches(
-        config.appConfig.riotLogsPath || ""
-      );
+      return window.native?.vods?.scanFolderForMatches(config.appConfig.riotLogsPath || '');
     },
     {
       enabled: Boolean(config.appConfig.riotLogsPath),
-    }
+    },
   );
 
   useEffect(() => {
@@ -76,7 +74,7 @@ export const Root = () => {
     });
 
     window.native.obs?.onRecordingStateChange((_evt, state) => {
-      console.log("new rec state", { state, recState });
+      console.log('new rec state', { state, recState });
       if (state.outputActive !== recordingActiveRef.current) {
         if (state.outputActive) {
           startSound.play();
@@ -106,7 +104,7 @@ export const Root = () => {
         window.native.obs?.startListening(
           config.appConfig.obsWSURL,
           config.appConfig.obsWSPassword,
-          config.appConfig.riotLogsPath
+          config.appConfig.riotLogsPath,
         );
       }
     }, 1000);
@@ -123,9 +121,7 @@ export const Root = () => {
 
   useEffect(() => {
     if (config.appConfig.vodStoragePath) {
-      window.native.vods?.configureVodsFolderProtocol(
-        config.appConfig.vodStoragePath
-      );
+      window.native.vods?.configureVodsFolderProtocol(config.appConfig.vodStoragePath);
     }
   }, [config.appConfig.vodStoragePath]);
 
@@ -134,15 +130,11 @@ export const Root = () => {
       <div className="flex flex-row gap-3 mb-2">
         <div>
           <div>Google API Token: {config.appConfig.googleToken}</div>
-          OBS Connected:{" "}
-          {connState.connected ? (
-            "Yes"
-          ) : (
-            <span className="bg-red-800 pl-8 pr-8 pt-1 pb-1 border">NO</span>
-          )}
+          OBS Connected:{' '}
+          {connState.connected ? 'Yes' : <span className="bg-red-800 pl-8 pr-8 pt-1 pb-1 border">NO</span>}
         </div>
-        <div>Recording: {recState.outputActive ? "Yes" : "No"}</div>
-        <div>Config OK: {config.isValidConfig ? "Yes" : "No"} </div>
+        <div>Recording: {recState.outputActive ? 'Yes' : 'No'}</div>
+        <div>Config OK: {config.isValidConfig ? 'Yes' : 'No'} </div>
       </div>
       <RouterProvider router={router} />
     </div>

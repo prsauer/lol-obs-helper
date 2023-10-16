@@ -1,7 +1,7 @@
-import { useQuery } from "react-query";
-import { getGameData, getSummonerByName } from "../proxy/riotApi";
-import { maybeGetVod } from "../utils/vod";
-import { ChampIcon } from "./ChampIcon";
+import { useQuery } from 'react-query';
+import { getGameData, getSummonerByName } from '../proxy/riotApi';
+import { maybeGetVod } from '../utils/vod';
+import { ChampIcon } from './ChampIcon';
 
 export const MatchStub = ({
   matchId,
@@ -15,16 +15,10 @@ export const MatchStub = ({
     ended: Date;
   }[];
 }) => {
-  const gamesQuery = useQuery(["game-data", { match: matchId }], () =>
-    getGameData(matchId)
-  );
-  const summonerQuery = useQuery(
-    `sum-${summonerName}`,
-    () => getSummonerByName(summonerName || "no-name"),
-    {
-      enabled: Boolean(summonerName),
-    }
-  );
+  const gamesQuery = useQuery(['game-data', { match: matchId }], () => getGameData(matchId));
+  const summonerQuery = useQuery(`sum-${summonerName}`, () => getSummonerByName(summonerName || 'no-name'), {
+    enabled: Boolean(summonerName),
+  });
 
   const myPuuid = summonerQuery.data?.data?.puuid;
 
@@ -35,9 +29,7 @@ export const MatchStub = ({
     participants,
     summonerQuery,
   });
-  const winnerId = game?.info
-    ? game?.info.teams.filter((e) => e.win)[0].teamId
-    : null;
+  const winnerId = game?.info ? game?.info.teams.filter((e) => e.win)[0].teamId : null;
   const didWin = myPart?.teamId === winnerId;
 
   let vod = null;
@@ -69,14 +61,10 @@ export const MatchStub = ({
           <div className="text-lg text-orange-500">
             {myPart?.kills}/{myPart?.deaths}/{myPart?.assists}
           </div>
-          <div className={didWin ? "text-green-400" : "text-purple-700"}>
-            {didWin ? "WIN" : "LOSS"}
-          </div>
+          <div className={didWin ? 'text-green-400' : 'text-purple-700'}>{didWin ? 'WIN' : 'LOSS'}</div>
         </div>
         <div>{summonerName}</div>
-        <div className="text-gray-500">
-          {new Date(game?.info?.gameCreation || 0).toLocaleString()}
-        </div>
+        <div className="text-gray-500">{new Date(game?.info?.gameCreation || 0).toLocaleString()}</div>
       </div>
       {vod && <div className="text-[2em]">&#128249;</div>}
     </div>

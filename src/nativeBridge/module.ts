@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-types */
-import { BrowserWindow } from "electron";
+import { BrowserWindow } from 'electron';
 
 type ModuleFunction = {
   name: string;
   value: (mainWindow: BrowserWindow, ...args: any[]) => Promise<any>;
 };
 
-type ModuleEventType = "on" | "once";
+type ModuleEventType = 'on' | 'once';
 
 type ModuleEvent = {
   name: string;
@@ -21,8 +21,10 @@ type NativeBridgeModuleMetadata = {
   events: Record<string, ModuleEvent>;
 };
 
-export const MODULE_METADATA: Map<Function, NativeBridgeModuleMetadata> =
-  new Map<Function, NativeBridgeModuleMetadata>();
+export const MODULE_METADATA: Map<Function, NativeBridgeModuleMetadata> = new Map<
+  Function,
+  NativeBridgeModuleMetadata
+>();
 
 function ensureModuleMetadata(ctor: Function): NativeBridgeModuleMetadata {
   if (!MODULE_METADATA.has(ctor)) {
@@ -38,7 +40,7 @@ function ensureModuleMetadata(ctor: Function): NativeBridgeModuleMetadata {
   if (result) {
     return result;
   }
-  throw new Error("Failed to ensure module metadata");
+  throw new Error('Failed to ensure module metadata');
 }
 
 export function nativeBridgeModule(name: string) {
@@ -52,24 +54,18 @@ export function getModuleKey(moduleName: string): string {
   return `native:${moduleName}`;
 }
 
-export function getModuleFunctionKey(
-  moduleName: string,
-  functionName: string
-): string {
+export function getModuleFunctionKey(moduleName: string, functionName: string): string {
   return `${getModuleKey(moduleName)}:${functionName}`;
 }
 
-export function getModuleEventKey(
-  moduleName: string,
-  eventName: string
-): string {
+export function getModuleEventKey(moduleName: string, eventName: string): string {
   return `${getModuleKey(moduleName)}:${eventName}`;
 }
 
 export function moduleFunction(nameOverride?: string) {
   return (target: any, key: string, descriptor: PropertyDescriptor) => {
     if (!target.constructor) {
-      throw new Error("@moduleFunction must be used within a class");
+      throw new Error('@moduleFunction must be used within a class');
     }
 
     const module = ensureModuleMetadata(target.constructor);
@@ -83,7 +79,7 @@ export function moduleFunction(nameOverride?: string) {
 export function moduleEvent(type: ModuleEventType, nameOverride?: string) {
   return (target: any, key: string, descriptor: PropertyDescriptor) => {
     if (!target.constructor) {
-      throw new Error("@moduleEvent must be used within a class");
+      throw new Error('@moduleEvent must be used within a class');
     }
 
     const module = ensureModuleMetadata(target.constructor);

@@ -1,9 +1,5 @@
-import { BrowserWindow, protocol } from "electron";
-import {
-  nativeBridgeModule,
-  NativeBridgeModule,
-  moduleFunction,
-} from "../module";
+import { BrowserWindow, protocol } from 'electron';
+import { nativeBridgeModule, NativeBridgeModule, moduleFunction } from '../module';
 import {
   openSync,
   readdirSync,
@@ -13,19 +9,14 @@ import {
   closeSync,
   createReadStream,
   ReadStream,
-} from "fs-extra";
-import { google } from "googleapis";
+} from 'fs-extra';
+import { google } from 'googleapis';
 
-async function insert(
-  token: string,
-  body: ReadStream,
-  title: string,
-  description: string
-) {
-  const service = google.youtube("v3");
+async function insert(token: string, body: ReadStream, title: string, description: string) {
+  const service = google.youtube('v3');
   const res = await service.videos.insert({
     access_token: token,
-    part: ["snippet"],
+    part: ['snippet'],
     requestBody: {
       snippet: {
         title,
@@ -33,7 +24,7 @@ async function insert(
       },
     },
     media: {
-      mimeType: "video/x-matroska",
+      mimeType: 'video/x-matroska',
       body,
     },
   });
@@ -60,14 +51,14 @@ const scanLogFileForInfo = (lines: string[]) => {
   let hasTeamChaos = false;
 
   lines.forEach((line) => {
-    if (line.includes("**LOCAL**") && line.includes("ROST")) {
+    if (line.includes('**LOCAL**') && line.includes('ROST')) {
       const puuidSearch = puuidRegex.exec(line);
       summonerPuuid = puuidSearch?.[1];
 
       const summonerNameSearch = summonerNameRegex.exec(line);
       summonerName = summonerNameSearch?.[1];
     }
-    if (line.includes("Command Line")) {
+    if (line.includes('Command Line')) {
       const gameIdSearch = gameIdRegex.exec(line);
       matchId = gameIdSearch?.[1];
 
@@ -78,7 +69,7 @@ const scanLogFileForInfo = (lines: string[]) => {
       region = regionSearch?.[1];
     }
 
-    if (line.includes("TeamChaos")) {
+    if (line.includes('TeamChaos')) {
       hasTeamChaos = true;
     }
   });
@@ -109,31 +100,23 @@ type FolderInfo = {
 const folderNamesCached: Record<string, boolean> = {};
 const folderInfoCache: FolderInfo[] = [];
 
-const fnSeparator = process.platform === "darwin" ? "/" : "\\";
+const fnSeparator = process.platform === 'darwin' ? '/' : '\\';
 
-@nativeBridgeModule("vods")
+@nativeBridgeModule('vods')
 export class VodFilesModule extends NativeBridgeModule {
   @moduleFunction()
-  public async scanFolderForMatches(
-    _mainWindow: BrowserWindow,
-    riotLogsFolder: string
-  ) {
+  public async scanFolderForMatches(_mainWindow: BrowserWindow, riotLogsFolder: string) {
     // console.log(`Scanning ${riotLogsFolder} for matches`);
     const dirListing = readdirSync(riotLogsFolder);
     for (let i = 0; i < dirListing.length; i++) {
       if (dirListing[i] in folderNamesCached) continue;
       const potentialLogFile =
-        riotLogsFolder +
-        fnSeparator +
-        dirListing[i] +
-        fnSeparator +
-        dirListing[i] +
-        "_r3dlog.txt";
+        riotLogsFolder + fnSeparator + dirListing[i] + fnSeparator + dirListing[i] + '_r3dlog.txt';
       // console.log("reading", potentialLogFile);
-      const fd = openSync(potentialLogFile, "r");
+      const fd = openSync(potentialLogFile, 'r');
       const stats = statSync(potentialLogFile);
       const data = readFileSync(fd);
-      const lines = data.toString().split("\n");
+      const lines = data.toString().split('\n');
       const info = scanLogFileForInfo(lines);
       if (info === null) continue;
 
@@ -150,26 +133,20 @@ export class VodFilesModule extends NativeBridgeModule {
   }
 
   @moduleFunction()
-  public async configureVodsFolderProtocol(
-    _mainWindow: BrowserWindow,
-    vodsFolder: string
-  ) {
-    if (protocol.isProtocolHandled("vod")) {
-      protocol.unhandle("vod");
+  public async configureVodsFolderProtocol(_mainWindow: BrowserWindow, vodsFolder: string) {
+    if (protocol.isProtocolHandled('vod')) {
+      protocol.unhandle('vod');
     }
-    protocol.handle("vod", async (request) => {
-      const filename = decodeURI(request.url).slice(
-        "vod://".length,
-        request.url.length - 3
-      );
+    protocol.handle('vod', async (request) => {
+      const filename = decodeURI(request.url).slice('vod://'.length, request.url.length - 3);
 
       const localFilePath = `${vodsFolder}${fnSeparator}${filename}`;
 
-      const rangeReq = request.headers.get("Range") || "bytes=0-";
-      const parts = rangeReq.split("=");
-      const numbers = parts[1].split("-").map((p) => parseInt(p));
+      const rangeReq = request.headers.get('Range') || 'bytes=0-';
+      const parts = rangeReq.split('=');
+      const numbers = parts[1].split('-').map((p) => parseInt(p));
 
-      const fp = openSync(localFilePath, "r");
+      const fp = openSync(localFilePath, 'r');
       const size = 2500000; // ~2.5mb chunks
       const start = numbers[0] || 0;
       const buffer = Buffer.alloc(size);
@@ -181,11 +158,11 @@ export class VodFilesModule extends NativeBridgeModule {
 
       return new Response(buffer, {
         status: 206,
-        statusText: "Partial Content",
+        statusText: 'Partial Content',
         headers: {
-          "Content-Length": `${totalSize}`,
-          "Accept-Ranges": "bytes",
-          "Content-Range": `bytes ${start}-${totalSize}`,
+          'Content-Length': `${totalSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Range': `bytes ${start}-${totalSize}`,
         },
       });
     });
@@ -197,9 +174,9 @@ export class VodFilesModule extends NativeBridgeModule {
     token: string,
     vodPath: string,
     title: string,
-    description: string
+    description: string,
   ) {
-    console.log("reading", vodPath);
+    console.log('reading', vodPath);
     const res = createReadStream(vodPath);
     await insert(token, res, title, description);
   }
@@ -210,7 +187,7 @@ export class VodFilesModule extends NativeBridgeModule {
     const dir = readdirSync(rootPath);
     const res = dir.filter((fn) => fn.length >= 23);
     const stats = res
-      .map((fn) => ({ name: fn, stats: statSync(rootPath + "/" + fn) }))
+      .map((fn) => ({ name: fn, stats: statSync(rootPath + '/' + fn) }))
       .map((fd) => {
         return {
           name: fd.name,

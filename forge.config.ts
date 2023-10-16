@@ -1,34 +1,29 @@
-import type { ForgeConfig } from "@electron-forge/shared-types";
-import { MakerSquirrel } from "@electron-forge/maker-squirrel";
-import { MakerZIP } from "@electron-forge/maker-zip";
-import { MakerDeb } from "@electron-forge/maker-deb";
-import { MakerRpm } from "@electron-forge/maker-rpm";
+import type { ForgeConfig } from '@electron-forge/shared-types';
+import { MakerSquirrel } from '@electron-forge/maker-squirrel';
+import { MakerZIP } from '@electron-forge/maker-zip';
+import { MakerDeb } from '@electron-forge/maker-deb';
+import { MakerRpm } from '@electron-forge/maker-rpm';
 // removed for __dirname issues in preload
 // import { AutoUnpackNativesPlugin } from "@electron-forge/plugin-auto-unpack-natives";
-import { WebpackPlugin } from "@electron-forge/plugin-webpack";
+import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 
-import { mainConfig } from "./webpack.main.config";
-import { rendererConfig } from "./webpack.renderer.config";
+import { mainConfig } from './webpack.main.config';
+import { rendererConfig } from './webpack.renderer.config';
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: false,
-    icon: "resources/icon",
-    extraResource: ["resources/icon.ico", "resources/icon.icns"],
+    icon: 'resources/icon',
+    extraResource: ['resources/icon.ico', 'resources/icon.icns'],
     protocols: [
       {
-        name: "LoL OBS Helper",
-        schemes: ["lol-obs-helper"],
+        name: 'LoL OBS Helper',
+        schemes: ['lol-obs-helper'],
       },
     ],
   },
   rebuildConfig: {},
-  makers: [
-    new MakerSquirrel({}),
-    new MakerZIP({}, ["darwin"]),
-    new MakerRpm({}),
-    new MakerDeb({}),
-  ],
+  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
   plugins: [
     // new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
@@ -37,11 +32,11 @@ const config: ForgeConfig = {
         config: rendererConfig,
         entryPoints: [
           {
-            html: "./src/index.html",
-            js: "./src/renderer.tsx",
-            name: "main_window",
+            html: './src/index.html',
+            js: './src/renderer.tsx',
+            name: 'main_window',
             preload: {
-              js: "./src/preload.ts",
+              js: './src/preload.ts',
               config: {
                 module: {
                   rules: [
@@ -49,7 +44,7 @@ const config: ForgeConfig = {
                       test: /\.tsx?$/,
                       exclude: /(node_modules|\.webpack)/,
                       use: {
-                        loader: "ts-loader",
+                        loader: 'ts-loader',
                         options: {
                           transpileOnly: true,
                         },
@@ -58,10 +53,10 @@ const config: ForgeConfig = {
                   ],
                 },
                 externals: {
-                  electron: "commonjs electron",
+                  electron: 'commonjs electron',
                 },
                 resolve: {
-                  extensions: [".ts"],
+                  extensions: ['.ts'],
                 },
               },
             },

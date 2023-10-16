@@ -1,6 +1,6 @@
-import { LoaderFunctionArgs, useLoaderData } from "react-router-dom";
-import { Button } from "../components/Button";
-import { MatchDetails } from "../components/MatchDetails";
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { Button } from '../components/Button';
+import { MatchDetails } from '../components/MatchDetails';
 
 export function matchLoader({ params }: LoaderFunctionArgs) {
   return { matchId: params.matchId };

@@ -4,15 +4,15 @@ type VodInfo = {
 };
 
 function getTimeFromVideoName(info: VodInfo) {
-  const hasGameID = info.name.includes("NA1");
+  const hasGameID = info.name.includes('NA1');
   const baseIndex = hasGameID ? 1 : 0;
 
-  const majorParts = info.name.slice(0, info.name.length - 4).split(" ");
+  const majorParts = info.name.slice(0, info.name.length - 4).split(' ');
   console.log(majorParts);
   const [dateStr, tm] = [majorParts[baseIndex], majorParts[baseIndex + 1]];
 
-  const [year, month, day] = dateStr.split("-");
-  const [hr, mn, sc] = tm.split("-");
+  const [year, month, day] = dateStr.split('-');
+  const [hr, mn, sc] = tm.split('-');
 
   return {
     info,
@@ -22,7 +22,7 @@ function getTimeFromVideoName(info: VodInfo) {
       parseInt(day),
       parseInt(hr),
       parseInt(mn),
-      parseInt(sc)
+      parseInt(sc),
     ),
   };
 }
@@ -36,7 +36,7 @@ export function maybeGetVod(vods: VodInfo[], gameId: number) {
   for (let i = 0; i < times.length; i++) {
     const time = times[i];
     if (time.info.name.includes(gameId.toString())) {
-      console.log("match", { time, gameId });
+      console.log('match', { time, gameId });
       return time;
     }
   }
@@ -48,7 +48,5 @@ export const secondsToMinutesString = (secs: number) => {
   }
   const mins = Math.floor(secs / 60);
   const secondsRemaining = secs - mins * 60;
-  return `${mins}:${secondsRemaining < 10 ? "0" : ""}${secondsRemaining.toFixed(
-    0
-  )}`;
+  return `${mins}:${secondsRemaining < 10 ? '0' : ''}${secondsRemaining.toFixed(0)}`;
 };

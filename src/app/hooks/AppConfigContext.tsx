@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from 'react';
 
-const APP_CONFIG_STORAGE_KEY = "@lolobshelper/appConfig";
+const APP_CONFIG_STORAGE_KEY = '@lolobshelper/appConfig';
 
 export interface IAppConfig {
   vodStoragePath?: string;
@@ -30,16 +30,14 @@ interface IProps {
 }
 
 const defaultAppConfig = {
-  obsWSURL: "ws://localhost:4455",
+  obsWSURL: 'ws://localhost:4455',
 };
 
 export const AppConfigContextProvider = (props: IProps) => {
   const [appConfig, setAppConfig] = useState<IAppConfig>(defaultAppConfig);
   const [isLoading, setLoading] = useState(true);
 
-  const updateAppConfig = (
-    updater: (prevAppConfig: IAppConfig) => IAppConfig
-  ) => {
+  const updateAppConfig = (updater: (prevAppConfig: IAppConfig) => IAppConfig) => {
     setAppConfig((prev) => {
       const newConfig = updater(prev);
       localStorage.setItem(APP_CONFIG_STORAGE_KEY, JSON.stringify(newConfig));
@@ -73,7 +71,7 @@ export const AppConfigContextProvider = (props: IProps) => {
       appConfig.riotLogsPath &&
       appConfig.riotLogsPath.length > 8 &&
       appConfig.obsWSPassword?.length > 4 &&
-      appConfig.obsWSURL?.length > 4
+      appConfig.obsWSURL?.length > 4,
   );
 
   return (
