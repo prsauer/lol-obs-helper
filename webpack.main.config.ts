@@ -14,6 +14,9 @@ export const mainConfig: Configuration = {
   module: {
     rules,
   },
+  externals: {
+    noobs: 'commonjs noobs',
+  },
   plugins: [
     new CopyPlugin({
       patterns: [

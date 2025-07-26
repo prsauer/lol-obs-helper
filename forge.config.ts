@@ -3,8 +3,7 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
-// removed for __dirname issues in preload
-// import { AutoUnpackNativesPlugin } from "@electron-forge/plugin-auto-unpack-natives";
+import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 
 import { mainConfig } from './webpack.main.config';
@@ -12,7 +11,9 @@ import { rendererConfig } from './webpack.renderer.config';
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: false,
+    asar: {
+      unpack: '**/*.node',
+    },
     icon: 'resources/icon',
     extraResource: ['resources/icon.ico', 'resources/icon.icns'],
     protocols: [
@@ -25,7 +26,7 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
   plugins: [
-    // new AutoUnpackNativesPlugin({}),
+    new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({
       mainConfig,
       renderer: {

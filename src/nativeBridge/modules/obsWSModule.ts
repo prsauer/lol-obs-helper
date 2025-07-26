@@ -4,6 +4,15 @@ import { FSWatcher, watch } from 'chokidar';
 import OBSWebSocket, { EventSubscription } from 'obs-websocket-js';
 import { R3DLogWatcher } from '../../nativeUtils/logWatcher';
 import { Events } from '../ipcEvents';
+import noobs from 'noobs';
+
+noobs.ObsInit(
+  'C:\\Program Files\\obs-studio\\plugins\\obs-ffmpeg',
+  'C:\\Program Files\\obs-studio\\data\\obs-studio\\log',
+  'C:\\Program Files\\obs-studio\\data\\obs-studio',
+  'C:\\Program Files\\obs-studio\\data\\obs-studio\\recording',
+  (signal) => console.log(signal),
+);
 
 const FOLDER_AGE_THRESHOLD = 10;
 
