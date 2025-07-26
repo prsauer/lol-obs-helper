@@ -2,7 +2,7 @@
 import { ExternalLinksModule } from './nativeBridge/modules/externalLinksModule';
 import { VodFilesModule } from './nativeBridge/modules/vodFilesModule';
 import { TrayIconModule } from './nativeBridge/modules/trayIconModule';
-import { OBSWSModule } from './nativeBridge/modules/obsModule';
+import { ObsModule } from './nativeBridge/modules/obsModule';
 import { LoginModule } from './nativeBridge/modules/loginModule';
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
@@ -20,17 +20,12 @@ type NativeApi = {
   };
   trayIcon: { hideToSystemTray: OmitFirstArg<TrayIconModule['hideToSystemTray']> };
   obs: {
-    startRecording: OmitFirstArg<OBSWSModule['startRecording']>;
-    stopRecording: OmitFirstArg<OBSWSModule['stopRecording']>;
-    synchronize: OmitFirstArg<OBSWSModule['synchronize']>;
-    startListening: OmitFirstArg<OBSWSModule['startListening']>;
-    logMessage: (callback: AsEventFunction<OBSWSModule['logMessage']>) => void;
+    startListening: OmitFirstArg<ObsModule['startListening']>;
+    startRecording: OmitFirstArg<ObsModule['startRecording']>;
+    stopRecording: OmitFirstArg<ObsModule['stopRecording']>;
+    logMessage: (callback: AsEventFunction<ObsModule['logMessage']>) => void;
     removeAll_logMessage_listeners: () => void;
-    onConnectionError: (callback: AsEventFunction<OBSWSModule['onConnectionError']>) => void;
-    removeAll_onConnectionError_listeners: () => void;
-    onConnectionStateChange: (callback: AsEventFunction<OBSWSModule['onConnectionStateChange']>) => void;
-    removeAll_onConnectionStateChange_listeners: () => void;
-    onRecordingStateChange: (callback: AsEventFunction<OBSWSModule['onRecordingStateChange']>) => void;
+    onRecordingStateChange: (callback: AsEventFunction<ObsModule['onRecordingStateChange']>) => void;
     removeAll_onRecordingStateChange_listeners: () => void;
   };
   login: {

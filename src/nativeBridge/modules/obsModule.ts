@@ -188,13 +188,6 @@ export class ObsModule extends NativeBridgeModule {
     }
   }
 
-  @moduleFunction()
-  public async synchronize(_mainWindow: BrowserWindow) {
-    if (!obsModuleState.libraryReady) {
-      return;
-    }
-  }
-
   @moduleEvent('on')
   public logMessage(_mainWindow: BrowserWindow, _message: string) {
     return;

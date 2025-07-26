@@ -13,10 +13,6 @@ type RecordingState = {
   outputPath: string;
 };
 
-type ConnectionState = {
-  connected: boolean;
-};
-
 const startSound = new Audio('static://StartSound.wav');
 const stopSound = new Audio('static://StopSound.wav');
 
