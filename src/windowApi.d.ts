@@ -20,6 +20,8 @@ type NativeApi = {
   };
   trayIcon: { hideToSystemTray: OmitFirstArg<TrayIconModule['hideToSystemTray']> };
   obs: {
+    startRecording: OmitFirstArg<OBSWSModule['startRecording']>;
+    stopRecording: OmitFirstArg<OBSWSModule['stopRecording']>;
     synchronize: OmitFirstArg<OBSWSModule['synchronize']>;
     startListening: OmitFirstArg<OBSWSModule['startListening']>;
     logMessage: (callback: AsEventFunction<OBSWSModule['logMessage']>) => void;

@@ -2,7 +2,7 @@
 import { BrowserWindow, ipcMain } from 'electron';
 
 import { getModuleFunctionKey, MODULE_METADATA, NativeBridgeModule } from './module';
-import { OBSWSModule } from './modules/oBSWSModule';
+import { OBSWSModule } from './modules/obsWSModule';
 import { TrayIconModule } from './modules/trayIconModule';
 import { VodFilesModule } from './modules/vodFilesModule';
 import { ExternalLinksModule } from './modules/externalLinksModule';

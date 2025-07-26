@@ -1,27 +1,30 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow } from 'electron';
 import { moduleEvent, moduleFunction, nativeBridgeModule, NativeBridgeModule } from '../module';
 import { FSWatcher, watch } from 'chokidar';
-import OBSWebSocket, { EventSubscription } from 'obs-websocket-js';
 import { R3DLogWatcher } from '../../nativeUtils/logWatcher';
-import { Events } from '../ipcEvents';
 import noobs from 'noobs';
+import path from 'path';
 
-noobs.ObsInit(
-  'C:\\Program Files\\obs-studio\\plugins\\obs-ffmpeg',
-  'C:\\Program Files\\obs-studio\\data\\obs-studio\\log',
-  'C:\\Program Files\\obs-studio\\data\\obs-studio',
-  'C:\\Program Files\\obs-studio\\data\\obs-studio\\recording',
-  (signal) => console.log(signal),
-);
+const pluginPath = path.resolve(__dirname, 'dist', 'plugins');
+const logPath = 'D:\\Videos'; //path.resolve(__dirname, 'logs');
+const dataPath = path.resolve(__dirname, 'dist', 'effects');
+const recordingPath = 'D:\\Videos';
+
+console.log({ pluginPath, logPath, dataPath, recordingPath });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cb = (msg: any) => {
+  console.log('Callback received:', msg);
+};
 
 const FOLDER_AGE_THRESHOLD = 10;
 
-let obs: OBSWebSocket | null = null;
 let folderWatcher: FSWatcher | null = null;
 let r3dWatcher: R3DLogWatcher | null = null;
 
 let isRecording = false;
 const folderPathSeparator = process.platform === 'darwin' ? '/' : '\\';
+
+let obsState: 'none' | 'ready' = 'none';
 
 function parseRiotFolderDate(path: string) {
   if (!path.includes('T')) return null;
@@ -110,93 +113,92 @@ export class OBSWSModule extends NativeBridgeModule {
     });
   }
 
-  private startRecording() {
-    if (!obs) {
+  @moduleFunction()
+  public startRecording(_mainWindow: BrowserWindow) {
+    if (obsState !== 'ready') {
       return;
     }
-    obs.call('StartRecord');
+    noobs.ObsStartBuffer();
+    setTimeout(() => {
+      noobs.ObsStartRecording(1);
+    }, 5000);
   }
 
-  private stopRecording() {
-    if (!obs) {
+  @moduleFunction()
+  public stopRecording(_mainWindow: BrowserWindow) {
+    if (obsState !== 'ready') {
       return;
     }
-    obs.call('StopRecord');
+    noobs.ObsStopRecording();
   }
 
   public async setRecordingNamePrefix(prefix: string) {
-    if (!obs) {
+    if (obsState !== 'ready') {
       return;
     }
-    obs.call('SetProfileParameter', {
-      parameterCategory: 'Output',
-      parameterName: 'FilenameFormatting',
-      parameterValue: `${prefix} %CCYY-%MM-%DD %hh-%mm-%ss`,
-    });
+    // TODO: noobs?
+    // obs.call('SetProfileParameter', {
+    //   parameterCategory: 'Output',
+    //   parameterName: 'FilenameFormatting',
+    //   parameterValue: `${prefix} %CCYY-%MM-%DD %hh-%mm-%ss`,
+    // });
   }
 
   @moduleFunction()
   public async synchronize(_mainWindow: BrowserWindow) {
-    if (!obs) {
+    if (obsState !== 'ready') {
       return;
     }
-    const recStatus = await obs.call('GetRecordStatus');
-    const recDir = await obs.call('GetRecordDirectory');
-    this.onRecordingStateChange(_mainWindow, {
-      outputActive: recStatus.outputActive,
-      outputPath: recDir.recordDirectory,
-      outputState: '',
-    });
-    isRecording = recStatus.outputActive;
+
+    // noobs wiring
+    // const recStatus = await obs.call('GetRecordStatus');
+    // const recDir = await obs.call('GetRecordDirectory');
+    // this.onRecordingStateChange(_mainWindow, {
+    //   outputActive: recStatus.outputActive,
+    //   outputPath: recDir.recordDirectory,
+    //   outputState: '',
+    // });
+    // isRecording = recStatus.outputActive;
   }
 
   @moduleFunction()
   public async startListening(_mainWindow: BrowserWindow, url: string, password: string, riotFolder: string) {
+    noobs.ObsInit(pluginPath, logPath, dataPath, recordingPath, cb);
+
+    obsState = 'ready'; // TODO: move this into signal?
+
     this.startFolderWatching(riotFolder);
 
-    if (obs != null) {
-      console.log('Disconnecting');
-      await obs.disconnect();
-      obs.removeAllListeners();
-    } else {
-      console.log('Starting new socket');
-      obs = new OBSWebSocket();
-    }
-
-    console.log('Connecting to', url, password);
-    obs.connect(url, password, {
-      eventSubscriptions: EventSubscription.All | EventSubscription.InputVolumeMeters,
-    });
-
-    obs.on('ConnectionOpened', async () => {
-      console.log('ConnectionOpened');
-      this.logMessage(_mainWindow, `Connection to OBS opened`);
-      this.onConnectionStateChange(_mainWindow, { connected: true });
-    });
-
-    obs.on('ConnectionClosed', () => {
-      console.log(`${new Date()}: ConnectionClosed`);
-      this.onConnectionStateChange(_mainWindow, { connected: false });
-    });
-
-    obs.on('ConnectionError', (args) => {
-      console.log('ConnectionError', args);
-      this.logMessage(_mainWindow, `Connection error (${args.code}) ${args.name}: ${args.message}`);
-      this.onConnectionStateChange(_mainWindow, { connected: false });
-      this.onConnectionError(_mainWindow, args.name + ': ' + args.message);
-    });
-
-    obs.on('RecordStateChanged', (args) => {
-      console.log('RecordStateChanged', args);
-      isRecording = args.outputActive;
-      this.logMessage(_mainWindow, `Recording state changed to ${args.outputState}`);
-      if (isRecording) {
-        ipcMain.emit(Events.RecordingStarted);
-      } else {
-        ipcMain.emit(Events.RecordingStopped);
-      }
-      this.onRecordingStateChange(_mainWindow, args);
-    });
+    // TODO: rewire to noobs
+    // obs.connect(url, password, {
+    //   eventSubscriptions: EventSubscription.All | EventSubscription.InputVolumeMeters,
+    // });
+    // obs.on('ConnectionOpened', async () => {
+    //   console.log('ConnectionOpened');
+    //   this.logMessage(_mainWindow, `Connection to OBS opened`);
+    //   this.onConnectionStateChange(_mainWindow, { connected: true });
+    // });
+    // obs.on('ConnectionClosed', () => {
+    //   console.log(`${new Date()}: ConnectionClosed`);
+    //   this.onConnectionStateChange(_mainWindow, { connected: false });
+    // });
+    // obs.on('ConnectionError', (args) => {
+    //   console.log('ConnectionError', args);
+    //   this.logMessage(_mainWindow, `Connection error (${args.code}) ${args.name}: ${args.message}`);
+    //   this.onConnectionStateChange(_mainWindow, { connected: false });
+    //   this.onConnectionError(_mainWindow, args.name + ': ' + args.message);
+    // });
+    // obs.on('RecordStateChanged', (args) => {
+    //   console.log('RecordStateChanged', args);
+    //   isRecording = args.outputActive;
+    //   this.logMessage(_mainWindow, `Recording state changed to ${args.outputState}`);
+    //   if (isRecording) {
+    //     ipcMain.emit(Events.RecordingStarted);
+    //   } else {
+    //     ipcMain.emit(Events.RecordingStopped);
+    //   }
+    //   this.onRecordingStateChange(_mainWindow, args);
+    // });
   }
 
   @moduleEvent('on')

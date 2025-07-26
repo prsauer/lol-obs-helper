@@ -57,6 +57,8 @@ export const IndexPage = () => {
         >
           Refresh
         </Button>
+        <Button onClick={() => window.native.obs.startRecording()}>Start Recording</Button>
+        <Button onClick={() => window.native.obs.stopRecording()}>Stop Recording</Button>
       </div>
       <div className="flex flex-col gap-2 overflow-y-auto pb-4">
         {localMatches.data &&
