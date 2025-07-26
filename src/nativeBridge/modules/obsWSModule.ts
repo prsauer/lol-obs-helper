@@ -5,10 +5,15 @@ import { R3DLogWatcher } from '../../nativeUtils/logWatcher';
 import noobs from 'noobs';
 import path from 'path';
 
-const pluginPath = path.resolve(__dirname, 'dist', 'plugins');
-const logPath = 'D:\\Videos'; //path.resolve(__dirname, 'logs');
-const dataPath = path.resolve(__dirname, 'dist', 'effects');
-const recordingPath = 'D:\\Videos';
+// TODO: Finalize this once path stuff is cleared out
+const pluginPath = 'D:\\Github\\lol-obs-helper\\.webpack\\main\\dist\\plugins';
+console.log(path.resolve(__dirname, 'dist', 'plugins'));
+console.log(path.resolve(__dirname, 'dist', 'bin'));
+console.log(pluginPath);
+
+const logPath = 'D:\\Video';
+const dataPath = 'D:\\Github\\lol-obs-helper\\.webpack\\main\\dist\\effects';
+const recordingPath = 'D:\\Video';
 
 console.log({ pluginPath, logPath, dataPath, recordingPath });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,7 +26,7 @@ const FOLDER_AGE_THRESHOLD = 10;
 let folderWatcher: FSWatcher | null = null;
 let r3dWatcher: R3DLogWatcher | null = null;
 
-let isRecording = false;
+const isRecording = false;
 const folderPathSeparator = process.platform === 'darwin' ? '/' : '\\';
 
 let obsState: 'none' | 'ready' = 'none';
@@ -81,10 +86,10 @@ export class OBSWSModule extends NativeBridgeModule {
       console.log('gameId?', maybeGameId);
       if (maybeGameId !== null) {
         this.setRecordingNamePrefix(maybeGameId);
-        this.startRecording();
+        // this.startRecording();
       }
       if (isRecording && logLineHasExitMessage(newline)) {
-        this.stopRecording();
+        // this.stopRecording();
       }
     });
   }
@@ -132,7 +137,7 @@ export class OBSWSModule extends NativeBridgeModule {
     noobs.ObsStopRecording();
   }
 
-  public async setRecordingNamePrefix(prefix: string) {
+  public async setRecordingNamePrefix(_prefix: string) {
     if (obsState !== 'ready') {
       return;
     }
@@ -163,9 +168,11 @@ export class OBSWSModule extends NativeBridgeModule {
 
   @moduleFunction()
   public async startListening(_mainWindow: BrowserWindow, url: string, password: string, riotFolder: string) {
-    noobs.ObsInit(pluginPath, logPath, dataPath, recordingPath, cb);
-
-    obsState = 'ready'; // TODO: move this into signal?
+    if (obsState !== 'ready') {
+      console.log('ObsInit');
+      noobs.ObsInit(pluginPath, logPath, dataPath, recordingPath, cb);
+      obsState = 'ready'; // TODO: move this into signal?
+    }
 
     this.startFolderWatching(riotFolder);
 
