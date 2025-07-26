@@ -25,10 +25,7 @@ export const MatchStub = ({
   const game = gamesQuery.data?.data;
   const participants = game?.info?.participants || [];
   const myPart = participants.find((e) => e.puuid === myPuuid);
-  console.log({
-    participants,
-    summonerQuery,
-  });
+
   const winnerId = game?.info ? game?.info.teams.filter((e) => e.win)[0].teamId : null;
   const didWin = myPart?.teamId === winnerId;
 
@@ -36,7 +33,6 @@ export const MatchStub = ({
   if (videos && game?.info?.gameCreation) {
     vod = maybeGetVod(videos, game?.info?.gameId);
   }
-  console.log({ videos });
 
   return (
     <div className="flex flex-row gap-1 items-center">

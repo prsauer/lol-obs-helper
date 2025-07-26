@@ -82,24 +82,16 @@ export const Root = () => {
   }, []);
 
   // Decide how to handle making sure we are listening
-  // useEffect(() => {
-  //   const watchdogTimer = setInterval(() => {
-  //     if (
-  //       config.appConfig.riotLogsPath &&
-  //       config.isValidConfig
-  //     ) {
-  //       window.native.obs?.startListening(
-  //         config.appConfig.riotLogsPath,
-  //       );
-  //     }
-  //   }, 1000);
-  //   return () => {
-  //     clearInterval(watchdogTimer);
-  //   };
-  // }, [
-  //   config.isValidConfig,
-  //   config.appConfig.riotLogsPath,
-  // ]);
+  useEffect(() => {
+    const watchdogTimer = setInterval(() => {
+      if (config.appConfig.riotLogsPath && config.isValidConfig) {
+        window.native.obs?.startListening(config.appConfig.riotLogsPath);
+      }
+    }, 1000);
+    return () => {
+      clearInterval(watchdogTimer);
+    };
+  }, [config.isValidConfig, config.appConfig.riotLogsPath]);
 
   useEffect(() => {
     if (config.appConfig.vodStoragePath) {

@@ -4,8 +4,6 @@ type VodInfo = {
 };
 
 function getTimeFromVideoName(info: VodInfo) {
-  console.log({ info });
-
   // Regex to match YYYY-MM-DD HH-MM-SS pattern in filename
   const dateTimeRegex = /(\d{4})-(\d{2})-(\d{2}) (\d{2})-(\d{2})-(\d{2})/;
   const match = info.name.match(dateTimeRegex);
@@ -15,7 +13,6 @@ function getTimeFromVideoName(info: VodInfo) {
   }
 
   const [, year, month, day, hr, mn, sc] = match;
-  console.log({ year, month, day, hr, mn, sc });
 
   return {
     info,
@@ -39,7 +36,6 @@ export function maybeGetVod(vods: VodInfo[], gameId: number) {
   for (let i = 0; i < times.length; i++) {
     const time = times[i];
     if (time.info.name.includes(gameId.toString())) {
-      console.log('match', { time, gameId });
       return time;
     }
   }

@@ -108,11 +108,36 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   @moduleFunction()
-  public async startListening(_mainWindow: BrowserWindow, url: string, password: string, riotFolder: string) {
+  public async configureSource(_mainWindow: BrowserWindow) {
+    const sourceName = 'Default_Source';
+    console.log('Creating source');
+    noobs.CreateSource(sourceName, 'image_source');
+    console.log('Setting source settings');
+    noobs.SetSourceSettings(sourceName, {});
+    console.log('Adding source to scene');
+    noobs.AddSourceToScene(sourceName);
+
+    console.log('Getting source settings 1');
+    const settings1 = noobs.GetSourceSettings(sourceName);
+    console.log(settings1);
+    noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 1 });
+
+    console.log('Getting source settings 2');
+    const settings2 = noobs.GetSourceSettings(sourceName);
+    console.log(settings2);
+
+    console.log('Getting source properties');
+    const properties = noobs.GetSourceProperties(sourceName);
+    console.log('Source properties:', { properties });
+  }
+
+  @moduleFunction()
+  public async startListening(_mainWindow: BrowserWindow, riotFolder: string) {
     if (!obsModuleState.libraryReady) {
       console.log('OBS state at start of listening');
       console.log({ obsModuleState });
       console.log('ObsInit');
+
       const signalHandler = (sig: Signal) => {
         console.log('Signal received:', sig);
         switch (sig.id) {
@@ -149,6 +174,14 @@ export class ObsModule extends NativeBridgeModule {
             break;
         }
       };
+      console.log([
+        obsModuleState.pluginPath,
+        obsModuleState.dataPath,
+        obsModuleState.logPath,
+        obsModuleState.recordingPath,
+        signalHandler,
+        false,
+      ]);
       // TODO: init with buffering disabled
       noobs.Init(
         obsModuleState.pluginPath,
@@ -158,6 +191,7 @@ export class ObsModule extends NativeBridgeModule {
         signalHandler,
         false,
       );
+      this.configureSource(_mainWindow);
       obsModuleState.libraryReady = true; // TODO: move this into signal?
     }
 

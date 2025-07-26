@@ -12,6 +12,7 @@ export const modulesApi = {
   },
   trayIcon: { hideToSystemTray: (...args: any[]) => ipcRenderer.invoke('native:trayIcon:hideToSystemTray', ...args) },
   obs: {
+    configureSource: (...args: any[]) => ipcRenderer.invoke('native:obs:configureSource', ...args),
     startListening: (...args: any[]) => ipcRenderer.invoke('native:obs:startListening', ...args),
     startRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:startRecording', ...args),
     stopRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:stopRecording', ...args),
