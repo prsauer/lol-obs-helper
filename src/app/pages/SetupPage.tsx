@@ -8,21 +8,14 @@ export const SetupPage = () => {
 
   useEffect(() => {
     setAppConfigState(config.appConfig);
-  }, [
-    config.appConfig.obsWSPassword,
-    config.appConfig.obsWSURL,
-    config.appConfig.riotLogsPath,
-    config.appConfig.vodStoragePath,
-  ]);
+  }, [config.appConfig.riotLogsPath, config.appConfig.vodStoragePath]);
 
   const writeState = useCallback(() => {
     config.updateAppConfig(() => appConfigState);
   }, [config, appConfigState]);
 
   const configHasEdits = Boolean(
-    config.appConfig.obsWSPassword != appConfigState.obsWSPassword ||
-      config.appConfig.obsWSURL != appConfigState.obsWSURL ||
-      config.appConfig.riotLogsPath != appConfigState.riotLogsPath ||
+    config.appConfig.riotLogsPath != appConfigState.riotLogsPath ||
       config.appConfig.vodStoragePath != appConfigState.vodStoragePath,
   );
 
@@ -30,34 +23,6 @@ export const SetupPage = () => {
     <div className="m-3 text-gray-100 max-w-full">
       <Button linkTo="/">BACK</Button>
       <h2>Setup</h2>
-      <div className="mt-2">
-        OBS WebSocket Address
-        <input
-          className="bg-cyan-800 text-slate-100 border border-l-violet-200 w-full"
-          type="text"
-          defaultValue={appConfigState.obsWSURL}
-          onChange={(e) =>
-            setAppConfigState((s) => ({
-              ...s,
-              obsWSURL: e.target.value,
-            }))
-          }
-        />
-      </div>
-      <div className="mt-2">
-        OBS WebSocket Password
-        <input
-          className="bg-cyan-800 text-slate-100 border border-l-violet-200 w-full"
-          type="text"
-          defaultValue={appConfigState.obsWSPassword}
-          onChange={(e) =>
-            setAppConfigState((s) => ({
-              ...s,
-              obsWSPassword: e.target.value,
-            }))
-          }
-        />
-      </div>
       <div className="mt-2">
         Riot logs directory
         <input

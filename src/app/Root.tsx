@@ -44,9 +44,6 @@ const router = createHashRouter([
 export const Root = () => {
   const config = useAppConfig();
 
-  const [connState, setConnState] = useState<ConnectionState>({
-    connected: false,
-  });
   const [recState, setRecState] = useState<RecordingState>({
     outputActive: false,
     outputPath: '',
@@ -69,10 +66,6 @@ export const Root = () => {
       console.log(`${new Date()} ${logline}`);
     });
 
-    window.native.obs?.onConnectionStateChange((_evt, state) => {
-      setConnState(state);
-    });
-
     window.native.obs?.onRecordingStateChange((_evt, state) => {
       console.log('new rec state', { state, recState });
       if (state.outputActive !== recordingActiveRef.current) {
@@ -92,32 +85,25 @@ export const Root = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const watchdogTimer = setInterval(() => {
-      if (
-        !connState.connected &&
-        config.appConfig.obsWSURL &&
-        config.appConfig.obsWSPassword &&
-        config.appConfig.riotLogsPath &&
-        config.isValidConfig
-      ) {
-        window.native.obs?.startListening(
-          config.appConfig.obsWSURL,
-          config.appConfig.obsWSPassword,
-          config.appConfig.riotLogsPath,
-        );
-      }
-    }, 1000);
-    return () => {
-      clearInterval(watchdogTimer);
-    };
-  }, [
-    connState,
-    config.appConfig.obsWSURL,
-    config.appConfig.obsWSPassword,
-    config.isValidConfig,
-    config.appConfig.riotLogsPath,
-  ]);
+  // Decide how to handle making sure we are listening
+  // useEffect(() => {
+  //   const watchdogTimer = setInterval(() => {
+  //     if (
+  //       config.appConfig.riotLogsPath &&
+  //       config.isValidConfig
+  //     ) {
+  //       window.native.obs?.startListening(
+  //         config.appConfig.riotLogsPath,
+  //       );
+  //     }
+  //   }, 1000);
+  //   return () => {
+  //     clearInterval(watchdogTimer);
+  //   };
+  // }, [
+  //   config.isValidConfig,
+  //   config.appConfig.riotLogsPath,
+  // ]);
 
   useEffect(() => {
     if (config.appConfig.vodStoragePath) {
@@ -130,8 +116,6 @@ export const Root = () => {
       <div className="flex flex-row gap-3 mb-2">
         <div>
           <div>Google API Token: {config.appConfig.googleToken}</div>
-          OBS Connected:{' '}
-          {connState.connected ? 'Yes' : <span className="bg-red-800 pl-8 pr-8 pt-1 pb-1 border">NO</span>}
         </div>
         <div>Recording: {recState.outputActive ? 'Yes' : 'No'}</div>
         <div>Config OK: {config.isValidConfig ? 'Yes' : 'No'} </div>

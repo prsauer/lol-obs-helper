@@ -2,7 +2,7 @@
 import { ExternalLinksModule } from './nativeBridge/modules/externalLinksModule';
 import { VodFilesModule } from './nativeBridge/modules/vodFilesModule';
 import { TrayIconModule } from './nativeBridge/modules/trayIconModule';
-import { OBSWSModule } from './nativeBridge/modules/obsWSModule';
+import { OBSWSModule } from './nativeBridge/modules/obsModule';
 import { LoginModule } from './nativeBridge/modules/loginModule';
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
