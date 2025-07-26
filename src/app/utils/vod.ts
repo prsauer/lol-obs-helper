@@ -4,15 +4,18 @@ type VodInfo = {
 };
 
 function getTimeFromVideoName(info: VodInfo) {
-  const hasGameID = info.name.includes('NA1');
-  const baseIndex = hasGameID ? 1 : 0;
+  console.log({ info });
 
-  const majorParts = info.name.slice(0, info.name.length - 4).split(' ');
-  console.log(majorParts);
-  const [dateStr, tm] = [majorParts[baseIndex], majorParts[baseIndex + 1]];
+  // Regex to match YYYY-MM-DD HH-MM-SS pattern in filename
+  const dateTimeRegex = /(\d{4})-(\d{2})-(\d{2}) (\d{2})-(\d{2})-(\d{2})/;
+  const match = info.name.match(dateTimeRegex);
 
-  const [year, month, day] = dateStr.split('-');
-  const [hr, mn, sc] = tm.split('-');
+  if (!match) {
+    throw new Error(`Could not parse date/time from filename: ${info.name}`);
+  }
+
+  const [, year, month, day, hr, mn, sc] = match;
+  console.log({ year, month, day, hr, mn, sc });
 
   return {
     info,

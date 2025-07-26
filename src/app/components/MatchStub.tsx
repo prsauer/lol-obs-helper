@@ -36,6 +36,7 @@ export const MatchStub = ({
   if (videos && game?.info?.gameCreation) {
     vod = maybeGetVod(videos, game?.info?.gameId);
   }
+  console.log({ videos });
 
   return (
     <div className="flex flex-row gap-1 items-center">

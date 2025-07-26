@@ -185,7 +185,29 @@ export class VodFilesModule extends NativeBridgeModule {
   public async getVodsInfo(_mainWindow: BrowserWindow, vodPath: string) {
     const rootPath = vodPath;
     const dir = readdirSync(rootPath);
-    const res = dir.filter((fn) => fn.length >= 23);
+
+    // Common video file extensions
+    const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.m4v'];
+
+    const res = dir.filter((fn) => {
+      const fullPath = rootPath + '/' + fn;
+      const stats = statSync(fullPath);
+
+      // Only include files (not directories)
+      if (!stats.isFile()) {
+        return false;
+      }
+
+      // Check if file has a video extension
+      const hasVideoExtension = videoExtensions.some((ext) => fn.toLowerCase().endsWith(ext.toLowerCase()));
+
+      // Check if filename contains date/time pattern (YYYY-MM-DD HH-MM-SS)
+      const dateTimeRegex = /\d{4}-\d{2}-\d{2} \d{2}-\d{2}-\d{2}/;
+      const hasDateTime = dateTimeRegex.test(fn);
+
+      return hasVideoExtension && hasDateTime;
+    });
+
     const stats = res
       .map((fn) => ({ name: fn, stats: statSync(rootPath + '/' + fn) }))
       .map((fd) => {
