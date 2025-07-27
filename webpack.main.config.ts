@@ -24,6 +24,10 @@ export const mainConfig: Configuration = {
           from: path.resolve(__dirname, 'assets/main'),
           to: path.resolve(__dirname, '.webpack/main/assets'),
         },
+        {
+          from: path.resolve(__dirname, 'node_modules/noobs/dist'),
+          to: path.resolve(__dirname, '.webpack/main/dist'),
+        },
       ],
     }),
   ],

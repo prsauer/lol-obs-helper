@@ -2,7 +2,7 @@
 import { BrowserWindow, ipcMain } from 'electron';
 
 import { getModuleFunctionKey, MODULE_METADATA, NativeBridgeModule } from './module';
-import { OBSWSModule } from './modules/oBSWSModule';
+import { ObsModule } from './modules/obsModule';
 import { TrayIconModule } from './modules/trayIconModule';
 import { VodFilesModule } from './modules/vodFilesModule';
 import { ExternalLinksModule } from './modules/externalLinksModule';
@@ -136,5 +136,5 @@ export const nativeBridgeRegistry = new NativeBridgeRegistry();
 nativeBridgeRegistry.registerModule(ExternalLinksModule);
 nativeBridgeRegistry.registerModule(VodFilesModule);
 nativeBridgeRegistry.registerModule(TrayIconModule);
-nativeBridgeRegistry.registerModule(OBSWSModule);
+nativeBridgeRegistry.registerModule(ObsModule);
 nativeBridgeRegistry.registerModule(LoginModule);

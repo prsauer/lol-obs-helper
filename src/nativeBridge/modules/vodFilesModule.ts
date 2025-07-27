@@ -28,7 +28,6 @@ async function insert(token: string, body: ReadStream, title: string, descriptio
       body,
     },
   });
-  console.log({ res });
   return res;
 }
 
@@ -74,7 +73,6 @@ const scanLogFileForInfo = (lines: string[]) => {
     }
   });
 
-  console.log({ summonerPuuid, matchId, hasTeamChaos });
   if (summonerPuuid && matchId && hasTeamChaos) {
     return {
       matchId,
@@ -106,13 +104,11 @@ const fnSeparator = process.platform === 'darwin' ? '/' : '\\';
 export class VodFilesModule extends NativeBridgeModule {
   @moduleFunction()
   public async scanFolderForMatches(_mainWindow: BrowserWindow, riotLogsFolder: string) {
-    // console.log(`Scanning ${riotLogsFolder} for matches`);
     const dirListing = readdirSync(riotLogsFolder);
     for (let i = 0; i < dirListing.length; i++) {
       if (dirListing[i] in folderNamesCached) continue;
       const potentialLogFile =
         riotLogsFolder + fnSeparator + dirListing[i] + fnSeparator + dirListing[i] + '_r3dlog.txt';
-      // console.log("reading", potentialLogFile);
       const fd = openSync(potentialLogFile, 'r');
       const stats = statSync(potentialLogFile);
       const data = readFileSync(fd);

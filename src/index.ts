@@ -98,7 +98,6 @@ const createWindow = () => {
   protocol.handle('static', async (request) => {
     const fileUrl = request.url.replace('static://', '');
     const filePath = path.join(app.getAppPath(), '.webpack/renderer/static', fileUrl);
-    console.log('Trying to load: ', filePath);
     const fetched = await net.fetch(filePath);
     fetched.headers.set('content-type', 'audio/wav');
     return fetched;

@@ -26,7 +26,6 @@ export const ReviewPage = () => {
   const gameInfo = gamesQuery?.data?.data || null;
 
   const myId = summonerQuery.data?.data?.puuid;
-  console.log({ summonerQuery });
   const myParticipantId = gameInfo?.info.participants.find((p) => p.puuid === myId)?.participantId;
 
   const myTeamId = gameInfo?.info.participants[myParticipantId || 0].teamId;
@@ -72,11 +71,6 @@ export const ReviewPage = () => {
               didWin ? 'W' : 'L'
             } ${new Date(gameInfo?.info.gameCreation || '').toLocaleDateString()}`;
 
-            console.log({
-              vod: config.appConfig.vodStoragePath + '\\' + vod?.info.name,
-              title,
-              description: 'test',
-            });
             if (config.appConfig.googleToken) {
               window.native.vods?.insertVod(
                 config.appConfig.googleToken,

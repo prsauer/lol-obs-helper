@@ -5,8 +5,6 @@ const APP_CONFIG_STORAGE_KEY = '@lolobshelper/appConfig';
 export interface IAppConfig {
   vodStoragePath?: string;
   riotLogsPath?: string;
-  obsWSURL?: string;
-  obsWSPassword?: string;
   googleToken?: string;
 }
 
@@ -29,9 +27,7 @@ interface IProps {
   children: React.ReactNode | React.ReactNode[];
 }
 
-const defaultAppConfig = {
-  obsWSURL: 'ws://localhost:4455',
-};
+const defaultAppConfig = {};
 
 export const AppConfigContextProvider = (props: IProps) => {
   const [appConfig, setAppConfig] = useState<IAppConfig>(defaultAppConfig);
@@ -53,8 +49,6 @@ export const AppConfigContextProvider = (props: IProps) => {
 
         const newState: IAppConfig = {
           riotLogsPath: storedConfig.riotLogsPath,
-          obsWSURL: storedConfig.obsWSURL,
-          obsWSPassword: storedConfig.obsWSPassword,
           vodStoragePath: storedConfig.vodStoragePath,
           googleToken: storedConfig.googleToken,
         };
@@ -65,14 +59,7 @@ export const AppConfigContextProvider = (props: IProps) => {
     impl();
   }, []);
 
-  const isValidConfig = Boolean(
-    appConfig.obsWSPassword &&
-      appConfig.obsWSURL &&
-      appConfig.riotLogsPath &&
-      appConfig.riotLogsPath.length > 8 &&
-      appConfig.obsWSPassword?.length > 4 &&
-      appConfig.obsWSURL?.length > 4,
-  );
+  const isValidConfig = Boolean(appConfig.riotLogsPath && appConfig.riotLogsPath.length > 8);
 
   return (
     <AppConfigContext.Provider

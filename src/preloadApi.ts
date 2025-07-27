@@ -12,18 +12,14 @@ export const modulesApi = {
   },
   trayIcon: { hideToSystemTray: (...args: any[]) => ipcRenderer.invoke('native:trayIcon:hideToSystemTray', ...args) },
   obs: {
-    synchronize: (...args: any[]) => ipcRenderer.invoke('native:obs:synchronize', ...args),
+    configureSource: (...args: any[]) => ipcRenderer.invoke('native:obs:configureSource', ...args),
+    resizeMovePreview: (...args: any[]) => ipcRenderer.invoke('native:obs:resizeMovePreview', ...args),
     startListening: (...args: any[]) => ipcRenderer.invoke('native:obs:startListening', ...args),
+    startRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:startRecording', ...args),
+    stopRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:stopRecording', ...args),
     logMessage: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
       ipcRenderer.on('native:obs:logMessage', callback),
     removeAll_logMessage_listeners: () => ipcRenderer.removeAllListeners('native:obs:logMessage'),
-    onConnectionError: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
-      ipcRenderer.on('native:obs:onConnectionError', callback),
-    removeAll_onConnectionError_listeners: () => ipcRenderer.removeAllListeners('native:obs:onConnectionError'),
-    onConnectionStateChange: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
-      ipcRenderer.on('native:obs:onConnectionStateChange', callback),
-    removeAll_onConnectionStateChange_listeners: () =>
-      ipcRenderer.removeAllListeners('native:obs:onConnectionStateChange'),
     onRecordingStateChange: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
       ipcRenderer.on('native:obs:onRecordingStateChange', callback),
     removeAll_onRecordingStateChange_listeners: () =>
