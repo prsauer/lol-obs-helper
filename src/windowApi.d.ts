@@ -21,6 +21,7 @@ type NativeApi = {
   trayIcon: { hideToSystemTray: OmitFirstArg<TrayIconModule['hideToSystemTray']> };
   obs: {
     configureSource: OmitFirstArg<ObsModule['configureSource']>;
+    resizeMovePreview: OmitFirstArg<ObsModule['resizeMovePreview']>;
     startListening: OmitFirstArg<ObsModule['startListening']>;
     startRecording: OmitFirstArg<ObsModule['startRecording']>;
     stopRecording: OmitFirstArg<ObsModule['stopRecording']>;

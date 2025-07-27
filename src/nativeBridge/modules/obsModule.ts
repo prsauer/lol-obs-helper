@@ -19,6 +19,7 @@ const obsModuleState = {
   dataPath: path.resolve(__dirname, 'dist', 'effects'),
   logPath: 'D:\\Video',
   recordingPath: 'D:\\Video',
+  previewReady: false,
 };
 
 function parseRiotFolderDate(path: string) {
@@ -110,12 +111,12 @@ export class ObsModule extends NativeBridgeModule {
   @moduleFunction()
   public async configureSource(_mainWindow: BrowserWindow) {
     const sourceName = 'Default_Source';
+
     console.log('Creating source');
-    noobs.CreateSource(sourceName, 'image_source');
+    noobs.CreateSource(sourceName, 'monitor_capture');
+
     console.log('Setting source settings');
     noobs.SetSourceSettings(sourceName, {});
-    console.log('Adding source to scene');
-    noobs.AddSourceToScene(sourceName);
 
     console.log('Getting source settings 1');
     const settings1 = noobs.GetSourceSettings(sourceName);
@@ -129,6 +130,19 @@ export class ObsModule extends NativeBridgeModule {
     console.log('Getting source properties');
     const properties = noobs.GetSourceProperties(sourceName);
     console.log('Source properties:', { properties });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    console.log('Source properties:', (properties[0] as unknown as any).items);
+
+    console.log('Adding source to scene');
+    noobs.AddSourceToScene(sourceName);
+  }
+
+  @moduleFunction()
+  public resizeMovePreview(_mainWindow: BrowserWindow, x: number, y: number, width: number, height: number) {
+    if (!obsModuleState.previewReady) {
+      return;
+    }
+    noobs.ShowPreview(x, y, width, height);
   }
 
   @moduleFunction()
@@ -152,7 +166,7 @@ export class ObsModule extends NativeBridgeModule {
             //   outputState: string;
             //   outputPath: string;
             // }
-            this.onRecordingStateChange(_mainWindow, {
+            this.onRecordingStateChange(mainWindow, {
               outputActive: true,
               outputState: 'recording',
               outputPath: '',
@@ -161,8 +175,9 @@ export class ObsModule extends NativeBridgeModule {
           case 'stop':
             obsModuleState.recording = false;
             ipcMain.emit(Events.RecordingStopped);
+            console.log({ lastRecording: noobs.GetLastRecording() });
             // TODO: How to service args with noobs lib?
-            this.onRecordingStateChange(_mainWindow, {
+            this.onRecordingStateChange(mainWindow, {
               outputActive: false,
               outputState: 'stopped',
               outputPath: '',
@@ -180,7 +195,6 @@ export class ObsModule extends NativeBridgeModule {
         obsModuleState.logPath,
         obsModuleState.recordingPath,
         signalHandler,
-        true,
       ]);
       // TODO: init with buffering disabled
       noobs.Init(
@@ -189,14 +203,16 @@ export class ObsModule extends NativeBridgeModule {
         obsModuleState.dataPath,
         obsModuleState.recordingPath,
         signalHandler,
-        true,
       );
       this.configureSource(mainWindow);
 
-      // const hwnd = mainWindow.getNativeWindowHandle();
-      // noobs.InitPreview(hwnd);
-
-      // noobs.ShowPreview(0, 0, 1920, 1080);
+      console.log('Getting native window handle');
+      const hwnd = mainWindow.getNativeWindowHandle();
+      console.log({ hwnd, mainWindow });
+      console.log('Init preview');
+      noobs.InitPreview(hwnd);
+      noobs.ShowPreview(500, 400, 1920 / 4, 1080 / 4);
+      obsModuleState.previewReady = true;
       obsModuleState.libraryReady = true; // TODO: move this into signal?
     }
 
@@ -210,13 +226,10 @@ export class ObsModule extends NativeBridgeModule {
     if (!obsModuleState.libraryReady) {
       return;
     }
-    // noobs.ShowPreview(0, 0, 1920, 1080);
     obsModuleState.recording = true;
-    noobs.StartBuffer();
 
-    setTimeout(() => {
-      noobs.StartRecording(0);
-    }, 5000);
+    console.log('Starting recording');
+    noobs.StartRecording(0);
   }
 
   @moduleFunction()
