@@ -120,7 +120,7 @@ export interface MatchParticipant {
   pushPings: number;
   puuid: string;
   quadraKills: number;
-  riotIdName: string;
+  riotIdGameName: string;
   riotIdTagline: string;
   role: string;
   sightWardsBoughtInGame: number;

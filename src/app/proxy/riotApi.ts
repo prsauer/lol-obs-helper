@@ -8,8 +8,8 @@ export type DataPacket<T> = {
   status: number | null;
 };
 
-export const getSummonerByName = async (summonerName: string): Promise<DataPacket<SummonerDto>> => {
-  const result = await fetch(`${baseApiRoute}/lol/summoner/v4/summoners/by-name/${summonerName}`);
+export const getSummonerByPuuid = async (summonerPuuid: string): Promise<DataPacket<SummonerDto>> => {
+  const result = await fetch(`${baseApiRoute}/lol/summoner/v4/summoners/by-puuid/${summonerPuuid}`);
   if (result.status != 200) {
     return {
       data: null,

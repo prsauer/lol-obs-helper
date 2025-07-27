@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import { getGameData, getSummonerByName } from '../proxy/riotApi';
+import { getGameData } from '../proxy/riotApi';
 import { maybeGetVod } from '../utils/vod';
 import { ChampIcon } from './ChampIcon';
 
@@ -16,15 +16,13 @@ export const MatchStub = ({
   }[];
 }) => {
   const gamesQuery = useQuery(['game-data', { match: matchId }], () => getGameData(matchId));
-  const summonerQuery = useQuery(`sum-${summonerName}`, () => getSummonerByName(summonerName || 'no-name'), {
-    enabled: Boolean(summonerName),
-  });
-
-  const myPuuid = summonerQuery.data?.data?.puuid;
+  console.log({ gamesQuery });
+  const myPart = gamesQuery.data?.data?.info.participants.find(
+    (e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName,
+  );
 
   const game = gamesQuery.data?.data;
   const participants = game?.info?.participants || [];
-  const myPart = participants.find((e) => e.puuid === myPuuid);
 
   const winnerId = game?.info ? game?.info.teams.filter((e) => e.win)[0].teamId : null;
   const didWin = myPart?.teamId === winnerId;

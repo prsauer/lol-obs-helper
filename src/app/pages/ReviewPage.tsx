@@ -1,7 +1,7 @@
 import { useLoaderData, LoaderFunctionArgs } from 'react-router-dom';
 import { VodReview } from '../components/VodReview';
 import { useQuery } from 'react-query';
-import { getGameData, getSummonerByName } from '../proxy/riotApi';
+import { getGameData } from '../proxy/riotApi';
 import { Button } from '../components/Button';
 import { maybeGetVod } from '../utils/vod';
 import { useState } from 'react';
@@ -15,9 +15,7 @@ export const ReviewPage = () => {
   const config = useAppConfig();
 
   const { id, summonerName } = useLoaderData() as ReturnType<typeof reviewLoader>;
-  const summonerQuery = useQuery(`sum-${summonerName}`, () => getSummonerByName(summonerName || 'no-name'), {
-    enabled: Boolean(summonerName),
-  });
+
   const [focusSummonerId, setFocusSummonerId] = useState<string | null>(null);
   const videos = useQuery(`vod-list`, () => window.native.vods?.getVodsInfo('D:\\Video'));
 
@@ -25,8 +23,9 @@ export const ReviewPage = () => {
 
   const gameInfo = gamesQuery?.data?.data || null;
 
-  const myId = summonerQuery.data?.data?.puuid;
-  const myParticipantId = gameInfo?.info.participants.find((p) => p.puuid === myId)?.participantId;
+  const myPart = gameInfo?.info.participants.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
+  console.log({ myPart, summonerName, gameInfo });
+  const myParticipantId = myPart?.participantId;
 
   const myTeamId = gameInfo?.info.participants[myParticipantId || 0].teamId;
 
@@ -43,15 +42,15 @@ export const ReviewPage = () => {
         <Button linkTo="/">BACK</Button>
         <div>{id}</div>
         {gameInfo && <div>created: {new Date(gameInfo?.info?.gameCreation).toLocaleString()}</div>}
-
+        {/* //https://u.gg/lol/profile/na1/spraypraylove-na1/overview */}
         <Button
           onClick={() => {
             window.native.links.openExternalURL(
-              `https://u.gg/lol/profile/na1/${summonerQuery.data?.data?.name}/overview`,
+              `https://u.gg/lol/profile/na1/${myPart?.riotIdGameName}-${myPart?.riotIdTagline}/overview`,
             );
           }}
         >
-          {summonerQuery.data?.data?.name} at u.gg
+          {summonerName} at u.gg
         </Button>
         <Button linkTo={`/inspect/${id}`}>Inspect</Button>
         {gameInfo?.info.participants.map((p) => (
@@ -93,7 +92,7 @@ export const ReviewPage = () => {
           created={vod?.startDatetime}
           matchId={id}
           ended={vod?.info.ended}
-          summonerPuuid={focusSummonerId || summonerQuery.data?.data?.puuid}
+          summonerPuuid={focusSummonerId || myPart?.puuid}
         />
       )}
     </>

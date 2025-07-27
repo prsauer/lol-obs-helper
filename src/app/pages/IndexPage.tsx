@@ -34,6 +34,7 @@ export const IndexPage = () => {
     return () => window.native.login.removeAll_didLogin_listeners();
   }, [config]);
 
+  console.log({ localMatches });
   return (
     <div className="flex flex-col h-full w-full">
       <div className="mb-2 flex flex-row gap-2 items-center">
@@ -65,7 +66,10 @@ export const IndexPage = () => {
         <div className="flex flex-col gap-2 overflow-y-auto pb-4">
           {localMatches.data &&
             localMatches.data.slice(0, 8).map((d, idx) => (
-              <Button key={`${d.matchId}${idx}`} linkTo={`vod/${d.platformId + '_' + d.matchId}/${d.summonerName}`}>
+              <Button
+                key={`${d.matchId}${idx}`}
+                linkTo={`vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}
+              >
                 <MatchStub
                   matchId={d.platformId + '_' + d.matchId}
                   summonerName={d.summonerName}
