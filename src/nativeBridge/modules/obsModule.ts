@@ -132,7 +132,7 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   @moduleFunction()
-  public async startListening(_mainWindow: BrowserWindow, riotFolder: string) {
+  public async startListening(mainWindow: BrowserWindow, riotFolder: string) {
     if (!obsModuleState.libraryReady) {
       console.log('OBS state at start of listening');
       console.log({ obsModuleState });
@@ -180,22 +180,29 @@ export class ObsModule extends NativeBridgeModule {
         obsModuleState.logPath,
         obsModuleState.recordingPath,
         signalHandler,
-        false,
+        true,
       ]);
       // TODO: init with buffering disabled
       noobs.Init(
         obsModuleState.pluginPath,
-        obsModuleState.dataPath,
         obsModuleState.logPath,
+        obsModuleState.dataPath,
         obsModuleState.recordingPath,
         signalHandler,
-        false,
+        true,
       );
-      this.configureSource(_mainWindow);
+      this.configureSource(mainWindow);
+
+      // const hwnd = mainWindow.getNativeWindowHandle();
+      // noobs.InitPreview(hwnd);
+
+      // noobs.ShowPreview(0, 0, 1920, 1080);
       obsModuleState.libraryReady = true; // TODO: move this into signal?
     }
 
-    this.startFolderWatching(riotFolder);
+    if (obsModuleState.folderWatcher === null) {
+      this.startFolderWatching(riotFolder);
+    }
   }
 
   @moduleFunction()
@@ -203,8 +210,13 @@ export class ObsModule extends NativeBridgeModule {
     if (!obsModuleState.libraryReady) {
       return;
     }
+    noobs.ShowPreview(0, 0, 1920, 1080);
     obsModuleState.recording = true;
-    noobs.StartRecording(0);
+    noobs.StartBuffer();
+
+    setTimeout(() => {
+      noobs.StartRecording(0);
+    }, 5000);
   }
 
   @moduleFunction()
