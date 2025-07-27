@@ -10,7 +10,28 @@ import { Events } from '../ipcEvents';
 const folderPathSeparator = process.platform === 'darwin' ? '/' : '\\';
 const FOLDER_AGE_THRESHOLD = 10;
 
-const obsModuleState = {
+type ObsModuleState = {
+  libraryReady: boolean;
+  recording: boolean;
+  folderWatcher: FSWatcher | null;
+  r3dWatcher: R3DLogWatcher | null;
+  pluginPath: string;
+  dataPath: string;
+  logPath: string;
+  recordingPath: string;
+  previewReady: boolean;
+};
+type ObsModuleStateDTO = {
+  libraryReady: boolean;
+  previewReady: boolean;
+  recording: boolean;
+  pluginPath: string;
+  dataPath: string;
+  recordingPath: string;
+  logPath: string;
+};
+
+const obsModuleState: ObsModuleState = {
   libraryReady: false,
   recording: false,
   folderWatcher: null as FSWatcher | null,
@@ -63,7 +84,7 @@ function logLineHasExitMessage(logLine: string) {
 
 @nativeBridgeModule('obs')
 export class ObsModule extends NativeBridgeModule {
-  public startLogWatching(folder: string) {
+  public startLogWatching(mainWindow: BrowserWindow, folder: string) {
     console.log(`New directory found: ${folder}`);
 
     if (obsModuleState.r3dWatcher) {
@@ -76,15 +97,18 @@ export class ObsModule extends NativeBridgeModule {
       console.log('gameId?', maybeGameId);
       if (maybeGameId !== null) {
         this.setRecordingNamePrefix(maybeGameId);
+        this.startRecording(mainWindow);
+        this.emitStateChange(mainWindow);
       }
       if (obsModuleState.recording && logLineHasExitMessage(newline)) {
         noobs.StopRecording();
         obsModuleState.recording = false;
+        this.emitStateChange(mainWindow);
       }
     });
   }
 
-  public startFolderWatching(folder: string) {
+  public startFolderWatching(mainWindow: BrowserWindow, folder: string) {
     console.log(`Starting log folder watching: ${folder}`);
     if (obsModuleState.folderWatcher) {
       obsModuleState.folderWatcher.close();
@@ -103,7 +127,7 @@ export class ObsModule extends NativeBridgeModule {
       const ageInSeconds = diffDates(date, startTime);
       // console.log("addDir", path, date, ageInSeconds);
       if (ageInSeconds < FOLDER_AGE_THRESHOLD) {
-        this.startLogWatching(path);
+        this.startLogWatching(mainWindow, path);
       }
     });
   }
@@ -121,7 +145,7 @@ export class ObsModule extends NativeBridgeModule {
     console.log('Getting source settings 1');
     const settings1 = noobs.GetSourceSettings(sourceName);
     console.log(settings1);
-    noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 1 });
+    noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 0 });
 
     console.log('Getting source settings 2');
     const settings2 = noobs.GetSourceSettings(sourceName);
@@ -171,6 +195,7 @@ export class ObsModule extends NativeBridgeModule {
               outputState: 'recording',
               outputPath: '',
             });
+            this.emitStateChange(mainWindow);
             break;
           case 'stop':
             obsModuleState.recording = false;
@@ -182,6 +207,7 @@ export class ObsModule extends NativeBridgeModule {
               outputState: 'stopped',
               outputPath: '',
             });
+            this.emitStateChange(mainWindow);
             break;
           case 'stopping':
             break;
@@ -214,10 +240,11 @@ export class ObsModule extends NativeBridgeModule {
       noobs.ShowPreview(500, 400, 1920 / 4, 1080 / 4);
       obsModuleState.previewReady = true;
       obsModuleState.libraryReady = true; // TODO: move this into signal?
+      this.emitStateChange(mainWindow);
     }
 
     if (obsModuleState.folderWatcher === null) {
-      this.startFolderWatching(riotFolder);
+      this.startFolderWatching(mainWindow, riotFolder);
     }
   }
 
@@ -230,6 +257,7 @@ export class ObsModule extends NativeBridgeModule {
 
     console.log('Starting recording');
     noobs.StartRecording(0);
+    this.emitStateChange(_mainWindow);
   }
 
   @moduleFunction()
@@ -239,6 +267,7 @@ export class ObsModule extends NativeBridgeModule {
     }
     obsModuleState.recording = false;
     noobs.StopRecording();
+    this.emitStateChange(_mainWindow);
   }
 
   public async setRecordingNamePrefix(_prefix: string) {
@@ -247,8 +276,38 @@ export class ObsModule extends NativeBridgeModule {
     }
   }
 
+  @moduleFunction()
+  public async readObsModuleState(_mainWindow: BrowserWindow) {
+    return {
+      libraryReady: obsModuleState.libraryReady,
+      previewReady: obsModuleState.previewReady,
+      recording: obsModuleState.recording,
+      pluginPath: obsModuleState.pluginPath,
+      dataPath: obsModuleState.dataPath,
+      recordingPath: obsModuleState.recordingPath,
+      logPath: obsModuleState.logPath,
+    };
+  }
+
   @moduleEvent('on')
   public logMessage(_mainWindow: BrowserWindow, _message: string) {
+    return;
+  }
+
+  private emitStateChange(mainWindow: BrowserWindow) {
+    this.onObsModuleStateChange(mainWindow, {
+      libraryReady: obsModuleState.libraryReady,
+      previewReady: obsModuleState.previewReady,
+      recording: obsModuleState.recording,
+      pluginPath: obsModuleState.pluginPath,
+      dataPath: obsModuleState.dataPath,
+      recordingPath: obsModuleState.recordingPath,
+      logPath: obsModuleState.logPath,
+    });
+  }
+
+  @moduleEvent('on')
+  public onObsModuleStateChange(_mainWindow: BrowserWindow, _state: ObsModuleStateDTO) {
     return;
   }
 

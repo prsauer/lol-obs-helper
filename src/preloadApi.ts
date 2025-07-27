@@ -17,9 +17,14 @@ export const modulesApi = {
     startListening: (...args: any[]) => ipcRenderer.invoke('native:obs:startListening', ...args),
     startRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:startRecording', ...args),
     stopRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:stopRecording', ...args),
+    readObsModuleState: (...args: any[]) => ipcRenderer.invoke('native:obs:readObsModuleState', ...args),
     logMessage: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
       ipcRenderer.on('native:obs:logMessage', callback),
     removeAll_logMessage_listeners: () => ipcRenderer.removeAllListeners('native:obs:logMessage'),
+    onObsModuleStateChange: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
+      ipcRenderer.on('native:obs:onObsModuleStateChange', callback),
+    removeAll_onObsModuleStateChange_listeners: () =>
+      ipcRenderer.removeAllListeners('native:obs:onObsModuleStateChange'),
     onRecordingStateChange: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
       ipcRenderer.on('native:obs:onRecordingStateChange', callback),
     removeAll_onRecordingStateChange_listeners: () =>
