@@ -210,7 +210,7 @@ export class ObsModule extends NativeBridgeModule {
     if (!obsModuleState.libraryReady) {
       return;
     }
-    noobs.ShowPreview(0, 0, 1920, 1080);
+    // noobs.ShowPreview(0, 0, 1920, 1080);
     obsModuleState.recording = true;
     noobs.StartBuffer();
 
