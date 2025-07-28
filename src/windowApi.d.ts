@@ -4,6 +4,7 @@ import { VodFilesModule } from './nativeBridge/modules/vodFilesModule';
 import { TrayIconModule } from './nativeBridge/modules/trayIconModule';
 import { ObsModule } from './nativeBridge/modules/obsModule';
 import { LoginModule } from './nativeBridge/modules/loginModule';
+import { LeagueLiveClientModule } from './nativeBridge/modules/leagueLiveClientModule';
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
 type AsEventFunction<F> = F extends (x: any, ...args: infer P) => infer R
@@ -36,6 +37,27 @@ type NativeApi = {
   login: {
     didLogin: (callback: AsEventFunction<LoginModule['didLogin']>) => void;
     removeAll_didLogin_listeners: () => void;
+  };
+  leagueLiveClient: {
+    startListeningForGame: OmitFirstArg<LeagueLiveClientModule['startListeningForGame']>;
+    stopListeningForGame: OmitFirstArg<LeagueLiveClientModule['stopListeningForGame']>;
+    getAllGameData: OmitFirstArg<LeagueLiveClientModule['getAllGameData']>;
+    getActivePlayer: OmitFirstArg<LeagueLiveClientModule['getActivePlayer']>;
+    getActivePlayerName: OmitFirstArg<LeagueLiveClientModule['getActivePlayerName']>;
+    getActivePlayerAbilities: OmitFirstArg<LeagueLiveClientModule['getActivePlayerAbilities']>;
+    getActivePlayerRunes: OmitFirstArg<LeagueLiveClientModule['getActivePlayerRunes']>;
+    getPlayerList: OmitFirstArg<LeagueLiveClientModule['getPlayerList']>;
+    getPlayerItems: OmitFirstArg<LeagueLiveClientModule['getPlayerItems']>;
+    getPlayerMainRunes: OmitFirstArg<LeagueLiveClientModule['getPlayerMainRunes']>;
+    getPlayerScores: OmitFirstArg<LeagueLiveClientModule['getPlayerScores']>;
+    getPlayerSummonerSpells: OmitFirstArg<LeagueLiveClientModule['getPlayerSummonerSpells']>;
+    getEventData: OmitFirstArg<LeagueLiveClientModule['getEventData']>;
+    getGameStats: OmitFirstArg<LeagueLiveClientModule['getGameStats']>;
+    isGameActive: OmitFirstArg<LeagueLiveClientModule['isGameActive']>;
+    onNewGameDetected: (callback: AsEventFunction<LeagueLiveClientModule['onNewGameDetected']>) => void;
+    removeAll_onNewGameDetected_listeners: () => void;
+    onGameEnded: (callback: AsEventFunction<LeagueLiveClientModule['onGameEnded']>) => void;
+    removeAll_onGameEnded_listeners: () => void;
   };
 };
 

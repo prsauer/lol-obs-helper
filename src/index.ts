@@ -152,4 +152,16 @@ if (!isFirstInstance) {
       console.log(err);
     }
   });
+
+  app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+    console.log('certificate-error', { event, webContents, url, error, certificate });
+    // League client uses a self-signed cert for local api, we can just assume it's OK
+    if (url.startsWith('https://127.0.0.1:2999/')) {
+      // Verification logic.
+      event.preventDefault();
+      callback(true);
+    } else {
+      callback(false);
+    }
+  });
 }

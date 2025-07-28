@@ -7,18 +7,23 @@ import { TrayIconModule } from './modules/trayIconModule';
 import { VodFilesModule } from './modules/vodFilesModule';
 import { ExternalLinksModule } from './modules/externalLinksModule';
 import { LoginModule } from './modules/loginModule';
+import { LeagueLiveClientModule } from './modules/leagueLiveClientModule';
 
 export class NativeBridgeRegistry {
-  private modules: NativeBridgeModule[] = [];
+  private modules: Record<string, NativeBridgeModule> = {};
 
   public registerModule<T extends NativeBridgeModule>(moduleClass: new () => T): void {
     const module = new moduleClass();
-    this.modules.push(module);
+    this.modules[moduleClass.name] = module;
+  }
+
+  public getModule(name: string): NativeBridgeModule {
+    return this.modules[name];
   }
 
   public generateAPIObject() {
     let apiString = `/* eslint-disable @typescript-eslint/no-explicit-any */\nimport { IpcRendererEvent, ipcRenderer } from "electron";\n\nexport const modulesApi = {`;
-    this.modules.forEach((module) => {
+    Object.values(this.modules).forEach((module) => {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
@@ -63,7 +68,7 @@ export class NativeBridgeRegistry {
 
   public generateAPIType(modulesPath: string) {
     let typeString = `/* eslint-disable @typescript-eslint/no-explicit-any */\n`;
-    this.modules.forEach((module) => {
+    Object.values(this.modules).forEach((module) => {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
@@ -82,7 +87,7 @@ export class NativeBridgeRegistry {
     : never;\n\n`;
 
     typeString += `type NativeApi = {`;
-    this.modules.forEach((module) => {
+    Object.values(this.modules).forEach((module) => {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
@@ -113,7 +118,8 @@ export class NativeBridgeRegistry {
   }
 
   public startListeners(mainWindow: BrowserWindow): void {
-    this.modules.forEach((module) => {
+    console.log(this.modules);
+    Object.values(this.modules).forEach((module) => {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
       if (!moduleMetadata) {
@@ -138,3 +144,4 @@ nativeBridgeRegistry.registerModule(VodFilesModule);
 nativeBridgeRegistry.registerModule(TrayIconModule);
 nativeBridgeRegistry.registerModule(ObsModule);
 nativeBridgeRegistry.registerModule(LoginModule);
+nativeBridgeRegistry.registerModule(LeagueLiveClientModule);

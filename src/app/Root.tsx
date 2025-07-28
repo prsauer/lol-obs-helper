@@ -85,7 +85,7 @@ export const Root = () => {
   useEffect(() => {
     const watchdogTimer = setInterval(() => {
       if (config.appConfig.riotLogsPath && config.isValidConfig) {
-        window.native.obs?.startListening(config.appConfig.riotLogsPath);
+        window.native.obs?.startListening();
       }
     }, 1000);
     return () => {
