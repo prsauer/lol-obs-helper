@@ -42,7 +42,7 @@ export const PreviewWindow = () => {
   }, [query.data?.previewReady]);
 
   return (
-    <div ref={ref} className="w-full h-full bg-red-500">
+    <div ref={ref} className="w-full h-full bg-green-500">
       Preview
     </div>
   );

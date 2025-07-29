@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { moduleEvent, moduleFunction, nativeBridgeModule, NativeBridgeModule } from '../module';
-import type { Signal } from 'noobs';
+import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
 import { Events } from '../ipcEvents';
@@ -16,7 +16,9 @@ type ObsModuleState = {
   logPath: string;
   recordingPath: string;
   previewReady: boolean;
+  sources: Record<string, { name: string; type: string }>;
 };
+
 type ObsModuleStateDTO = {
   libraryReady: boolean;
   previewReady: boolean;
@@ -37,34 +39,76 @@ const obsModuleState: ObsModuleState = {
   logPath: 'D:\\Video',
   recordingPath: 'D:\\Video',
   previewReady: false,
+  sources: {},
 };
 
 @nativeBridgeModule('obs')
 export class ObsModule extends NativeBridgeModule {
   @moduleFunction()
+  public async discoverSourceProperties(_mainWindow: BrowserWindow) {
+    const propsBySource: Record<string, ObsProperty[]> = {};
+    for (const source of Object.keys(obsModuleState.sources)) {
+      const properties = noobs.GetSourceProperties(source);
+      console.log(properties);
+      propsBySource[source] = properties;
+    }
+    return propsBySource;
+  }
+
+  @moduleFunction()
+  public async setSourceProperty(
+    _mainWindow: BrowserWindow,
+    sourceName: string,
+    propertyName: keyof ObsData,
+    value: ObsDataValue,
+  ) {
+    const settings = noobs.GetSourceSettings(sourceName);
+    settings[propertyName] = value;
+    console.log(`Setting ${propertyName} to ${value} for ${sourceName}`);
+    noobs.SetSourceSettings(sourceName, settings);
+  }
+
+  @moduleFunction()
   public async configureSource(_mainWindow: BrowserWindow) {
-    const sourceName = 'Default_Source';
+    noobs.CreateSource('MonCap', 'monitor_capture');
+    noobs.CreateSource('WinCap', 'window_capture');
+    obsModuleState.sources['MonCap'] = { name: 'MonCap', type: 'monitor_capture' };
+    obsModuleState.sources['WinCap'] = { name: 'WinCap', type: 'window_capture' };
+    // noobs.CreateSource('GameCap', 'monitor_capture');
 
-    console.log('Creating source');
-    noobs.CreateSource(sourceName, 'monitor_capture');
+    const sourceName = 'MonCap';
 
-    console.log('Setting source settings');
-    noobs.SetSourceSettings(sourceName, {});
+    // noobs.CreateSource(sourceName, 'monitor_capture');
 
-    console.log('Getting source settings 1');
-    const settings1 = noobs.GetSourceSettings(sourceName);
-    console.log(settings1);
-    noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 0 });
+    // const settings1 = noobs.GetSourceSettings(sourceName);
+    // // noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 0 });
+    // noobs.SetSourceSettings(sourceName, {
+    //   ...settings1,
+    //   method: 2, // WGC: Windows Graphics Capture
+    //   window: 'World of Warcraft:waApplication Window:WowClassic.exe',
+    //   compatibility: true,
+    // });
 
-    console.log('Getting source settings 2');
+    // const properties = noobs.GetSourceProperties(sourceName);
+    // console.log('Source properties:', { properties });
+    // for (const property of properties) {
+    //   if (property.type === 'list') {
+    //     for (const item of property.items) {
+    //       if (item.name.startsWith('Acer')) {
+    //         noobs.SetSourceSettings(sourceName, {
+    //           ...settings1,
+    //           monitor_id: item.value,
+    //         });
+    //       }
+    //       console.log(item);
+    //     }
+    //   }
+    // }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // console.log('Source properties:', (properties[0] as unknown as any).items);
+
     const settings2 = noobs.GetSourceSettings(sourceName);
     console.log(settings2);
-
-    console.log('Getting source properties');
-    const properties = noobs.GetSourceProperties(sourceName);
-    console.log('Source properties:', { properties });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.log('Source properties:', (properties[0] as unknown as any).items);
 
     console.log('Adding source to scene');
     noobs.AddSourceToScene(sourceName);
@@ -178,6 +222,7 @@ export class ObsModule extends NativeBridgeModule {
 
     console.log('Starting recording');
     noobs.StartRecording(0);
+    // noobs.setDrawSourceOutline(true);
     this.emitStateChange(_mainWindow);
   }
 
@@ -188,6 +233,7 @@ export class ObsModule extends NativeBridgeModule {
     }
     obsModuleState.recording = false;
     noobs.StopRecording();
+    // noobs.setDrawSourceOutline(false);
     this.emitStateChange(_mainWindow);
   }
 

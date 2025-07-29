@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAppConfig } from './hooks/AppConfigContext';
 import { SetupPage } from './pages/SetupPage';
 import { MatchInspectPage, matchLoader } from './pages/MatchInspectPage';
+import { SourceConfig } from './pages/SourceConfig';
 import { useQuery } from 'react-query';
 
 type RecordingState = {
@@ -34,6 +35,10 @@ const router = createHashRouter([
     path: '/inspect/:matchId',
     element: <MatchInspectPage />,
     loader: matchLoader,
+  },
+  {
+    path: '/source-config',
+    element: <SourceConfig />,
   },
 ]);
 

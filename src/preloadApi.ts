@@ -12,6 +12,8 @@ export const modulesApi = {
   },
   trayIcon: { hideToSystemTray: (...args: any[]) => ipcRenderer.invoke('native:trayIcon:hideToSystemTray', ...args) },
   obs: {
+    discoverSourceProperties: (...args: any[]) => ipcRenderer.invoke('native:obs:discoverSourceProperties', ...args),
+    setSourceProperty: (...args: any[]) => ipcRenderer.invoke('native:obs:setSourceProperty', ...args),
     configureSource: (...args: any[]) => ipcRenderer.invoke('native:obs:configureSource', ...args),
     resizeMovePreview: (...args: any[]) => ipcRenderer.invoke('native:obs:resizeMovePreview', ...args),
     startListening: (...args: any[]) => ipcRenderer.invoke('native:obs:startListening', ...args),
