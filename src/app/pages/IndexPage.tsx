@@ -39,6 +39,7 @@ export const IndexPage = () => {
     <div className="flex flex-col h-full w-full">
       <div className="mb-2 flex flex-row gap-2 items-center">
         <Button linkTo="/setup">Setup</Button>
+        <Button linkTo="/source-config">Source Config</Button>
         <Button
           onClick={async () => {
             try {
@@ -61,6 +62,9 @@ export const IndexPage = () => {
         </Button>
         <Button onClick={() => window.native.obs.startRecording()}>Start Recording</Button>
         <Button onClick={() => window.native.obs.stopRecording()}>Stop Recording</Button>
+        <Button onClick={() => window.native.obs.discoverSourceProperties().then(console.log)}>
+          Discover Source Properties
+        </Button>
       </div>
       <div className="flex flex-row gap-2">
         <div className="flex flex-col gap-2 overflow-y-auto pb-4">
