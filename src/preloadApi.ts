@@ -15,6 +15,7 @@ export const modulesApi = {
     discoverSourceProperties: (...args: any[]) => ipcRenderer.invoke('native:obs:discoverSourceProperties', ...args),
     setSourceProperty: (...args: any[]) => ipcRenderer.invoke('native:obs:setSourceProperty', ...args),
     configureSource: (...args: any[]) => ipcRenderer.invoke('native:obs:configureSource', ...args),
+    setScene: (...args: any[]) => ipcRenderer.invoke('native:obs:setScene', ...args),
     resizeMovePreview: (...args: any[]) => ipcRenderer.invoke('native:obs:resizeMovePreview', ...args),
     startListening: (...args: any[]) => ipcRenderer.invoke('native:obs:startListening', ...args),
     startRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:startRecording', ...args),

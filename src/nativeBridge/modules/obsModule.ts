@@ -49,7 +49,7 @@ export class ObsModule extends NativeBridgeModule {
     const propsBySource: Record<string, ObsProperty[]> = {};
     for (const source of Object.keys(obsModuleState.sources)) {
       const properties = noobs.GetSourceProperties(source);
-      console.log(properties);
+      console.log(JSON.stringify(properties, null, 2));
       propsBySource[source] = properties;
     }
     return propsBySource;
@@ -68,50 +68,55 @@ export class ObsModule extends NativeBridgeModule {
     noobs.SetSourceSettings(sourceName, settings);
   }
 
+  private initializeWindowCapture() {
+    noobs.CreateSource('WinCap', 'window_capture');
+    obsModuleState.sources['WinCap'] = { name: 'WinCap', type: 'window_capture' };
+
+    const initSettings = noobs.GetSourceProperties('WinCap');
+    let window = '';
+    let priority = '';
+    initSettings.forEach((prop) => {
+      console.log({ prop });
+
+      if (prop.type === 'list') {
+        console.log(prop.items);
+        // find monitor and priority values
+        if (prop.name === 'window') {
+          window = prop.items[1].value as string;
+        }
+        if (prop.name === 'priority') {
+          priority = prop.items[0].value as string;
+        }
+      }
+    });
+
+    noobs.SetSourceSettings('WinCap', {
+      ...noobs.GetSourceSettings('WinCap'),
+      window,
+      priority,
+    });
+
+    const settingsSet = noobs.GetSourceSettings('WinCap');
+    console.log({ settingsSet });
+  }
+
   @moduleFunction()
   public async configureSource(_mainWindow: BrowserWindow) {
     noobs.CreateSource('MonCap', 'monitor_capture');
-    noobs.CreateSource('WinCap', 'window_capture');
     obsModuleState.sources['MonCap'] = { name: 'MonCap', type: 'monitor_capture' };
-    obsModuleState.sources['WinCap'] = { name: 'WinCap', type: 'window_capture' };
     // noobs.CreateSource('GameCap', 'monitor_capture');
 
-    const sourceName = 'MonCap';
-
-    // noobs.CreateSource(sourceName, 'monitor_capture');
-
-    // const settings1 = noobs.GetSourceSettings(sourceName);
-    // // noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 0 });
-    // noobs.SetSourceSettings(sourceName, {
-    //   ...settings1,
-    //   method: 2, // WGC: Windows Graphics Capture
-    //   window: 'World of Warcraft:waApplication Window:WowClassic.exe',
-    //   compatibility: true,
-    // });
-
-    // const properties = noobs.GetSourceProperties(sourceName);
-    // console.log('Source properties:', { properties });
-    // for (const property of properties) {
-    //   if (property.type === 'list') {
-    //     for (const item of property.items) {
-    //       if (item.name.startsWith('Acer')) {
-    //         noobs.SetSourceSettings(sourceName, {
-    //           ...settings1,
-    //           monitor_id: item.value,
-    //         });
-    //       }
-    //       console.log(item);
-    //     }
-    //   }
-    // }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // console.log('Source properties:', (properties[0] as unknown as any).items);
-
-    const settings2 = noobs.GetSourceSettings(sourceName);
-    console.log(settings2);
+    this.initializeWindowCapture();
 
     console.log('Adding source to scene');
-    noobs.AddSourceToScene(sourceName);
+    noobs.AddSourceToScene('WinCap');
+  }
+
+  @moduleFunction()
+  public async setScene(_mainWindow: BrowserWindow, sceneName: string) {
+    noobs.RemoveSourceFromScene('WinCap');
+    noobs.RemoveSourceFromScene('MonCap');
+    noobs.AddSourceToScene(sceneName);
   }
 
   @moduleFunction()
@@ -199,12 +204,12 @@ export class ObsModule extends NativeBridgeModule {
     obsModuleState.listeningForGame = true;
     const leagueModule = nativeBridgeRegistry.getModule('LeagueLiveClientModule') as LeagueLiveClientModule;
     await leagueModule.startListeningForGame(mainWindow);
-    ipcMain.addListener(Events.LeagueGameDetected, (gameData) => {
-      console.log('League game detected', gameData);
+    ipcMain.addListener(Events.ActivityStarted, (activityData) => {
+      console.log('[OBS] Activity started', activityData);
       this.startRecording(mainWindow);
     });
-    ipcMain.addListener(Events.LeagueGameEnded, (gameData) => {
-      console.log('League game ended', gameData);
+    ipcMain.addListener(Events.ActivityEnded, (activityData) => {
+      console.log('[OBS] Activity ended', activityData);
       this.stopRecording(mainWindow);
     });
   }

@@ -59,7 +59,10 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     if (this.gameRunning && this.currentGameId) {
       console.log(`League game ended: ${this.currentGameId}`);
       this.onGameEnded(_mainWindow, this.currentGameId);
-      ipcMain.emit(Events.LeagueGameEnded, this.currentGameId);
+      ipcMain.emit(Events.ActivityEnded, {
+        game: 'league-of-legends',
+        activityId: this.currentGameId,
+      });
       this.gameRunning = false;
       this.currentGameId = null;
     }
@@ -112,7 +115,10 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
           if (!this.seenGameIds.has(gameId)) {
             this.addGameIdToHistory(gameId);
             this.onNewGameDetected(_mainWindow, gameData);
-            ipcMain.emit(Events.LeagueGameDetected, gameData);
+            ipcMain.emit(Events.ActivityStarted, {
+              game: 'league-of-legends',
+              activityId: gameId,
+            });
           }
 
           if (!this.gameRunning) {

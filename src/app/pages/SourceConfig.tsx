@@ -407,6 +407,7 @@ const PropertyRenderer = ({ property, value, onChange }: PropertyInputProps) => 
 export const SourceConfig = () => {
   const [propertyValues, setPropertyValues] = useState<Record<string, string | number | boolean | string[]>>({});
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [activeScene, setActiveScene] = useState<string>('');
 
   const sourcePropertiesQuery = useQuery('source-properties', () => window.native.obs.discoverSourceProperties(), {
     refetchOnMount: true,
@@ -443,10 +444,23 @@ export const SourceConfig = () => {
     }
   };
 
+  const handleSceneChange = async (sceneName: string) => {
+    try {
+      await window.native.obs.setScene(sceneName);
+      setActiveScene(sceneName);
+      console.log(`Switched to scene: ${sceneName}`);
+      setLastUpdated(new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error(`Failed to switch to scene ${sceneName}:`, error);
+      alert(`Failed to switch to scene: ${error}`);
+    }
+  };
+
   const handleRefreshAndReset = () => {
     // Reset local state and refresh properties
     setPropertyValues({});
     setLastUpdated(null);
+    setActiveScene('');
     sourcePropertiesQuery.refetch();
     console.log('Properties refreshed and local state reset');
   };
@@ -486,6 +500,29 @@ export const SourceConfig = () => {
         <Button onClick={handleRefreshAndReset} className="bg-blue-600 hover:bg-blue-700">
           Reset & Refresh
         </Button>
+      </div>
+
+      <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
+        <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Scene Selection</h2>
+        <div className="space-y-3">
+          {['MonCap', 'WinCap'].map((sceneName) => (
+            <label key={sceneName} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={activeScene === sceneName}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    handleSceneChange(sceneName);
+                  }
+                }}
+                className="rounded"
+              />
+              <span className="text-gray-100">
+                {sceneName === 'MonCap' ? 'Monitor Capture' : 'Window Capture'} ({sceneName})
+              </span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
