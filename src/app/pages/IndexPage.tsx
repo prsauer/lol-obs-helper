@@ -66,23 +66,22 @@ export const IndexPage = () => {
           Discover Source Properties
         </Button>
       </div>
-      <div className="flex flex-row gap-2">
-        <div className="flex flex-col gap-2 overflow-y-auto pb-4">
+      <div className="flex flex-row gap-2 flex-1 overflow-hidden">
+        <div className="flex flex-col gap-2 min-h-0 overflow-y-scroll pr-1">
           {localMatches.data &&
             localMatches.data.slice(0, 8).map((d, idx) => (
-              <Button
-                key={`${d.matchId}${idx}`}
-                linkTo={`vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}
-              >
-                <MatchStub
-                  matchId={d.platformId + '_' + d.matchId}
-                  summonerName={d.summonerName}
-                  videos={videos.data}
-                />
-              </Button>
+              <div key={`${d.matchId}${idx}`}>
+                <Button linkTo={`vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}>
+                  <MatchStub
+                    matchId={d.platformId + '_' + d.matchId}
+                    summonerName={d.summonerName}
+                    videos={videos.data}
+                  />
+                </Button>
+              </div>
             ))}
         </div>
-        <div className="flex-1 self-stretch">
+        <div className="flex-1 self-stretch min-h-0">
           <PreviewWindow />
         </div>
       </div>

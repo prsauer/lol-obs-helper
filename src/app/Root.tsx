@@ -105,11 +105,8 @@ export const Root = () => {
   }, [config.appConfig.vodStoragePath]);
 
   return (
-    <div className="p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
+    <div className="absolute top-0 left-0 right-0 bottom-0 p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
       <div className="flex flex-row gap-3 mb-2">
-        <div>
-          <div>Google API Token: {config.appConfig.googleToken}</div>
-        </div>
         <div>Recording: {recState.outputActive ? 'Yes' : 'No'}</div>
         <div>Config OK: {config.isValidConfig ? 'Yes' : 'No'} </div>
       </div>
