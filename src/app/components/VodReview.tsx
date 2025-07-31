@@ -30,23 +30,14 @@ export const VodReview = ({
   const gameInfo = gamesQuery.data?.data?.info;
 
   const vodStartTime = created;
+  console.log({ created, ended });
   const vodEndTime = ended;
-  const vodDuration = vodStartTime && vodEndTime ? vodEndTime.getTime() - vodStartTime.getTime() : 1;
 
   if (!gameInfo || !vodEndTime || !vodStartTime) {
     return <div>loading</div>;
   }
 
-  console.log({ vod });
   const myTeamId = myParticipantId ? gameInfo.participants[myParticipantId]?.teamId : -1;
-  const gameEndTime = new Date(gameInfo?.gameEndTimestamp);
-
-  const gameStartConvert = new Date(gameEndTime.getTime() - gameInfo?.gameDuration * 1000);
-
-  const timeCorrectionMs = gameEndTime.getTime() - vodEndTime.getTime();
-  console.log('## TIME CORRECTION', timeCorrectionMs);
-
-  const vodStartOffset = gameStartConvert.getTime() - vodStartTime.getTime() - timeCorrectionMs;
 
   const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
 
@@ -66,12 +57,9 @@ export const VodReview = ({
     return false;
   });
 
+  console.log({ importantEvents });
   const timeConvert = (eventTimestamp: number) => {
-    return (
-      (new Date(eventTimestamp + gameInfo?.gameCreation + vodStartOffset - timeCorrectionMs).getTime() -
-        vodStartTime.getTime()) /
-      1000
-    );
+    return eventTimestamp / 1000;
   };
 
   const progressBarClick = useCallback(
@@ -192,7 +180,7 @@ export const VodReview = ({
               minHeight: 0,
             }}
           />
-          <div id="video-controls" className="controls w-full" data-state="hidden">
+          {/* <div id="video-controls" className="controls w-full" data-state="hidden">
             <div className="progress w-full ">
               <progress
                 ref={progressBar}
@@ -218,7 +206,7 @@ export const VodReview = ({
                 })}
               </div>
             </div>
-          </div>
+          </div> */}
         </figure>
       )}
     </div>

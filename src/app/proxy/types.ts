@@ -30,7 +30,7 @@ export interface MatchInfo {
   gameType: string;
   gameVersion: string;
   mapId: number;
-  participants: MatchParticipant[];
+  participants?: MatchParticipant[];
   platformId: string;
   queueId: number;
   teams: Team[];

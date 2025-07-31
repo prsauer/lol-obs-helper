@@ -20,7 +20,7 @@ export const ReviewPage = () => {
   const videos = useQuery(`vod-list`, () => window.native.vods?.getVodsInfo('D:\\Video'));
 
   const gamesQuery = useQuery(`game-${id}`, () => getGameData(id || 'no-id'));
-
+  console.log({ videos, games: gamesQuery.data });
   const gameInfo = gamesQuery?.data?.data || null;
 
   const myPart = gameInfo?.info.participants.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
@@ -33,12 +33,13 @@ export const ReviewPage = () => {
   if (videos?.data && gameInfo?.info?.gameCreation) {
     vod = maybeGetVod(videos.data, gameInfo?.info?.gameId);
   }
+  console.log({ vod });
 
   const noVodExists = Boolean(!vod && gameInfo?.info.gameCreation);
 
   return (
-    <>
-      <div className="flex flex-row gap-2 mb-2 items-center">
+    <div className="h-full min-h-0 flex flex-col">
+      <div className="flex flex-row gap-2 mb-2 items-center ">
         <Button linkTo="/">BACK</Button>
         <div>{id}</div>
         {gameInfo && <div>created: {new Date(gameInfo?.info?.gameCreation).toLocaleString()}</div>}
@@ -95,6 +96,6 @@ export const ReviewPage = () => {
           summonerPuuid={focusSummonerId || myPart?.puuid}
         />
       )}
-    </>
+    </div>
   );
 };

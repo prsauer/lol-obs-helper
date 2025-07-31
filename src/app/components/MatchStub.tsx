@@ -17,7 +17,7 @@ export const MatchStub = ({
 }) => {
   const gamesQuery = useQuery(['game-data', { match: matchId }], () => getGameData(matchId));
   console.log({ gamesQuery });
-  const myPart = gamesQuery.data?.data?.info.participants.find(
+  const myPart = gamesQuery.data?.data?.info?.participants?.find(
     (e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName,
   );
 
@@ -51,7 +51,7 @@ export const MatchStub = ({
         </div>
       </div>
       <ChampIcon championId={myPart?.championId} size={64} />
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-start">
         <div className="flex flex-row items-center gap-2">
           <div className="text-lg text-orange-500">
             {myPart?.kills}/{myPart?.deaths}/{myPart?.assists}
@@ -62,6 +62,7 @@ export const MatchStub = ({
         <div className="text-gray-500">{new Date(game?.info?.gameCreation || 0).toLocaleString()}</div>
       </div>
       {vod && <div className="text-[2em]">&#128249;</div>}
+      {!vod && <div className="text-[2em] opacity-10">&#128249;</div>}
     </div>
   );
 };

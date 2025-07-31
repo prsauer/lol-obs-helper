@@ -230,7 +230,7 @@ export class ObsModule extends NativeBridgeModule {
     const activePlayerName = await leagueModule.getActivePlayerName(_mainWindow);
     console.log({ activePlayerName });
 
-    console.log('Starting recording');
+    console.log(`${new Date()} Starting recording`);
     noobs.StartRecording(0);
     // noobs.setDrawSourceOutline(true);
     this.emitStateChange(_mainWindow);
