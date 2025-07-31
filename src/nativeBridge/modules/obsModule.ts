@@ -44,15 +44,22 @@ const obsModuleState: ObsModuleState = {
 
 @nativeBridgeModule('obs')
 export class ObsModule extends NativeBridgeModule {
+  /**
+   * propertiesBySource are the available settings for each source
+   *
+   * settingsBySource are the current settings for each source
+   */
   @moduleFunction()
   public async discoverSourceProperties(_mainWindow: BrowserWindow) {
-    const propsBySource: Record<string, ObsProperty[]> = {};
+    const propertiesBySource: Record<string, ObsProperty[]> = {};
+    const settingsBySource: Record<string, ObsData> = {};
     for (const source of Object.keys(obsModuleState.sources)) {
       const properties = noobs.GetSourceProperties(source);
+      settingsBySource[source] = noobs.GetSourceSettings(source);
       console.log(JSON.stringify(properties, null, 2));
-      propsBySource[source] = properties;
+      propertiesBySource[source] = properties;
     }
-    return propsBySource;
+    return { propertiesBySource, settingsBySource };
   }
 
   @moduleFunction()
@@ -69,12 +76,14 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   private initializeWindowCapture() {
+    console.log('Initializing window capture');
     noobs.CreateSource('WinCap', 'window_capture');
     obsModuleState.sources['WinCap'] = { name: 'WinCap', type: 'window_capture' };
 
     const initSettings = noobs.GetSourceProperties('WinCap');
     let window = '';
     let priority = '';
+    let method = '';
     initSettings.forEach((prop) => {
       console.log({ prop });
 
@@ -87,6 +96,9 @@ export class ObsModule extends NativeBridgeModule {
         if (prop.name === 'priority') {
           priority = prop.items[0].value as string;
         }
+        if (prop.name === 'method') {
+          method = prop.items[0].value as string;
+        }
       }
     });
 
@@ -94,22 +106,49 @@ export class ObsModule extends NativeBridgeModule {
       ...noobs.GetSourceSettings('WinCap'),
       window,
       priority,
+      method,
     });
 
     const settingsSet = noobs.GetSourceSettings('WinCap');
     console.log({ settingsSet });
   }
 
-  @moduleFunction()
-  public async configureSource(_mainWindow: BrowserWindow) {
+  public initializeMonitorCapture() {
+    console.log('Initializing monitor capture');
     noobs.CreateSource('MonCap', 'monitor_capture');
     obsModuleState.sources['MonCap'] = { name: 'MonCap', type: 'monitor_capture' };
-    // noobs.CreateSource('GameCap', 'monitor_capture');
 
+    const initSettings = noobs.GetSourceProperties('MonCap');
+    let monitor_id = '';
+    let method = '';
+    initSettings.forEach((prop) => {
+      console.log({ prop });
+      if (prop.type === 'list') {
+        console.log(prop.items);
+        // find monitor and priority values
+        if (prop.name === 'monitor_id') {
+          monitor_id = prop.items[1].value as string;
+        }
+        if (prop.name === 'method') {
+          method = prop.items[0].value as string;
+        }
+      }
+    });
+
+    noobs.SetSourceSettings('MonCap', {
+      ...noobs.GetSourceSettings('MonCap'),
+      monitor_id,
+      method,
+    });
+  }
+
+  @moduleFunction()
+  public async configureSource(_mainWindow: BrowserWindow) {
     this.initializeWindowCapture();
+    this.initializeMonitorCapture();
 
     console.log('Adding source to scene');
-    noobs.AddSourceToScene('WinCap');
+    noobs.AddSourceToScene('MonCap');
   }
 
   @moduleFunction()
@@ -232,7 +271,6 @@ export class ObsModule extends NativeBridgeModule {
 
     console.log(`${new Date()} Starting recording`);
     noobs.StartRecording(0);
-    // noobs.setDrawSourceOutline(true);
     this.emitStateChange(_mainWindow);
   }
 
@@ -243,7 +281,6 @@ export class ObsModule extends NativeBridgeModule {
     }
     obsModuleState.recording = false;
     noobs.StopRecording();
-    // noobs.setDrawSourceOutline(false);
     this.emitStateChange(_mainWindow);
   }
 
