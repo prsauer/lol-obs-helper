@@ -23,11 +23,11 @@ export const ReviewPage = () => {
   console.log({ videos, games: gamesQuery.data });
   const gameInfo = gamesQuery?.data?.data || null;
 
-  const myPart = gameInfo?.info.participants.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
+  const myPart = gameInfo?.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
   console.log({ myPart, summonerName, gameInfo });
   const myParticipantId = myPart?.participantId;
 
-  const myTeamId = gameInfo?.info.participants[myParticipantId || 0].teamId;
+  const myTeamId = gameInfo?.info.participants?.[myParticipantId || 0].teamId;
 
   let vod: ReturnType<typeof maybeGetVod> | null = null;
   if (videos?.data && gameInfo?.info?.gameCreation) {
@@ -54,7 +54,7 @@ export const ReviewPage = () => {
           {summonerName} at u.gg
         </Button>
         <Button linkTo={`/inspect/${id}`}>Inspect</Button>
-        {gameInfo?.info.participants.map((p) => (
+        {gameInfo?.info.participants?.map((p) => (
           <div
             key={p.puuid}
             onClick={() => {
@@ -67,7 +67,7 @@ export const ReviewPage = () => {
         <Button
           onClick={async () => {
             const didWin = gameInfo?.info.teams.find((t) => t.teamId === myTeamId)?.win;
-            const title = `${gameInfo?.info.participants[(myParticipantId || 0) - 1].championName} ${
+            const title = `${gameInfo?.info.participants?.[(myParticipantId || 0) - 1].championName} ${
               didWin ? 'W' : 'L'
             } ${new Date(gameInfo?.info.gameCreation || '').toLocaleDateString()}`;
 

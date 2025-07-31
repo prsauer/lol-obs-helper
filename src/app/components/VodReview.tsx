@@ -1,8 +1,7 @@
-import { KeyboardEvent, MouseEvent, useCallback, useEffect, useRef } from 'react';
+import { KeyboardEvent, useCallback, useEffect, useRef } from 'react';
 import { getGameData, getGameTimeline } from '../proxy/riotApi';
 import { useQuery } from 'react-query';
 import { EventStub } from './EventStub';
-import { EventTimelineIcon } from './EventTimelineIcon';
 
 const KILL_UNDERCUT_TIME = 10;
 
@@ -37,7 +36,7 @@ export const VodReview = ({
     return <div>loading</div>;
   }
 
-  const myTeamId = myParticipantId ? gameInfo.participants[myParticipantId]?.teamId : -1;
+  const myTeamId = myParticipantId ? gameInfo.participants?.[myParticipantId]?.teamId : -1;
 
   const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
 
@@ -62,18 +61,6 @@ export const VodReview = ({
     return eventTimestamp / 1000;
   };
 
-  const progressBarClick = useCallback(
-    (e: MouseEvent<HTMLProgressElement>) => {
-      if (!vidRef.current) return;
-      if (!progressBar.current) return;
-      const pos = (e.pageX - progressBar.current.offsetLeft) / progressBar.current.offsetWidth;
-      vidRef.current.currentTime = pos * vidRef.current.duration;
-    },
-    [progressBar.current, vidRef.current],
-  );
-
-  // vidRef.current?.playbackRate = 2;
-
   const setWhileHeld = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (!vidRef.current) return;
@@ -97,19 +84,6 @@ export const VodReview = ({
     (_e: KeyboardEvent<HTMLDivElement>) => {
       if (!vidRef.current) return;
       vidRef.current.playbackRate = 1;
-    },
-    [progressBar.current, vidRef.current],
-  );
-
-  const progressBarDrag = useCallback(
-    (e: MouseEvent<HTMLProgressElement>) => {
-      if (!vidRef.current) return;
-      if (!progressBar.current) return;
-      if (!(e.buttons === 1)) return;
-      const pos =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((e as unknown as any).pageX - progressBar.current.offsetLeft) / progressBar.current.offsetWidth;
-      vidRef.current.currentTime = pos * vidRef.current.duration;
     },
     [progressBar.current, vidRef.current],
   );
@@ -151,7 +125,7 @@ export const VodReview = ({
           return (
             <EventStub
               key={evt.timestamp}
-              participants={gameInfo.participants}
+              participants={gameInfo.participants || []}
               event={evt}
               myTeamId={myTeamId}
               myParticipantId={myParticipantId}
