@@ -26,6 +26,7 @@ type NativeApi = {
     configureSource: OmitFirstArg<ObsModule['configureSource']>;
     setScene: OmitFirstArg<ObsModule['setScene']>;
     resizeMovePreview: OmitFirstArg<ObsModule['resizeMovePreview']>;
+    hidePreview: OmitFirstArg<ObsModule['hidePreview']>;
     startListening: OmitFirstArg<ObsModule['startListening']>;
     startRecording: OmitFirstArg<ObsModule['startRecording']>;
     stopRecording: OmitFirstArg<ObsModule['stopRecording']>;

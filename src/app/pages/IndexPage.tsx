@@ -36,7 +36,7 @@ export const IndexPage = () => {
 
   console.log({ localMatches });
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="h-full min-h-0 flex flex-col">
       <div className="mb-2 flex flex-row gap-2 items-center">
         <Button linkTo="/setup">Setup</Button>
         <Button linkTo="/source-config">Source Config</Button>
@@ -66,8 +66,8 @@ export const IndexPage = () => {
           Discover Source Properties
         </Button>
       </div>
-      <div className="flex flex-row gap-2 flex-1 overflow-hidden">
-        <div className="flex flex-col gap-2 min-h-0 overflow-y-scroll pr-1">
+      <div className="flex flex-row gap-2 flex-1 overflow-hidden mb-4">
+        <div className="flex flex-col gap-2 overflow-y-scroll pr-1 minimal-scrollbar">
           {localMatches.data &&
             localMatches.data.slice(0, 8).map((d, idx) => (
               <div key={`${d.matchId}${idx}`}>
@@ -81,7 +81,7 @@ export const IndexPage = () => {
               </div>
             ))}
         </div>
-        <div className="flex-1 self-stretch min-h-0">
+        <div className="flex flex-1">
           <PreviewWindow />
         </div>
       </div>

@@ -128,6 +128,11 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   @moduleFunction()
+  public async hidePreview(_mainWindow: BrowserWindow) {
+    noobs.HidePreview();
+  }
+
+  @moduleFunction()
   public async startListening(mainWindow: BrowserWindow) {
     if (!obsModuleState.libraryReady) {
       console.log('OBS state at start of listening');
@@ -188,7 +193,7 @@ export class ObsModule extends NativeBridgeModule {
       console.log({ hwnd, mainWindow });
       console.log('Init preview');
       noobs.InitPreview(hwnd);
-      noobs.ShowPreview(500, 400, 1920 / 4, 1080 / 4);
+      // noobs.ShowPreview(500, 400, 1920 / 4, 1080 / 4);
       obsModuleState.previewReady = true;
       obsModuleState.libraryReady = true; // TODO: move this into signal?
       this.emitStateChange(mainWindow);

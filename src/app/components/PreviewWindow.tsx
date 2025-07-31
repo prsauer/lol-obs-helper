@@ -9,6 +9,10 @@ export const PreviewWindow = () => {
     window.native.obs.onObsModuleStateChange((_evt, _state) => {
       query.refetch(); // TODO: More clever strategy to merge the queried state with the listener state
     });
+    return () => {
+      window.native.obs.removeAll_onObsModuleStateChange_listeners();
+      window.native.obs.hidePreview();
+    };
   }, []);
 
   // use effect with resize or move listener:
@@ -42,7 +46,7 @@ export const PreviewWindow = () => {
   }, [query.data?.previewReady]);
 
   return (
-    <div ref={ref} className="w-full h-full bg-green-500">
+    <div ref={ref} className="flex-1">
       Preview
     </div>
   );

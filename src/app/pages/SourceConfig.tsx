@@ -2,6 +2,7 @@ import { useQuery } from 'react-query';
 import { useState } from 'react';
 import { Button } from '../components/Button';
 import type { ObsProperty, ObsListItem } from 'noobs';
+import { PreviewWindow } from '../components/PreviewWindow';
 
 type PropertyInputProps = {
   property: ObsProperty;
@@ -488,72 +489,79 @@ export const SourceConfig = () => {
   const sourceProperties = sourcePropertiesQuery.data || {};
 
   return (
-    <div className="flex flex-col h-full w-full">
-      <div className="mb-4 flex flex-row gap-2 items-center">
-        <Button linkTo="/">← Back</Button>
-        <div className="flex flex-col">
-          <h1 className="text-xl font-bold text-gray-100">OBS Source Configuration</h1>
-          <p className="text-sm text-gray-400">Settings are applied to OBS immediately when changed</p>
-        </div>
-        {lastUpdated && <span className="text-sm text-green-400">Last updated: {lastUpdated}</span>}
-        <Button onClick={handleRefresh}>Refresh Properties</Button>
-        <Button onClick={handleRefreshAndReset} className="bg-blue-600 hover:bg-blue-700">
-          Reset & Refresh
-        </Button>
-      </div>
-
-      <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
-        <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Scene Selection</h2>
-        <div className="space-y-3">
-          {['MonCap', 'WinCap'].map((sceneName) => (
-            <label key={sceneName} className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={activeScene === sceneName}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    handleSceneChange(sceneName);
-                  }
-                }}
-                className="rounded"
-              />
-              <span className="text-gray-100">
-                {sceneName === 'MonCap' ? 'Monitor Capture' : 'Window Capture'} ({sceneName})
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
-        {Object.keys(sourceProperties).length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">No sources found</p>
-            <p className="text-gray-500 text-sm mt-2">Make sure OBS is running and sources are configured</p>
+    <div className="flex flex-row h-full w-full">
+      <div className="flex flex-col h-full w-full flex-1">
+        <div className="mb-4 flex flex-row gap-2 items-center">
+          <Button linkTo="/">← Back</Button>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold text-gray-100">OBS Source Configuration</h1>
+            <p className="text-sm text-gray-400">Settings are applied to OBS immediately when changed</p>
           </div>
-        ) : (
-          <div className="space-y-8">
-            {Object.entries(sourceProperties).map(([sourceName, properties]) => (
-              <div key={sourceName} className="bg-gray-800 rounded-lg p-6 border border-gray-600">
-                <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">{sourceName}</h2>
-                {(properties as ObsProperty[]).length === 0 ? (
-                  <p className="text-gray-400">No configurable properties for this source</p>
-                ) : (
-                  <div className="space-y-2">
-                    {(properties as ObsProperty[]).map((property: ObsProperty, index: number) => (
-                      <PropertyRenderer
-                        key={`${sourceName}-${property.name}-${index}`}
-                        property={property}
-                        value={propertyValues[`${sourceName}.${property.name}`]}
-                        onChange={(name, value) => handlePropertyChange(`${sourceName}.${name}`, value)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+          {lastUpdated && <span className="text-sm text-green-400">Last updated: {lastUpdated}</span>}
+          <Button onClick={handleRefresh}>Refresh Properties</Button>
+          <Button onClick={handleRefreshAndReset} className="bg-blue-600 hover:bg-blue-700">
+            Reset & Refresh
+          </Button>
+        </div>
+
+        <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
+          <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Scene Selection</h2>
+          <div className="space-y-3">
+            {['MonCap', 'WinCap'].map((sceneName) => (
+              <label key={sceneName} className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={activeScene === sceneName}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      handleSceneChange(sceneName);
+                    }
+                  }}
+                  className="rounded"
+                />
+                <span className="text-gray-100">
+                  {sceneName === 'MonCap' ? 'Monitor Capture' : 'Window Capture'} ({sceneName})
+                </span>
+              </label>
             ))}
           </div>
-        )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {Object.keys(sourceProperties).length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">No sources found</p>
+              <p className="text-gray-500 text-sm mt-2">Make sure OBS is running and sources are configured</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {Object.entries(sourceProperties).map(([sourceName, properties]) => (
+                <div key={sourceName} className="bg-gray-800 rounded-lg p-6 border border-gray-600">
+                  <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">
+                    {sourceName}
+                  </h2>
+                  {(properties as ObsProperty[]).length === 0 ? (
+                    <p className="text-gray-400">No configurable properties for this source</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(properties as ObsProperty[]).map((property: ObsProperty, index: number) => (
+                        <PropertyRenderer
+                          key={`${sourceName}-${property.name}-${index}`}
+                          property={property}
+                          value={propertyValues[`${sourceName}.${property.name}`]}
+                          onChange={(name, value) => handlePropertyChange(`${sourceName}.${name}`, value)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-1">
+        <PreviewWindow />
       </div>
     </div>
   );
