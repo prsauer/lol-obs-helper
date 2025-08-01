@@ -53,7 +53,7 @@ const createWindow = () => {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
-
+  mainWindow.setMinimumSize(1280, 720);
   nativeBridgeRegistry.startListeners(mainWindow);
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

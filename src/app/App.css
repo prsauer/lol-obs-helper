@@ -17,7 +17,8 @@ video::-webkit-media-controls-panel {
 }
 
 .minimal-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(75, 75, 75, 0.15);
+  border-radius: 3px;
 }
 
 .minimal-scrollbar::-webkit-scrollbar-thumb {

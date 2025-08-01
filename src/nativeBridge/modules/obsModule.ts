@@ -164,6 +164,7 @@ export class ObsModule extends NativeBridgeModule {
       return;
     }
     noobs.ShowPreview(x, y, width, height);
+    noobs.GetSourcePos('WinCap');
   }
 
   @moduleFunction()
