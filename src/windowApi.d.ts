@@ -35,8 +35,6 @@ type NativeApi = {
     removeAll_logMessage_listeners: () => void;
     onObsModuleStateChange: (callback: AsEventFunction<ObsModule['onObsModuleStateChange']>) => void;
     removeAll_onObsModuleStateChange_listeners: () => void;
-    onRecordingStateChange: (callback: AsEventFunction<ObsModule['onRecordingStateChange']>) => void;
-    removeAll_onRecordingStateChange_listeners: () => void;
   };
   login: {
     didLogin: (callback: AsEventFunction<LoginModule['didLogin']>) => void;

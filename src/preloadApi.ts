@@ -29,10 +29,6 @@ export const modulesApi = {
       ipcRenderer.on('native:obs:onObsModuleStateChange', callback),
     removeAll_onObsModuleStateChange_listeners: () =>
       ipcRenderer.removeAllListeners('native:obs:onObsModuleStateChange'),
-    onRecordingStateChange: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
-      ipcRenderer.on('native:obs:onRecordingStateChange', callback),
-    removeAll_onRecordingStateChange_listeners: () =>
-      ipcRenderer.removeAllListeners('native:obs:onRecordingStateChange'),
   },
   login: {
     didLogin: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>

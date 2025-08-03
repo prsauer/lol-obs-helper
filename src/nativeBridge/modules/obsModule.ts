@@ -3,7 +3,8 @@ import { moduleEvent, moduleFunction, nativeBridgeModule, NativeBridgeModule } f
 import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
-import { Events } from '../ipcEvents';
+import fs from 'fs-extra';
+import { ActivityStartedEvent, Events } from '../ipcEvents';
 import { nativeBridgeRegistry } from '../registry';
 import { LeagueLiveClientModule } from './leagueLiveClientModule';
 
@@ -16,6 +17,7 @@ type ObsModuleState = {
   recordingPath: string;
   previewReady: boolean;
   sources: Record<string, { name: string; type: string }>;
+  currentActivityId: string | null;
 };
 
 type ObsModuleStateDTO = {
@@ -26,6 +28,7 @@ type ObsModuleStateDTO = {
   dataPath: string;
   recordingPath: string;
   logPath: string;
+  currentActivityId: string | null;
 };
 
 const obsModuleState: ObsModuleState = {
@@ -39,6 +42,7 @@ const obsModuleState: ObsModuleState = {
   recordingPath: 'D:\\Video',
   previewReady: false,
   sources: {},
+  currentActivityId: null,
 };
 
 @nativeBridgeModule('obs')
@@ -205,30 +209,10 @@ export class ObsModule extends NativeBridgeModule {
           case 'start':
             obsModuleState.recording = true;
             ipcMain.emit(Events.RecordingStarted);
-            // TODO: How to service args with noobs lib?
-            // {
-            //   outputActive: boolean;
-            //   outputState: string;
-            //   outputPath: string;
-            // }
-            this.onRecordingStateChange(mainWindow, {
-              outputActive: true,
-              outputState: 'recording',
-              outputPath: '',
-            });
             this.emitStateChange(mainWindow);
             break;
           case 'stop':
-            obsModuleState.recording = false;
-            ipcMain.emit(Events.RecordingStopped);
-            console.log({ lastRecording: noobs.GetLastRecording() });
-            // TODO: How to service args with noobs lib?
-            this.onRecordingStateChange(mainWindow, {
-              outputActive: false,
-              outputState: 'stopped',
-              outputPath: '',
-            });
-            this.emitStateChange(mainWindow);
+            this.onRecordingStopped(mainWindow);
             break;
           case 'stopping':
             break;
@@ -254,6 +238,24 @@ export class ObsModule extends NativeBridgeModule {
     this.startListeningForGame(mainWindow);
   }
 
+  private onRecordingStopped(mainWindow: BrowserWindow) {
+    obsModuleState.recording = false;
+    ipcMain.emit(Events.RecordingStopped, {
+      video: noobs.GetLastRecording(),
+      activityId: obsModuleState.currentActivityId,
+    });
+
+    // rename recording file to include activityId
+    const lastRecording = noobs.GetLastRecording();
+    if (lastRecording) {
+      const newPath = path.join(obsModuleState.recordingPath, `${obsModuleState.currentActivityId}.mp4`);
+      fs.renameSync(lastRecording, newPath);
+    }
+
+    obsModuleState.currentActivityId = null;
+    this.emitStateChange(mainWindow);
+  }
+
   private async startListeningForGame(mainWindow: BrowserWindow) {
     if (obsModuleState.listeningForGame) {
       return;
@@ -261,9 +263,9 @@ export class ObsModule extends NativeBridgeModule {
     obsModuleState.listeningForGame = true;
     const leagueModule = nativeBridgeRegistry.getModule('LeagueLiveClientModule') as LeagueLiveClientModule;
     await leagueModule.startListeningForGame(mainWindow);
-    ipcMain.addListener(Events.ActivityStarted, (activityData) => {
+    ipcMain.addListener(Events.ActivityStarted, (activityData: ActivityStartedEvent) => {
       console.log('[OBS] Activity started', activityData);
-      this.startRecording(mainWindow);
+      this.startRecording(mainWindow, activityData.activityId);
     });
     ipcMain.addListener(Events.ActivityEnded, (activityData) => {
       console.log('[OBS] Activity ended', activityData);
@@ -272,7 +274,7 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   @moduleFunction()
-  public async startRecording(_mainWindow: BrowserWindow) {
+  public async startRecording(_mainWindow: BrowserWindow, activityId: string) {
     if (!obsModuleState.libraryReady) {
       return;
     }
@@ -284,6 +286,7 @@ export class ObsModule extends NativeBridgeModule {
 
     console.log(`${new Date()} Starting recording`);
     noobs.StartRecording(0);
+    obsModuleState.currentActivityId = activityId;
     this.emitStateChange(_mainWindow);
   }
 
@@ -313,6 +316,7 @@ export class ObsModule extends NativeBridgeModule {
       dataPath: obsModuleState.dataPath,
       recordingPath: obsModuleState.recordingPath,
       logPath: obsModuleState.logPath,
+      currentActivityId: obsModuleState.currentActivityId,
     };
   }
 
@@ -330,19 +334,12 @@ export class ObsModule extends NativeBridgeModule {
       listeningForGame: obsModuleState.listeningForGame,
       recordingPath: obsModuleState.recordingPath,
       logPath: obsModuleState.logPath,
+      currentActivityId: obsModuleState.currentActivityId,
     });
   }
 
   @moduleEvent('on')
   public onObsModuleStateChange(_mainWindow: BrowserWindow, _state: ObsModuleStateDTO) {
-    return;
-  }
-
-  @moduleEvent('on')
-  public onRecordingStateChange(
-    _mainWindow: BrowserWindow,
-    _state: { outputActive: boolean; outputState: string; outputPath: string },
-  ) {
     return;
   }
 }
