@@ -130,7 +130,7 @@ export const SourceConfig = () => {
         <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
           <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Scene Selection</h2>
           <div className="space-y-3">
-            {['MonCap', 'WinCap'].map((sceneName) => (
+            {Object.keys(propertiesBySource || {}).map((sceneName) => (
               <label key={sceneName} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -142,9 +142,7 @@ export const SourceConfig = () => {
                   }}
                   className="rounded"
                 />
-                <span className="text-gray-100">
-                  {sceneName === 'MonCap' ? 'Monitor Capture' : 'Window Capture'} ({sceneName})
-                </span>
+                <span className="text-gray-100">{sceneName}</span>
               </label>
             ))}
           </div>

@@ -15,6 +15,7 @@ export class NativeBridgeRegistry {
   public registerModule<T extends NativeBridgeModule>(moduleClass: new () => T): void {
     const module = new moduleClass();
     this.modules[moduleClass.name] = module;
+    console.log(this.modules);
   }
 
   public getModule(name: string): NativeBridgeModule {

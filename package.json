@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
+    "repack-obs": "del .obs /q && xcopy .webpack\\main\\dist .obs\\ /E /Y",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx . --fix",

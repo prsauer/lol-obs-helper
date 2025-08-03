@@ -11,7 +11,6 @@ type ObsModuleState = {
   libraryReady: boolean;
   recording: boolean;
   listeningForGame: boolean;
-  pluginPath: string;
   dataPath: string;
   logPath: string;
   recordingPath: string;
@@ -23,7 +22,6 @@ type ObsModuleStateDTO = {
   libraryReady: boolean;
   previewReady: boolean;
   recording: boolean;
-  pluginPath: string;
   listeningForGame: boolean;
   dataPath: string;
   recordingPath: string;
@@ -34,8 +32,9 @@ const obsModuleState: ObsModuleState = {
   libraryReady: false,
   recording: false,
   listeningForGame: false,
-  pluginPath: path.resolve(__dirname, 'dist', 'plugins'),
-  dataPath: path.resolve(__dirname, 'dist', 'effects'),
+  dataPath: process.env.OBS_REPACKED_PATH
+    ? path.resolve(process.env.OBS_REPACKED_PATH)
+    : path.resolve(__dirname, 'dist'),
   logPath: 'D:\\Video',
   recordingPath: 'D:\\Video',
   previewReady: false,
@@ -75,6 +74,11 @@ export class ObsModule extends NativeBridgeModule {
     noobs.SetSourceSettings(sourceName, settings);
   }
 
+  public shutdown() {
+    console.log('Shutting down OBS');
+    noobs.Shutdown();
+  }
+
   private initializeWindowCapture() {
     console.log('Initializing window capture');
     noobs.CreateSource('WinCap', 'window_capture');
@@ -85,10 +89,8 @@ export class ObsModule extends NativeBridgeModule {
     let priority = '';
     let method = '';
     initSettings.forEach((prop) => {
-      console.log({ prop });
-
       if (prop.type === 'list') {
-        console.log(prop.items);
+        // console.log(prop.items);
         // find monitor and priority values
         if (prop.name === 'window') {
           window = prop.items[1].value as string;
@@ -122,9 +124,7 @@ export class ObsModule extends NativeBridgeModule {
     let monitor_id = '';
     let method = '';
     initSettings.forEach((prop) => {
-      console.log({ prop });
       if (prop.type === 'list') {
-        console.log(prop.items);
         // find monitor and priority values
         if (prop.name === 'monitor_id') {
           monitor_id = prop.items[1].value as string;
@@ -142,19 +142,37 @@ export class ObsModule extends NativeBridgeModule {
     });
   }
 
+  public async initializeGameCapture() {
+    console.log('Initializing game capture');
+    noobs.CreateSource('GameCap', 'game_capture');
+    obsModuleState.sources['GameCap'] = { name: 'GameCap', type: 'game_capture' };
+
+    const initialSettings = noobs.GetSourceSettings('GameCap');
+    noobs.SetSourceSettings('GameCap', {
+      ...initialSettings,
+      capture_mode: 'window',
+      window: 'League of Legends (TM) Client:RiotWindowClass:League of Legends.exe',
+    });
+
+    const s1 = noobs.GetSourceSettings('GameCap');
+    console.log('GameCap Initial Settings', s1);
+  }
+
   @moduleFunction()
   public async configureSource(_mainWindow: BrowserWindow) {
     this.initializeWindowCapture();
     this.initializeMonitorCapture();
+    this.initializeGameCapture();
 
     console.log('Adding source to scene');
-    noobs.AddSourceToScene('MonCap');
+    this.setScene(_mainWindow, 'GameCap');
   }
 
   @moduleFunction()
   public async setScene(_mainWindow: BrowserWindow, sceneName: string) {
     noobs.RemoveSourceFromScene('WinCap');
     noobs.RemoveSourceFromScene('MonCap');
+    noobs.RemoveSourceFromScene('GameCap');
     noobs.AddSourceToScene(sceneName);
   }
 
@@ -219,13 +237,7 @@ export class ObsModule extends NativeBridgeModule {
         }
       };
 
-      noobs.Init(
-        obsModuleState.pluginPath,
-        obsModuleState.logPath,
-        obsModuleState.dataPath,
-        obsModuleState.recordingPath,
-        signalHandler,
-      );
+      noobs.Init(obsModuleState.dataPath, obsModuleState.logPath, obsModuleState.recordingPath, signalHandler);
       this.configureSource(mainWindow);
 
       console.log('Getting native window handle');
@@ -297,7 +309,6 @@ export class ObsModule extends NativeBridgeModule {
       libraryReady: obsModuleState.libraryReady,
       previewReady: obsModuleState.previewReady,
       recording: obsModuleState.recording,
-      pluginPath: obsModuleState.pluginPath,
       listeningForGame: obsModuleState.listeningForGame,
       dataPath: obsModuleState.dataPath,
       recordingPath: obsModuleState.recordingPath,
@@ -315,7 +326,6 @@ export class ObsModule extends NativeBridgeModule {
       libraryReady: obsModuleState.libraryReady,
       previewReady: obsModuleState.previewReady,
       recording: obsModuleState.recording,
-      pluginPath: obsModuleState.pluginPath,
       dataPath: obsModuleState.dataPath,
       listeningForGame: obsModuleState.listeningForGame,
       recordingPath: obsModuleState.recordingPath,
