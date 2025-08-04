@@ -32,16 +32,23 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   private gameRunning = false;
   private currentGameId: string | null = null;
 
+  /// generate a list of strings: all champ names, all summoner names, all summoner spells, all runes:
+  // sort this list by alphabetical order
+  // concatenate it to a single string
+  // convert all chars in the string to numbers
+  // multiply all the numbers
+  // mod by some large prime number
+  // return the result as a string
   private generateGameId(gameData: AllGameData): string {
-    const gameMode = gameData.gameData?.gameMode || 'unknown';
-    const mapNumber = gameData.gameData?.mapNumber || 0;
-
-    const gameStartEvent = gameData.events?.Events?.[0];
-    const gameStartTime = Math.floor(gameStartEvent.EventTime * 1000000);
-
-    const gameId = `${gameMode}_${mapNumber}_${gameStartTime}`;
-
-    return gameId;
+    const champNames = gameData.allPlayers.map((player) => player.championName);
+    const summonerNames = gameData.allPlayers.map((player) => player.summonerName);
+    const allStrings = [...champNames, ...summonerNames];
+    const sortedStrings = allStrings.sort();
+    const string = sortedStrings.join('');
+    const numbers = string.split('').map((char) => char.charCodeAt(0));
+    const product = numbers.reduce((acc, num) => acc * num, 1);
+    const mod = product % 1000000007;
+    return mod.toString();
   }
 
   private addGameIdToHistory(gameId: string): void {
@@ -109,6 +116,10 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         this.currentRequest = new AbortController();
         const gameData = await this.callClientApi<AllGameData>('/liveclientdata/allgamedata', 100);
 
+        if (gameData) {
+          console.log('gameData', { gameData });
+          console.log('gameData.events[0]', { evt: gameData.events?.Events?.[0] });
+        }
         if (gameData) {
           const gameId = this.generateGameId(gameData);
 

@@ -28,8 +28,8 @@ export const MatchStub = ({
   const didWin = myPart?.teamId === winnerId;
 
   let vod = null;
-  if (videos && game?.info?.gameCreation) {
-    vod = maybeGetVod(videos, game?.info?.gameId);
+  if (videos && game) {
+    vod = maybeGetVod(videos, game);
   }
 
   return (

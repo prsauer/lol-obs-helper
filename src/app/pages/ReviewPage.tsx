@@ -30,8 +30,8 @@ export const ReviewPage = () => {
   const myTeamId = gameInfo?.info.participants?.[myParticipantId || 0].teamId;
 
   let vod: ReturnType<typeof maybeGetVod> | null = null;
-  if (videos?.data && gameInfo?.info?.gameCreation) {
-    vod = maybeGetVod(videos.data, gameInfo?.info?.gameId);
+  if (videos?.data && gameInfo) {
+    vod = maybeGetVod(videos.data, gameInfo);
   }
   console.log({ vod });
 
