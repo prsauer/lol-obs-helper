@@ -89,10 +89,10 @@ export const ReviewPage = () => {
       {noVodExists && <div>No video recorded for this match :( </div>}
       {vod && (
         <VodReview
-          vod={vod?.info.name}
-          created={vod?.startDatetime}
+          vod={vod?.name}
+          created={vod?.ended}
           matchId={id}
-          ended={vod?.info.ended}
+          ended={vod?.ended}
           summonerPuuid={focusSummonerId || myPart?.puuid}
         />
       )}

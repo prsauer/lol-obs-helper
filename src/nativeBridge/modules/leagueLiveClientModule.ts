@@ -1,6 +1,8 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { moduleEvent, moduleFunction, NativeBridgeModule, nativeBridgeModule } from '../module';
 import https from 'https';
+import fs from 'fs';
+import path from 'path';
 import { Events } from '../ipcEvents';
 import {
   AllGameData,
@@ -18,6 +20,7 @@ import {
 } from './leagueLiveClientTypes';
 
 const LEAGUE_LIVE_CLIENT_API_ROOT = 'https://127.0.0.1:2999';
+const LEAGUE_LIVE_CLIENT_FILE_LOGGING = true;
 
 @nativeBridgeModule('leagueLiveClient')
 export class LeagueLiveClientModule extends NativeBridgeModule {
@@ -31,6 +34,47 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   private readonly maxGameIdHistory = 10;
   private gameRunning = false;
   private currentGameId: string | null = null;
+  private readonly logsDir = path.join(process.cwd(), 'logs', 'league-api');
+
+  constructor() {
+    super();
+    if (LEAGUE_LIVE_CLIENT_FILE_LOGGING) {
+      this.ensureLogsDirectory();
+    }
+  }
+
+  private ensureLogsDirectory(): void {
+    try {
+      if (!fs.existsSync(this.logsDir)) {
+        fs.mkdirSync(this.logsDir, { recursive: true });
+      }
+    } catch (error) {
+      console.error('Failed to create logs directory:', error);
+    }
+  }
+
+  private logApiResponse(endpoint: string, response: unknown): void {
+    if (!LEAGUE_LIVE_CLIENT_FILE_LOGGING) {
+      return;
+    }
+
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp,
+        endpoint,
+        response,
+      };
+
+      const logFileName = `league-api-${new Date().toISOString().split('T')[0]}.log`;
+      const logFilePath = path.join(this.logsDir, logFileName);
+
+      const logLine = JSON.stringify(logEntry) + '\n';
+      fs.appendFileSync(logFilePath, logLine);
+    } catch (error) {
+      console.error('Failed to log API response:', error);
+    }
+  }
 
   /// generate a list of strings: all champ names, all summoner names, all summoner spells, all runes:
   // sort this list by alphabetical order
@@ -93,7 +137,13 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         console.error(`Error calling League Client API at ${endpoint}: ${response.statusText}`);
         return null;
       }
-      return (await response.json()) as T;
+
+      const result = (await response.json()) as T;
+      if (result !== null) {
+        this.logApiResponse(endpoint, result);
+      }
+
+      return result;
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
         console.log(`Request to ${endpoint} timed out or was cancelled`);

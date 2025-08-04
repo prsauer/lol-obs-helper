@@ -5,34 +5,6 @@ type VodInfo = {
   ended: Date;
 };
 
-function getTimeFromVideoName(info: VodInfo) {
-  // Regex to match YYYY-MM-DD HH-MM-SS pattern in filename
-  const dateTimeRegex = /(\d{4})-(\d{2})-(\d{2}) (\d{2})-(\d{2})-(\d{2})/;
-  const match = info.name.match(dateTimeRegex);
-
-  if (!match) {
-    throw new Error(`Could not parse date/time from filename: ${info.name}`);
-  }
-
-  const [, year, month, day, hr, mn, sc] = match;
-
-  return {
-    info,
-    startDatetime: new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hr),
-      parseInt(mn),
-      parseInt(sc),
-    ),
-  };
-}
-
-function videoListToTimes(vods: VodInfo[]) {
-  return vods.map(getTimeFromVideoName);
-}
-
 /// generate a list of strings: all champ names, all summoner names, all summoner spells, all runes:
 // sort this list by alphabetical order
 // concatenate it to a single string
@@ -60,15 +32,15 @@ function generateGameHash(game: MatchDto): string {
 
 export function maybeGetVod(vods: VodInfo[], game: MatchDto) {
   const gameHash = generateGameHash(game);
-  console.log({ game, gameHash });
+
   if (!gameHash) return undefined;
-  const times = videoListToTimes(vods);
-  for (let i = 0; i < times.length; i++) {
-    const time = times[i];
-    if (time.info.name.includes(gameHash)) {
-      return time;
+  console.log({ game, gameHash, vods });
+  for (const vod of vods) {
+    if (vod.name.includes(gameHash)) {
+      return vod;
     }
   }
+  return undefined;
 }
 
 export const secondsToMinutesString = (secs: number) => {

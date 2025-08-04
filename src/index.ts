@@ -32,7 +32,7 @@ protocol.registerSchemesAsPrivileged([
     scheme: 'vod',
     privileges: {
       bypassCSP: true,
-      standard: true,
+      standard: false,
       stream: true,
       supportFetchAPI: true,
     },
@@ -73,19 +73,27 @@ const createWindow = () => {
   });
 
   protocol.handle('vod', async (request) => {
-    const filename = decodeURI(request.url).slice('vod://'.length, request.url.length - 3);
+    const sliced = request.url.toString().slice('vod://'.length, request.url.length - 1);
+    const requestUrl = decodeURIComponent(sliced);
+    if (requestUrl == null) {
+      return new Response('', {
+        status: 404,
+        statusText: 'Not Found',
+      });
+    }
 
+    const filename = Buffer.from(requestUrl, 'base64').toString('utf-8');
     const rangeReq = request.headers.get('Range') || 'bytes=0-';
     const parts = rangeReq.split('=');
     const numbers = parts[1].split('-').map((p) => parseInt(p));
 
-    const fp = openSync(`D:\\Video\\${filename}`, 'r');
+    const fp = openSync(filename, 'r');
     const size = 2500000; // ~2.5mb chunks
     const start = numbers[0] || 0;
     const buffer = Buffer.alloc(size);
     readSync(fp, buffer, 0, size, start);
 
-    const stats = statSync(`D:\\Video\\${filename}`);
+    const stats = statSync(filename);
     const totalSize = stats.size;
     closeSync(fp);
 

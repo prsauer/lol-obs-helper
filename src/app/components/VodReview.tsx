@@ -118,6 +118,8 @@ export const VodReview = ({
     };
   }, [vidRef.current, progressBar.current]);
 
+  const vodReferenceUri = `vod://${btoa('D:\\Video\\' + vod || '')}`;
+  console.log('video src: ' + vodReferenceUri);
   return (
     <div className="flex-1 flex flex-row gap-2 overflow-auto" onKeyDown={setWhileHeld} onKeyUp={unsetHold}>
       <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto text-sm">
@@ -145,7 +147,7 @@ export const VodReview = ({
             controls
             id="video"
             ref={vidRef}
-            src={`vod://${vod}`}
+            src={vodReferenceUri}
             style={{
               margin: 'auto',
               flex: 1,
