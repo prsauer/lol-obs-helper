@@ -18,6 +18,7 @@ import {
   GameStats,
   TeamID,
 } from './leagueLiveClientTypes';
+import { getAccountByRiotId, getActiveGamesForSummoner } from '../../app/proxy/riotApi';
 
 const LEAGUE_LIVE_CLIENT_API_ROOT = 'https://127.0.0.1:2999';
 const LEAGUE_LIVE_CLIENT_FILE_LOGGING = true;
@@ -34,6 +35,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   private readonly maxGameIdHistory = 10;
   private gameRunning = false;
   private currentGameId: string | null = null;
+  private riotGameId: number | null = null;
   private readonly logsDir = path.join(process.cwd(), 'logs', 'league-api');
 
   constructor() {
@@ -113,6 +115,9 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
       ipcMain.emit(Events.ActivityEnded, {
         game: 'league-of-legends',
         activityId: this.currentGameId,
+        metadata: {
+          riotGameId: this.riotGameId?.toString() || '',
+        },
       });
       this.gameRunning = false;
       this.currentGameId = null;
@@ -167,13 +172,20 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         const gameData = await this.callClientApi<AllGameData>('/liveclientdata/allgamedata', 100);
 
         if (gameData) {
-          console.log('gameData', { gameData });
-          console.log('gameData.events[0]', { evt: gameData.events?.Events?.[0] });
-        }
-        if (gameData) {
           const gameId = this.generateGameId(gameData);
 
+          const account = await getAccountByRiotId(
+            gameData.activePlayer.riotIdGameName,
+            gameData.activePlayer.riotIdTagLine,
+          );
+          if (account.data) {
+            const activePlayerGame = await getActiveGamesForSummoner(account.data.puuid);
+            console.log('Active Game Id', { id: activePlayerGame.data?.gameId });
+            this.riotGameId = activePlayerGame.data?.gameId || null;
+          }
+
           if (!this.seenGameIds.has(gameId)) {
+            this.riotGameId = null;
             this.addGameIdToHistory(gameId);
             this.onNewGameDetected(_mainWindow, gameData);
             ipcMain.emit(Events.ActivityStarted, {

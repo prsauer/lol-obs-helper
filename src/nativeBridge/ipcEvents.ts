@@ -8,4 +8,11 @@ export const Events = {
 export type ActivityStartedEvent = {
   game: string;
   activityId: string;
+  metadata: Record<string, string>;
+};
+
+export type ActivityEndedEvent = {
+  game: string;
+  activityId: string;
+  metadata: Record<string, string>;
 };

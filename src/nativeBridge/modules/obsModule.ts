@@ -4,7 +4,7 @@ import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
 import fs from 'fs-extra';
-import { ActivityStartedEvent, Events } from '../ipcEvents';
+import { ActivityEndedEvent, ActivityStartedEvent, Events } from '../ipcEvents';
 import { nativeBridgeRegistry } from '../registry';
 import { LeagueLiveClientModule } from './leagueLiveClientModule';
 
@@ -18,6 +18,7 @@ type ObsModuleState = {
   previewReady: boolean;
   sources: Record<string, { name: string; type: string }>;
   currentActivityId: string | null;
+  lastActivityEnded: ActivityEndedEvent | null;
 };
 
 type ObsModuleStateDTO = {
@@ -43,6 +44,7 @@ const obsModuleState: ObsModuleState = {
   previewReady: false,
   sources: {},
   currentActivityId: null,
+  lastActivityEnded: null,
 };
 
 @nativeBridgeModule('obs')
@@ -114,9 +116,6 @@ export class ObsModule extends NativeBridgeModule {
       priority,
       method,
     });
-
-    const settingsSet = noobs.GetSourceSettings('WinCap');
-    console.log({ settingsSet });
   }
 
   public initializeMonitorCapture() {
@@ -157,9 +156,6 @@ export class ObsModule extends NativeBridgeModule {
       capture_mode: 'window',
       window: 'League of Legends (TM) Client:RiotWindowClass:League of Legends.exe',
     });
-
-    const s1 = noobs.GetSourceSettings('GameCap');
-    console.log('GameCap Initial Settings', s1);
   }
 
   @moduleFunction()
@@ -224,14 +220,10 @@ export class ObsModule extends NativeBridgeModule {
       noobs.Init(obsModuleState.dataPath, obsModuleState.logPath, obsModuleState.recordingPath, signalHandler);
       this.configureSource(mainWindow);
 
-      console.log('Getting native window handle');
       const hwnd = mainWindow.getNativeWindowHandle();
-      console.log({ hwnd, mainWindow });
-      console.log('Init preview');
       noobs.InitPreview(hwnd);
-      // noobs.ShowPreview(500, 400, 1920 / 4, 1080 / 4);
       obsModuleState.previewReady = true;
-      obsModuleState.libraryReady = true; // TODO: move this into signal?
+      obsModuleState.libraryReady = true;
       this.emitStateChange(mainWindow);
     }
 
@@ -248,7 +240,10 @@ export class ObsModule extends NativeBridgeModule {
     // rename recording file to include activityId
     const lastRecording = noobs.GetLastRecording();
     if (lastRecording) {
-      const newPath = path.join(obsModuleState.recordingPath, `${obsModuleState.currentActivityId}.mp4`);
+      const newPath = path.join(
+        obsModuleState.recordingPath,
+        `${obsModuleState.lastActivityEnded?.activityId}-${obsModuleState.lastActivityEnded?.metadata['riotGameId']}.mp4`,
+      );
       fs.renameSync(lastRecording, newPath);
     }
 
@@ -264,11 +259,13 @@ export class ObsModule extends NativeBridgeModule {
     const leagueModule = nativeBridgeRegistry.getModule('LeagueLiveClientModule') as LeagueLiveClientModule;
     await leagueModule.startListeningForGame(mainWindow);
     ipcMain.addListener(Events.ActivityStarted, (activityData: ActivityStartedEvent) => {
+      obsModuleState.lastActivityEnded = null;
       console.log('[OBS] Activity started', activityData);
       this.startRecording(mainWindow, activityData.activityId);
     });
     ipcMain.addListener(Events.ActivityEnded, (activityData) => {
       console.log('[OBS] Activity ended', activityData);
+      obsModuleState.lastActivityEnded = activityData;
       this.stopRecording(mainWindow);
     });
   }

@@ -60,7 +60,7 @@ export const IndexPage = () => {
         >
           Refresh
         </Button>
-        <Button onClick={() => window.native.obs.startRecording()}>Start Recording</Button>
+        <Button onClick={() => window.native.obs.startRecording('123')}>Start Recording</Button>
         <Button onClick={() => window.native.obs.stopRecording()}>Stop Recording</Button>
         <Button onClick={() => window.native.obs.discoverSourceProperties().then(console.log)}>
           Discover Source Properties

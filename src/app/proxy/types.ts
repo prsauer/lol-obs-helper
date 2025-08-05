@@ -8,6 +8,12 @@ export interface SummonerDto {
   summonerLevel: number;
 }
 
+export interface AccountDto {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
+}
+
 export interface MatchDto {
   metadata: Metadata;
   info: MatchInfo;
@@ -524,3 +530,46 @@ export interface Participant {
   participantId: number;
   puuid: string;
 }
+
+export type ActiveGameInfo = {
+  gameId: number;
+  mapId: number;
+  gameMode: string;
+  gameType: string;
+  gameQueueConfigId: number;
+  participants: CurrentGameParticipant[];
+  observers: CurrentGameObservers;
+  platformId: string;
+  bannedChampions: BannedChampion[];
+  gameStartTime: number;
+  gameLength: number;
+};
+
+export type CurrentGameParticipant = {
+  puuid: string;
+  teamId: number;
+  spell1Id: number;
+  spell2Id: number;
+  championId: number;
+  profileIconId: number;
+  riotId: string;
+  bot: boolean;
+  gameCustomizationObjects: unknown[];
+  perks: CurrentGamePerks;
+};
+
+export type CurrentGamePerks = {
+  perkIds: number[];
+  perkStyle: number;
+  perkSubStyle: number;
+};
+
+export type CurrentGameObservers = {
+  encryptionKey: string;
+};
+
+export type BannedChampion = {
+  championId: number;
+  teamId: number;
+  pickTurn: number;
+};

@@ -28,7 +28,6 @@ export const ReviewPage = () => {
   const myParticipantId = myPart?.participantId;
 
   const myTeamId = gameInfo?.info.participants?.[myParticipantId || 0].teamId;
-
   let vod: ReturnType<typeof maybeGetVod> | null = null;
   if (videos?.data && gameInfo) {
     vod = maybeGetVod(videos.data, gameInfo);
@@ -74,7 +73,7 @@ export const ReviewPage = () => {
             if (config.appConfig.googleToken) {
               window.native.vods?.insertVod(
                 config.appConfig.googleToken,
-                config.appConfig.vodStoragePath + '\\' + vod?.info.name,
+                config.appConfig.vodStoragePath + '\\' + vod?.name,
                 title,
                 'Test description',
               );

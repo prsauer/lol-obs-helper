@@ -15,7 +15,6 @@ export class NativeBridgeRegistry {
   public registerModule<T extends NativeBridgeModule>(moduleClass: new () => T): void {
     const module = new moduleClass();
     this.modules[moduleClass.name] = module;
-    console.log(this.modules);
   }
 
   public getModule(name: string): NativeBridgeModule {
@@ -119,7 +118,6 @@ export class NativeBridgeRegistry {
   }
 
   public startListeners(mainWindow: BrowserWindow): void {
-    console.log(this.modules);
     Object.values(this.modules).forEach((module) => {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);
