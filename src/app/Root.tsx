@@ -5,12 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useAppConfig } from './hooks/AppConfigContext';
 import { SetupPage } from './pages/SetupPage';
 import { MatchInspectPage, matchLoader } from './pages/MatchInspectPage';
+import { SourceConfig } from './pages/SourceConfig';
 import { useQuery } from 'react-query';
 
 type RecordingState = {
-  outputActive: boolean;
-  outputState: string;
-  outputPath: string;
+  recording: boolean;
 };
 
 const startSound = new Audio('static://StartSound.wav');
@@ -35,15 +34,17 @@ const router = createHashRouter([
     element: <MatchInspectPage />,
     loader: matchLoader,
   },
+  {
+    path: '/source-config',
+    element: <SourceConfig />,
+  },
 ]);
 
 export const Root = () => {
   const config = useAppConfig();
 
   const [recState, setRecState] = useState<RecordingState>({
-    outputActive: false,
-    outputPath: '',
-    outputState: '',
+    recording: false,
   });
   const recordingActiveRef = useRef(false);
 
@@ -62,17 +63,17 @@ export const Root = () => {
       console.log(`${new Date()} ${logline}`);
     });
 
-    window.native.obs?.onRecordingStateChange((_evt, state) => {
+    window.native.obs?.onObsModuleStateChange((_evt, state) => {
       console.log('new rec state', { state, recState });
-      if (state.outputActive !== recordingActiveRef.current) {
-        if (state.outputActive) {
+      if (state.recording !== recordingActiveRef.current) {
+        if (state.recording) {
           startSound.play();
         } else {
           stopSound.play();
           setTimeout(() => localMatches.refetch(), 5000);
         }
       }
-      recordingActiveRef.current = state.outputActive;
+      recordingActiveRef.current = state.recording;
       setRecState(state);
     });
 
@@ -100,15 +101,14 @@ export const Root = () => {
   }, [config.appConfig.vodStoragePath]);
 
   return (
-    <div className="p-3 text-gray-100 h-screen overflow-hidden flex flex-col">
+    <div className="absolute top-0 left-0 right-0 bottom-0 p-3 text-gray-100 overflow-hidden flex flex-col">
       <div className="flex flex-row gap-3 mb-2">
-        <div>
-          <div>Google API Token: {config.appConfig.googleToken}</div>
-        </div>
-        <div>Recording: {recState.outputActive ? 'Yes' : 'No'}</div>
+        <div>Recording: {recState.recording ? 'Yes' : 'No'}</div>
         <div>Config OK: {config.isValidConfig ? 'Yes' : 'No'} </div>
       </div>
-      <RouterProvider router={router} />
+      <div className="h-full min-h-0">
+        <RouterProvider router={router} />
+      </div>
     </div>
   );
 };

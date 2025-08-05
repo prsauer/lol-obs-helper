@@ -197,11 +197,7 @@ export class VodFilesModule extends NativeBridgeModule {
       // Check if file has a video extension
       const hasVideoExtension = videoExtensions.some((ext) => fn.toLowerCase().endsWith(ext.toLowerCase()));
 
-      // Check if filename contains date/time pattern (YYYY-MM-DD HH-MM-SS)
-      const dateTimeRegex = /\d{4}-\d{2}-\d{2} \d{2}-\d{2}-\d{2}/;
-      const hasDateTime = dateTimeRegex.test(fn);
-
-      return hasVideoExtension && hasDateTime;
+      return hasVideoExtension;
     });
 
     const stats = res

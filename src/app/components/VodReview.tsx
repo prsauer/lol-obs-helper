@@ -1,8 +1,7 @@
-import { KeyboardEvent, MouseEvent, useCallback, useEffect, useRef } from 'react';
+import { KeyboardEvent, useCallback, useEffect, useRef } from 'react';
 import { getGameData, getGameTimeline } from '../proxy/riotApi';
 import { useQuery } from 'react-query';
 import { EventStub } from './EventStub';
-import { EventTimelineIcon } from './EventTimelineIcon';
 
 const KILL_UNDERCUT_TIME = 10;
 
@@ -30,23 +29,14 @@ export const VodReview = ({
   const gameInfo = gamesQuery.data?.data?.info;
 
   const vodStartTime = created;
+  console.log({ created, ended });
   const vodEndTime = ended;
-  const vodDuration = vodStartTime && vodEndTime ? vodEndTime.getTime() - vodStartTime.getTime() : 1;
 
   if (!gameInfo || !vodEndTime || !vodStartTime) {
     return <div>loading</div>;
   }
 
-  console.log({ vod });
-  const myTeamId = myParticipantId ? gameInfo.participants[myParticipantId]?.teamId : -1;
-  const gameEndTime = new Date(gameInfo?.gameEndTimestamp);
-
-  const gameStartConvert = new Date(gameEndTime.getTime() - gameInfo?.gameDuration * 1000);
-
-  const timeCorrectionMs = gameEndTime.getTime() - vodEndTime.getTime();
-  console.log('## TIME CORRECTION', timeCorrectionMs);
-
-  const vodStartOffset = gameStartConvert.getTime() - vodStartTime.getTime() - timeCorrectionMs;
+  const myTeamId = myParticipantId ? gameInfo.participants?.[myParticipantId]?.teamId : -1;
 
   const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
 
@@ -66,25 +56,10 @@ export const VodReview = ({
     return false;
   });
 
+  console.log({ importantEvents });
   const timeConvert = (eventTimestamp: number) => {
-    return (
-      (new Date(eventTimestamp + gameInfo?.gameCreation + vodStartOffset - timeCorrectionMs).getTime() -
-        vodStartTime.getTime()) /
-      1000
-    );
+    return eventTimestamp / 1000;
   };
-
-  const progressBarClick = useCallback(
-    (e: MouseEvent<HTMLProgressElement>) => {
-      if (!vidRef.current) return;
-      if (!progressBar.current) return;
-      const pos = (e.pageX - progressBar.current.offsetLeft) / progressBar.current.offsetWidth;
-      vidRef.current.currentTime = pos * vidRef.current.duration;
-    },
-    [progressBar.current, vidRef.current],
-  );
-
-  // vidRef.current?.playbackRate = 2;
 
   const setWhileHeld = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -109,19 +84,6 @@ export const VodReview = ({
     (_e: KeyboardEvent<HTMLDivElement>) => {
       if (!vidRef.current) return;
       vidRef.current.playbackRate = 1;
-    },
-    [progressBar.current, vidRef.current],
-  );
-
-  const progressBarDrag = useCallback(
-    (e: MouseEvent<HTMLProgressElement>) => {
-      if (!vidRef.current) return;
-      if (!progressBar.current) return;
-      if (!(e.buttons === 1)) return;
-      const pos =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((e as unknown as any).pageX - progressBar.current.offsetLeft) / progressBar.current.offsetWidth;
-      vidRef.current.currentTime = pos * vidRef.current.duration;
     },
     [progressBar.current, vidRef.current],
   );
@@ -156,6 +118,8 @@ export const VodReview = ({
     };
   }, [vidRef.current, progressBar.current]);
 
+  const vodReferenceUri = `vod://${btoa('D:\\Video\\' + vod || '')}`;
+  console.log('video src: ' + vodReferenceUri);
   return (
     <div className="flex-1 flex flex-row gap-2 overflow-auto" onKeyDown={setWhileHeld} onKeyUp={unsetHold}>
       <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto text-sm">
@@ -163,7 +127,7 @@ export const VodReview = ({
           return (
             <EventStub
               key={evt.timestamp}
-              participants={gameInfo.participants}
+              participants={gameInfo.participants || []}
               event={evt}
               myTeamId={myTeamId}
               myParticipantId={myParticipantId}
@@ -183,7 +147,7 @@ export const VodReview = ({
             controls
             id="video"
             ref={vidRef}
-            src={`vod://${vod}`}
+            src={vodReferenceUri}
             style={{
               margin: 'auto',
               flex: 1,
@@ -192,7 +156,7 @@ export const VodReview = ({
               minHeight: 0,
             }}
           />
-          <div id="video-controls" className="controls w-full" data-state="hidden">
+          {/* <div id="video-controls" className="controls w-full" data-state="hidden">
             <div className="progress w-full ">
               <progress
                 ref={progressBar}
@@ -218,7 +182,7 @@ export const VodReview = ({
                 })}
               </div>
             </div>
-          </div>
+          </div> */}
         </figure>
       )}
     </div>

@@ -12,8 +12,12 @@ export const modulesApi = {
   },
   trayIcon: { hideToSystemTray: (...args: any[]) => ipcRenderer.invoke('native:trayIcon:hideToSystemTray', ...args) },
   obs: {
+    discoverSourceProperties: (...args: any[]) => ipcRenderer.invoke('native:obs:discoverSourceProperties', ...args),
+    setSourceProperty: (...args: any[]) => ipcRenderer.invoke('native:obs:setSourceProperty', ...args),
     configureSource: (...args: any[]) => ipcRenderer.invoke('native:obs:configureSource', ...args),
+    setScene: (...args: any[]) => ipcRenderer.invoke('native:obs:setScene', ...args),
     resizeMovePreview: (...args: any[]) => ipcRenderer.invoke('native:obs:resizeMovePreview', ...args),
+    hidePreview: (...args: any[]) => ipcRenderer.invoke('native:obs:hidePreview', ...args),
     startListening: (...args: any[]) => ipcRenderer.invoke('native:obs:startListening', ...args),
     startRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:startRecording', ...args),
     stopRecording: (...args: any[]) => ipcRenderer.invoke('native:obs:stopRecording', ...args),
@@ -25,10 +29,6 @@ export const modulesApi = {
       ipcRenderer.on('native:obs:onObsModuleStateChange', callback),
     removeAll_onObsModuleStateChange_listeners: () =>
       ipcRenderer.removeAllListeners('native:obs:onObsModuleStateChange'),
-    onRecordingStateChange: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
-      ipcRenderer.on('native:obs:onRecordingStateChange', callback),
-    removeAll_onRecordingStateChange_listeners: () =>
-      ipcRenderer.removeAllListeners('native:obs:onRecordingStateChange'),
   },
   login: {
     didLogin: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>

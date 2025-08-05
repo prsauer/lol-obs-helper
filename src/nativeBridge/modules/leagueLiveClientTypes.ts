@@ -11,6 +11,9 @@ export type ActivePlayer = {
   currentGold: number;
   fullRunes: FullRunes;
   level: number;
+  riotId: string;
+  riotIdGameName: string;
+  riotIdTagLine: string;
   summonerName: string;
   teamRelativeColors: boolean;
 };
@@ -28,7 +31,7 @@ export type Abilities = {
 };
 
 export type Ability = {
-  abilityLevel: number;
+  abilityLevel?: number;
   displayName: string;
   id: string;
   rawDescription: string;
@@ -46,27 +49,25 @@ export type ChampionStats = {
   attackSpeed: number;
   bonusArmorPenetrationPercent: number;
   bonusMagicPenetrationPercent: number;
-  cooldownReduction: number;
   critChance: number;
   critDamage: number;
   currentHealth: number;
   healShieldPower: number;
-  health: number;
-  healthMax: number;
   healthRegenRate: number;
   lifeSteal: number;
   magicLethality: number;
   magicPenetrationFlat: number;
   magicPenetrationPercent: number;
   magicResist: number;
+  maxHealth: number;
   moveSpeed: number;
   omnivamp: number;
   physicalLethality: number;
   physicalVamp: number;
-  resource: number;
   resourceMax: number;
   resourceRegenRate: number;
   resourceType: string;
+  resourceValue: number;
   spellVamp: number;
   tenacity: number;
 };
@@ -113,10 +114,15 @@ export type Player = {
   level: number;
   position: string;
   rawChampionName: string;
+  rawSkinName: string;
   respawnTimer: number;
+  riotId: string;
+  riotIdGameName: string;
+  riotIdTagLine: string;
   runes: MainRunes;
   scores: Scores;
   skinID: number;
+  skinName: string;
   summonerName: string;
   summonerSpells: SummonerSpells;
   team: TeamID;

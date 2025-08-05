@@ -118,7 +118,6 @@ export class NativeBridgeRegistry {
   }
 
   public startListeners(mainWindow: BrowserWindow): void {
-    console.log(this.modules);
     Object.values(this.modules).forEach((module) => {
       const ctor = Object.getPrototypeOf(module).constructor;
       const moduleMetadata = MODULE_METADATA.get(ctor);

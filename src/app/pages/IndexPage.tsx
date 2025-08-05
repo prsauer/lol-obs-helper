@@ -36,9 +36,10 @@ export const IndexPage = () => {
 
   console.log({ localMatches });
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="h-full min-h-0 flex flex-col">
       <div className="mb-2 flex flex-row gap-2 items-center">
         <Button linkTo="/setup">Setup</Button>
+        <Button linkTo="/source-config">Source Config</Button>
         <Button
           onClick={async () => {
             try {
@@ -59,26 +60,28 @@ export const IndexPage = () => {
         >
           Refresh
         </Button>
-        <Button onClick={() => window.native.obs.startRecording()}>Start Recording</Button>
+        <Button onClick={() => window.native.obs.startRecording('123')}>Start Recording</Button>
         <Button onClick={() => window.native.obs.stopRecording()}>Stop Recording</Button>
+        <Button onClick={() => window.native.obs.discoverSourceProperties().then(console.log)}>
+          Discover Source Properties
+        </Button>
       </div>
-      <div className="flex flex-row gap-2">
-        <div className="flex flex-col gap-2 overflow-y-auto pb-4">
+      <div className="flex flex-row gap-2 flex-1 overflow-hidden mb-4">
+        <div className="flex flex-col gap-2 overflow-y-scroll pr-1 minimal-scrollbar">
           {localMatches.data &&
             localMatches.data.slice(0, 8).map((d, idx) => (
-              <Button
-                key={`${d.matchId}${idx}`}
-                linkTo={`vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}
-              >
-                <MatchStub
-                  matchId={d.platformId + '_' + d.matchId}
-                  summonerName={d.summonerName}
-                  videos={videos.data}
-                />
-              </Button>
+              <div key={`${d.matchId}${idx}`}>
+                <Button linkTo={`vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}>
+                  <MatchStub
+                    matchId={d.platformId + '_' + d.matchId}
+                    summonerName={d.summonerName}
+                    videos={videos.data}
+                  />
+                </Button>
+              </div>
             ))}
         </div>
-        <div className="flex-1 self-stretch">
+        <div className="flex flex-1">
           <PreviewWindow />
         </div>
       </div>

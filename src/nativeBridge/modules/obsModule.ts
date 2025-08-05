@@ -1,9 +1,10 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { moduleEvent, moduleFunction, nativeBridgeModule, NativeBridgeModule } from '../module';
-import type { Signal } from 'noobs';
+import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
-import { Events } from '../ipcEvents';
+import fs from 'fs-extra';
+import { ActivityEndedEvent, ActivityStartedEvent, Events } from '../ipcEvents';
 import { nativeBridgeRegistry } from '../registry';
 import { LeagueLiveClientModule } from './leagueLiveClientModule';
 
@@ -11,63 +12,168 @@ type ObsModuleState = {
   libraryReady: boolean;
   recording: boolean;
   listeningForGame: boolean;
-  pluginPath: string;
   dataPath: string;
   logPath: string;
   recordingPath: string;
   previewReady: boolean;
+  sources: Record<string, { name: string; type: string }>;
+  currentActivityId: string | null;
+  lastActivityEnded: ActivityEndedEvent | null;
 };
+
 type ObsModuleStateDTO = {
   libraryReady: boolean;
   previewReady: boolean;
   recording: boolean;
-  pluginPath: string;
   listeningForGame: boolean;
   dataPath: string;
   recordingPath: string;
   logPath: string;
+  currentActivityId: string | null;
 };
 
 const obsModuleState: ObsModuleState = {
   libraryReady: false,
   recording: false,
   listeningForGame: false,
-  pluginPath: path.resolve(__dirname, 'dist', 'plugins'),
-  dataPath: path.resolve(__dirname, 'dist', 'effects'),
+  dataPath: process.env.OBS_REPACKED_PATH
+    ? path.resolve(process.env.OBS_REPACKED_PATH)
+    : path.resolve(__dirname, 'dist'),
   logPath: 'D:\\Video',
   recordingPath: 'D:\\Video',
   previewReady: false,
+  sources: {},
+  currentActivityId: null,
+  lastActivityEnded: null,
 };
 
 @nativeBridgeModule('obs')
 export class ObsModule extends NativeBridgeModule {
+  /**
+   * propertiesBySource are the available settings for each source
+   *
+   * settingsBySource are the current settings for each source
+   */
+  @moduleFunction()
+  public async discoverSourceProperties(_mainWindow: BrowserWindow) {
+    const propertiesBySource: Record<string, ObsProperty[]> = {};
+    const settingsBySource: Record<string, ObsData> = {};
+    for (const source of Object.keys(obsModuleState.sources)) {
+      const properties = noobs.GetSourceProperties(source);
+      settingsBySource[source] = noobs.GetSourceSettings(source);
+      console.log(JSON.stringify(properties, null, 2));
+      propertiesBySource[source] = properties;
+    }
+    return { propertiesBySource, settingsBySource };
+  }
+
+  @moduleFunction()
+  public async setSourceProperty(
+    _mainWindow: BrowserWindow,
+    sourceName: string,
+    propertyName: keyof ObsData,
+    value: ObsDataValue,
+  ) {
+    const settings = noobs.GetSourceSettings(sourceName);
+    settings[propertyName] = value;
+    console.log(`Setting ${propertyName} to ${value} for ${sourceName}`);
+    noobs.SetSourceSettings(sourceName, settings);
+  }
+
+  public shutdown() {
+    console.log('Shutting down OBS');
+    noobs.Shutdown();
+  }
+
+  private initializeWindowCapture() {
+    console.log('Initializing window capture');
+    noobs.CreateSource('WinCap', 'window_capture');
+    obsModuleState.sources['WinCap'] = { name: 'WinCap', type: 'window_capture' };
+
+    const initSettings = noobs.GetSourceProperties('WinCap');
+    let window = '';
+    let priority = '';
+    let method = '';
+    initSettings.forEach((prop) => {
+      if (prop.type === 'list') {
+        // console.log(prop.items);
+        // find monitor and priority values
+        if (prop.name === 'window') {
+          window = prop.items[1].value as string;
+        }
+        if (prop.name === 'priority') {
+          priority = prop.items[0].value as string;
+        }
+        if (prop.name === 'method') {
+          method = prop.items[0].value as string;
+        }
+      }
+    });
+
+    noobs.SetSourceSettings('WinCap', {
+      ...noobs.GetSourceSettings('WinCap'),
+      window,
+      priority,
+      method,
+    });
+  }
+
+  public initializeMonitorCapture() {
+    console.log('Initializing monitor capture');
+    noobs.CreateSource('MonCap', 'monitor_capture');
+    obsModuleState.sources['MonCap'] = { name: 'MonCap', type: 'monitor_capture' };
+
+    const initSettings = noobs.GetSourceProperties('MonCap');
+    let monitor_id = '';
+    let method = '';
+    initSettings.forEach((prop) => {
+      if (prop.type === 'list') {
+        // find monitor and priority values
+        if (prop.name === 'monitor_id') {
+          monitor_id = prop.items[1].value as string;
+        }
+        if (prop.name === 'method') {
+          method = prop.items[0].value as string;
+        }
+      }
+    });
+
+    noobs.SetSourceSettings('MonCap', {
+      ...noobs.GetSourceSettings('MonCap'),
+      monitor_id,
+      method,
+    });
+  }
+
+  public async initializeGameCapture() {
+    console.log('Initializing game capture');
+    noobs.CreateSource('GameCap', 'game_capture');
+    obsModuleState.sources['GameCap'] = { name: 'GameCap', type: 'game_capture' };
+
+    const initialSettings = noobs.GetSourceSettings('GameCap');
+    noobs.SetSourceSettings('GameCap', {
+      ...initialSettings,
+      capture_mode: 'window',
+      window: 'League of Legends (TM) Client:RiotWindowClass:League of Legends.exe',
+    });
+  }
+
   @moduleFunction()
   public async configureSource(_mainWindow: BrowserWindow) {
-    const sourceName = 'Default_Source';
-
-    console.log('Creating source');
-    noobs.CreateSource(sourceName, 'monitor_capture');
-
-    console.log('Setting source settings');
-    noobs.SetSourceSettings(sourceName, {});
-
-    console.log('Getting source settings 1');
-    const settings1 = noobs.GetSourceSettings(sourceName);
-    console.log(settings1);
-    noobs.SetSourceSettings(sourceName, { ...settings1, monitor: 0 });
-
-    console.log('Getting source settings 2');
-    const settings2 = noobs.GetSourceSettings(sourceName);
-    console.log(settings2);
-
-    console.log('Getting source properties');
-    const properties = noobs.GetSourceProperties(sourceName);
-    console.log('Source properties:', { properties });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.log('Source properties:', (properties[0] as unknown as any).items);
+    this.initializeWindowCapture();
+    this.initializeMonitorCapture();
+    this.initializeGameCapture();
 
     console.log('Adding source to scene');
-    noobs.AddSourceToScene(sourceName);
+    this.setScene(_mainWindow, 'GameCap');
+  }
+
+  @moduleFunction()
+  public async setScene(_mainWindow: BrowserWindow, sceneName: string) {
+    noobs.RemoveSourceFromScene('WinCap');
+    noobs.RemoveSourceFromScene('MonCap');
+    noobs.RemoveSourceFromScene('GameCap');
+    noobs.AddSourceToScene(sceneName);
   }
 
   @moduleFunction()
@@ -76,6 +182,12 @@ export class ObsModule extends NativeBridgeModule {
       return;
     }
     noobs.ShowPreview(x, y, width, height);
+    noobs.GetSourcePos('WinCap');
+  }
+
+  @moduleFunction()
+  public async hidePreview(_mainWindow: BrowserWindow) {
+    noobs.HidePreview();
   }
 
   @moduleFunction()
@@ -93,30 +205,10 @@ export class ObsModule extends NativeBridgeModule {
           case 'start':
             obsModuleState.recording = true;
             ipcMain.emit(Events.RecordingStarted);
-            // TODO: How to service args with noobs lib?
-            // {
-            //   outputActive: boolean;
-            //   outputState: string;
-            //   outputPath: string;
-            // }
-            this.onRecordingStateChange(mainWindow, {
-              outputActive: true,
-              outputState: 'recording',
-              outputPath: '',
-            });
             this.emitStateChange(mainWindow);
             break;
           case 'stop':
-            obsModuleState.recording = false;
-            ipcMain.emit(Events.RecordingStopped);
-            console.log({ lastRecording: noobs.GetLastRecording() });
-            // TODO: How to service args with noobs lib?
-            this.onRecordingStateChange(mainWindow, {
-              outputActive: false,
-              outputState: 'stopped',
-              outputPath: '',
-            });
-            this.emitStateChange(mainWindow);
+            this.onRecordingStopped(mainWindow);
             break;
           case 'stopping':
             break;
@@ -125,27 +217,38 @@ export class ObsModule extends NativeBridgeModule {
         }
       };
 
-      noobs.Init(
-        obsModuleState.pluginPath,
-        obsModuleState.logPath,
-        obsModuleState.dataPath,
-        obsModuleState.recordingPath,
-        signalHandler,
-      );
+      noobs.Init(obsModuleState.dataPath, obsModuleState.logPath, obsModuleState.recordingPath, signalHandler);
       this.configureSource(mainWindow);
 
-      console.log('Getting native window handle');
       const hwnd = mainWindow.getNativeWindowHandle();
-      console.log({ hwnd, mainWindow });
-      console.log('Init preview');
       noobs.InitPreview(hwnd);
-      noobs.ShowPreview(500, 400, 1920 / 4, 1080 / 4);
       obsModuleState.previewReady = true;
-      obsModuleState.libraryReady = true; // TODO: move this into signal?
+      obsModuleState.libraryReady = true;
       this.emitStateChange(mainWindow);
     }
 
     this.startListeningForGame(mainWindow);
+  }
+
+  private onRecordingStopped(mainWindow: BrowserWindow) {
+    obsModuleState.recording = false;
+    ipcMain.emit(Events.RecordingStopped, {
+      video: noobs.GetLastRecording(),
+      activityId: obsModuleState.currentActivityId,
+    });
+
+    // rename recording file to include activityId
+    const lastRecording = noobs.GetLastRecording();
+    if (lastRecording) {
+      const newPath = path.join(
+        obsModuleState.recordingPath,
+        `${obsModuleState.lastActivityEnded?.activityId}-${obsModuleState.lastActivityEnded?.metadata['riotGameId']}.mp4`,
+      );
+      fs.renameSync(lastRecording, newPath);
+    }
+
+    obsModuleState.currentActivityId = null;
+    this.emitStateChange(mainWindow);
   }
 
   private async startListeningForGame(mainWindow: BrowserWindow) {
@@ -155,18 +258,20 @@ export class ObsModule extends NativeBridgeModule {
     obsModuleState.listeningForGame = true;
     const leagueModule = nativeBridgeRegistry.getModule('LeagueLiveClientModule') as LeagueLiveClientModule;
     await leagueModule.startListeningForGame(mainWindow);
-    ipcMain.addListener(Events.LeagueGameDetected, (gameData) => {
-      console.log('League game detected', gameData);
-      this.startRecording(mainWindow);
+    ipcMain.addListener(Events.ActivityStarted, (activityData: ActivityStartedEvent) => {
+      obsModuleState.lastActivityEnded = null;
+      console.log('[OBS] Activity started', activityData);
+      this.startRecording(mainWindow, activityData.activityId);
     });
-    ipcMain.addListener(Events.LeagueGameEnded, (gameData) => {
-      console.log('League game ended', gameData);
+    ipcMain.addListener(Events.ActivityEnded, (activityData) => {
+      console.log('[OBS] Activity ended', activityData);
+      obsModuleState.lastActivityEnded = activityData;
       this.stopRecording(mainWindow);
     });
   }
 
   @moduleFunction()
-  public async startRecording(_mainWindow: BrowserWindow) {
+  public async startRecording(_mainWindow: BrowserWindow, activityId: string) {
     if (!obsModuleState.libraryReady) {
       return;
     }
@@ -176,8 +281,9 @@ export class ObsModule extends NativeBridgeModule {
     const activePlayerName = await leagueModule.getActivePlayerName(_mainWindow);
     console.log({ activePlayerName });
 
-    console.log('Starting recording');
+    console.log(`${new Date()} Starting recording`);
     noobs.StartRecording(0);
+    obsModuleState.currentActivityId = activityId;
     this.emitStateChange(_mainWindow);
   }
 
@@ -203,11 +309,11 @@ export class ObsModule extends NativeBridgeModule {
       libraryReady: obsModuleState.libraryReady,
       previewReady: obsModuleState.previewReady,
       recording: obsModuleState.recording,
-      pluginPath: obsModuleState.pluginPath,
       listeningForGame: obsModuleState.listeningForGame,
       dataPath: obsModuleState.dataPath,
       recordingPath: obsModuleState.recordingPath,
       logPath: obsModuleState.logPath,
+      currentActivityId: obsModuleState.currentActivityId,
     };
   }
 
@@ -221,24 +327,16 @@ export class ObsModule extends NativeBridgeModule {
       libraryReady: obsModuleState.libraryReady,
       previewReady: obsModuleState.previewReady,
       recording: obsModuleState.recording,
-      pluginPath: obsModuleState.pluginPath,
       dataPath: obsModuleState.dataPath,
       listeningForGame: obsModuleState.listeningForGame,
       recordingPath: obsModuleState.recordingPath,
       logPath: obsModuleState.logPath,
+      currentActivityId: obsModuleState.currentActivityId,
     });
   }
 
   @moduleEvent('on')
   public onObsModuleStateChange(_mainWindow: BrowserWindow, _state: ObsModuleStateDTO) {
-    return;
-  }
-
-  @moduleEvent('on')
-  public onRecordingStateChange(
-    _mainWindow: BrowserWindow,
-    _state: { outputActive: boolean; outputState: string; outputPath: string },
-  ) {
     return;
   }
 }

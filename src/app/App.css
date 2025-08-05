@@ -11,3 +11,21 @@ video::-webkit-media-controls-panel {
   width: 40px;
   background-image: none;
 }
+
+.minimal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(75, 75, 75, 0.15);
+  border-radius: 3px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

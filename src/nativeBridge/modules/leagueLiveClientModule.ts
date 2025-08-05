@@ -1,6 +1,8 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { moduleEvent, moduleFunction, NativeBridgeModule, nativeBridgeModule } from '../module';
 import https from 'https';
+import fs from 'fs';
+import path from 'path';
 import { Events } from '../ipcEvents';
 import {
   AllGameData,
@@ -16,8 +18,10 @@ import {
   GameStats,
   TeamID,
 } from './leagueLiveClientTypes';
+import { getAccountByRiotId, getActiveGamesForSummoner } from '../../app/proxy/riotApi';
 
 const LEAGUE_LIVE_CLIENT_API_ROOT = 'https://127.0.0.1:2999';
+const LEAGUE_LIVE_CLIENT_FILE_LOGGING = true;
 
 @nativeBridgeModule('leagueLiveClient')
 export class LeagueLiveClientModule extends NativeBridgeModule {
@@ -31,17 +35,66 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   private readonly maxGameIdHistory = 10;
   private gameRunning = false;
   private currentGameId: string | null = null;
+  private riotGameId: number | null = null;
+  private readonly logsDir = path.join(process.cwd(), 'logs', 'league-api');
 
+  constructor() {
+    super();
+    if (LEAGUE_LIVE_CLIENT_FILE_LOGGING) {
+      this.ensureLogsDirectory();
+    }
+  }
+
+  private ensureLogsDirectory(): void {
+    try {
+      if (!fs.existsSync(this.logsDir)) {
+        fs.mkdirSync(this.logsDir, { recursive: true });
+      }
+    } catch (error) {
+      console.error('Failed to create logs directory:', error);
+    }
+  }
+
+  private logApiResponse(endpoint: string, response: unknown): void {
+    if (!LEAGUE_LIVE_CLIENT_FILE_LOGGING) {
+      return;
+    }
+
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = {
+        timestamp,
+        endpoint,
+        response,
+      };
+
+      const logFileName = `league-api-${new Date().toISOString().split('T')[0]}.log`;
+      const logFilePath = path.join(this.logsDir, logFileName);
+
+      const logLine = JSON.stringify(logEntry) + '\n';
+      fs.appendFileSync(logFilePath, logLine);
+    } catch (error) {
+      console.error('Failed to log API response:', error);
+    }
+  }
+
+  /// generate a list of strings: all champ names, all summoner names, all summoner spells, all runes:
+  // sort this list by alphabetical order
+  // concatenate it to a single string
+  // convert all chars in the string to numbers
+  // multiply all the numbers
+  // mod by some large prime number
+  // return the result as a string
   private generateGameId(gameData: AllGameData): string {
-    const gameMode = gameData.gameData?.gameMode || 'unknown';
-    const mapNumber = gameData.gameData?.mapNumber || 0;
-
-    const gameStartEvent = gameData.events?.Events?.[0];
-    const gameStartTime = Math.floor(gameStartEvent.EventTime * 1000000);
-
-    const gameId = `${gameMode}_${mapNumber}_${gameStartTime}`;
-
-    return gameId;
+    const champNames = gameData.allPlayers.map((player) => player.championName);
+    const summonerNames = gameData.allPlayers.map((player) => player.summonerName);
+    const allStrings = [...champNames, ...summonerNames];
+    const sortedStrings = allStrings.sort();
+    const string = sortedStrings.join('');
+    const numbers = string.split('').map((char) => char.charCodeAt(0));
+    const product = numbers.reduce((acc, num) => acc * num, 1);
+    const mod = product % 1000000007;
+    return mod.toString();
   }
 
   private addGameIdToHistory(gameId: string): void {
@@ -59,7 +112,13 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     if (this.gameRunning && this.currentGameId) {
       console.log(`League game ended: ${this.currentGameId}`);
       this.onGameEnded(_mainWindow, this.currentGameId);
-      ipcMain.emit(Events.LeagueGameEnded, this.currentGameId);
+      ipcMain.emit(Events.ActivityEnded, {
+        game: 'league-of-legends',
+        activityId: this.currentGameId,
+        metadata: {
+          riotGameId: this.riotGameId?.toString() || '',
+        },
+      });
       this.gameRunning = false;
       this.currentGameId = null;
     }
@@ -83,7 +142,13 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         console.error(`Error calling League Client API at ${endpoint}: ${response.statusText}`);
         return null;
       }
-      return (await response.json()) as T;
+
+      const result = (await response.json()) as T;
+      if (result !== null) {
+        this.logApiResponse(endpoint, result);
+      }
+
+      return result;
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
         console.log(`Request to ${endpoint} timed out or was cancelled`);
@@ -109,10 +174,24 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         if (gameData) {
           const gameId = this.generateGameId(gameData);
 
+          const account = await getAccountByRiotId(
+            gameData.activePlayer.riotIdGameName,
+            gameData.activePlayer.riotIdTagLine,
+          );
+          if (account.data) {
+            const activePlayerGame = await getActiveGamesForSummoner(account.data.puuid);
+            console.log('Active Game Id', { id: activePlayerGame.data?.gameId });
+            this.riotGameId = activePlayerGame.data?.gameId || null;
+          }
+
           if (!this.seenGameIds.has(gameId)) {
+            this.riotGameId = null;
             this.addGameIdToHistory(gameId);
             this.onNewGameDetected(_mainWindow, gameData);
-            ipcMain.emit(Events.LeagueGameDetected, gameData);
+            ipcMain.emit(Events.ActivityStarted, {
+              game: 'league-of-legends',
+              activityId: gameId,
+            });
           }
 
           if (!this.gameRunning) {

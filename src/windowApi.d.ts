@@ -21,8 +21,12 @@ type NativeApi = {
   };
   trayIcon: { hideToSystemTray: OmitFirstArg<TrayIconModule['hideToSystemTray']> };
   obs: {
+    discoverSourceProperties: OmitFirstArg<ObsModule['discoverSourceProperties']>;
+    setSourceProperty: OmitFirstArg<ObsModule['setSourceProperty']>;
     configureSource: OmitFirstArg<ObsModule['configureSource']>;
+    setScene: OmitFirstArg<ObsModule['setScene']>;
     resizeMovePreview: OmitFirstArg<ObsModule['resizeMovePreview']>;
+    hidePreview: OmitFirstArg<ObsModule['hidePreview']>;
     startListening: OmitFirstArg<ObsModule['startListening']>;
     startRecording: OmitFirstArg<ObsModule['startRecording']>;
     stopRecording: OmitFirstArg<ObsModule['stopRecording']>;
@@ -31,8 +35,6 @@ type NativeApi = {
     removeAll_logMessage_listeners: () => void;
     onObsModuleStateChange: (callback: AsEventFunction<ObsModule['onObsModuleStateChange']>) => void;
     removeAll_onObsModuleStateChange_listeners: () => void;
-    onRecordingStateChange: (callback: AsEventFunction<ObsModule['onRecordingStateChange']>) => void;
-    removeAll_onRecordingStateChange_listeners: () => void;
   };
   login: {
     didLogin: (callback: AsEventFunction<LoginModule['didLogin']>) => void;
