@@ -239,8 +239,9 @@ export class ObsModule extends NativeBridgeModule {
 
     // rename recording file to include activityId
     const lastRecording = noobs.GetLastRecording();
+    let newPath = lastRecording;
     if (lastRecording) {
-      const newPath = path.join(
+      newPath = path.join(
         obsModuleState.recordingPath,
         `${obsModuleState.lastActivityEnded?.activityId}-${obsModuleState.lastActivityEnded?.metadata['riotGameId']}.mp4`,
       );
@@ -248,6 +249,11 @@ export class ObsModule extends NativeBridgeModule {
     }
 
     obsModuleState.currentActivityId = null;
+    ipcMain.emit(Events.RecordingWritten, {
+      activityId: obsModuleState.currentActivityId,
+      metadata: obsModuleState.lastActivityEnded?.metadata || {},
+      filename: newPath,
+    });
     this.emitStateChange(mainWindow);
   }
 
