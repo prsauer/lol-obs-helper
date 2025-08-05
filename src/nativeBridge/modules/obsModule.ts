@@ -8,6 +8,11 @@ import { ActivityEndedEvent, ActivityStartedEvent, Events } from '../ipcEvents';
 import { nativeBridgeRegistry } from '../registry';
 import { LeagueLiveClientModule } from './leagueLiveClientModule';
 
+// import { DatabaseSync } from 'node:sqlite';
+// const database = new DatabaseSync(':memory:');
+const nodeVersion = process.versions.node;
+console.log(`Node.js Version: ${nodeVersion}`);
+
 type ObsModuleState = {
   libraryReady: boolean;
   recording: boolean;
