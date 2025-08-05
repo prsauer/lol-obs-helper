@@ -1,6 +1,6 @@
-import { app, ipcMain, BrowserWindow, Menu, Tray } from 'electron';
+import { app, BrowserWindow, Menu, Tray } from 'electron';
 import { NativeBridgeModule, moduleFunction, nativeBridgeModule } from '../module';
-import { Events } from '../ipcEvents';
+import { bus } from '../bus';
 
 @nativeBridgeModule('trayIcon')
 export class TrayIconModule extends NativeBridgeModule {
@@ -39,10 +39,10 @@ export class TrayIconModule extends NativeBridgeModule {
       console.error(e);
     }
 
-    ipcMain.on(Events.RecordingStarted, () => {
+    bus.onRecordingStarted(() => {
       this.trayIcon?.setImage(path.resolve('./.webpack/main/assets/icon_red.ico'));
     });
-    ipcMain.on(Events.RecordingStopped, () => {
+    bus.onRecordingStopped(() => {
       this.trayIcon?.setImage(path.resolve('./.webpack/main/assets/icon.ico'));
     });
   }

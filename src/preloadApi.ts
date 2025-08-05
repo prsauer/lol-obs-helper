@@ -5,8 +5,6 @@ export const modulesApi = {
   links: { openExternalURL: (...args: any[]) => ipcRenderer.invoke('native:links:openExternalURL', ...args) },
   vods: {
     scanFolderForMatches: (...args: any[]) => ipcRenderer.invoke('native:vods:scanFolderForMatches', ...args),
-    configureVodsFolderProtocol: (...args: any[]) =>
-      ipcRenderer.invoke('native:vods:configureVodsFolderProtocol', ...args),
     insertVod: (...args: any[]) => ipcRenderer.invoke('native:vods:insertVod', ...args),
     getVodsInfo: (...args: any[]) => ipcRenderer.invoke('native:vods:getVodsInfo', ...args),
   },

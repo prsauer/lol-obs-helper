@@ -1,9 +1,10 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow } from 'electron';
 import { moduleEvent, moduleFunction, NativeBridgeModule, nativeBridgeModule } from '../module';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
-import { Events } from '../ipcEvents';
+import { ActivityEndedEvent, ActivityStartedEvent, BusEvents } from '../events';
+import { bus } from '../bus';
 import {
   AllGameData,
   ActivePlayer,
@@ -112,13 +113,17 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     if (this.gameRunning && this.currentGameId) {
       console.log(`League game ended: ${this.currentGameId}`);
       this.onGameEnded(_mainWindow, this.currentGameId);
-      ipcMain.emit(Events.ActivityEnded, {
+      const activityEnded: ActivityEndedEvent = {
+        type: BusEvents.ActivityEnded,
         game: 'league-of-legends',
         activityId: this.currentGameId,
         metadata: {
           riotGameId: this.riotGameId?.toString() || '',
         },
-      });
+        timestamp: new Date(),
+      };
+      console.log('LeagueLiveClientModule.activity:ended', activityEnded);
+      bus.emitActivityEnded(activityEnded);
       this.gameRunning = false;
       this.currentGameId = null;
     }
@@ -188,10 +193,15 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
             this.riotGameId = null;
             this.addGameIdToHistory(gameId);
             this.onNewGameDetected(_mainWindow, gameData);
-            ipcMain.emit(Events.ActivityStarted, {
+            const activityStarted: ActivityStartedEvent = {
+              type: BusEvents.ActivityStarted,
               game: 'league-of-legends',
               activityId: gameId,
-            });
+              metadata: {},
+              timestamp: new Date(),
+            };
+            console.log('LeagueLiveClientModule.activity:started', activityStarted);
+            bus.emitActivityStarted(activityStarted);
           }
 
           if (!this.gameRunning) {
