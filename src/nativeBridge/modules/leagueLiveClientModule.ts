@@ -3,7 +3,7 @@ import { moduleEvent, moduleFunction, NativeBridgeModule, nativeBridgeModule } f
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
-import { Events } from '../ipcEvents';
+import { ActivityEndedEvent, ActivityStartedEvent, Events } from '../ipcEvents';
 import {
   AllGameData,
   ActivePlayer,
@@ -112,14 +112,17 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     if (this.gameRunning && this.currentGameId) {
       console.log(`League game ended: ${this.currentGameId}`);
       this.onGameEnded(_mainWindow, this.currentGameId);
-      ipcMain.emit(Events.ActivityEnded, {
+      const activityEnded: ActivityEndedEvent = {
+        type: 'activity:ended',
         game: 'league-of-legends',
         activityId: this.currentGameId,
         metadata: {
           riotGameId: this.riotGameId?.toString() || '',
         },
         timestamp: new Date(),
-      });
+      };
+      console.log('LeagueLiveClientModule.activity:ended', activityEnded);
+      ipcMain.emit(Events.ActivityEnded, activityEnded);
       this.gameRunning = false;
       this.currentGameId = null;
     }
@@ -189,11 +192,15 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
             this.riotGameId = null;
             this.addGameIdToHistory(gameId);
             this.onNewGameDetected(_mainWindow, gameData);
-            ipcMain.emit(Events.ActivityStarted, {
+            const activityStarted: ActivityStartedEvent = {
+              type: 'activity:started',
               game: 'league-of-legends',
               activityId: gameId,
+              metadata: {},
               timestamp: new Date(),
-            });
+            };
+            console.log('LeagueLiveClientModule.activity:started', activityStarted);
+            ipcMain.emit(Events.ActivityStarted, activityStarted);
           }
 
           if (!this.gameRunning) {

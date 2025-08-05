@@ -4,7 +4,7 @@ import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
 import fs from 'fs-extra';
-import { ActivityEndedEvent, ActivityStartedEvent, Events } from '../ipcEvents';
+import { ActivityEndedEvent, ActivityStartedEvent, Events, RecordingWrittenEvent } from '../ipcEvents';
 import { nativeBridgeRegistry } from '../registry';
 import { LeagueLiveClientModule } from './leagueLiveClientModule';
 
@@ -248,13 +248,17 @@ export class ObsModule extends NativeBridgeModule {
       fs.renameSync(lastRecording, newPath);
     }
 
-    obsModuleState.currentActivityId = null;
-    ipcMain.emit(Events.RecordingWritten, {
-      activityId: obsModuleState.currentActivityId,
+    const recordingWritten: RecordingWrittenEvent = {
+      type: Events.RecordingWritten,
+      activityId: obsModuleState.currentActivityId || '',
       metadata: obsModuleState.lastActivityEnded?.metadata || {},
       filename: newPath,
       timestamp: new Date(),
-    });
+    };
+    console.log('ObsModule.recording:written', recordingWritten);
+    ipcMain.emit(Events.RecordingWritten, recordingWritten);
+
+    obsModuleState.currentActivityId = null;
     this.emitStateChange(mainWindow);
   }
 
