@@ -1,5 +1,11 @@
 import { EventEmitter } from 'events';
-import { ActivityEndedEvent, ActivityStartedEvent, RecordingStoppedEvent, RecordingWrittenEvent } from './events';
+import {
+  ActivityEndedEvent,
+  ActivityStartedEvent,
+  RecordingStartedEvent,
+  RecordingStoppedEvent,
+  RecordingWrittenEvent,
+} from './events';
 
 /**
  * Bus for communication between modules -- does not ipc to the render process
@@ -13,8 +19,8 @@ class InternalEventBus extends EventEmitter {
     this.emit('activity:ended', data);
   }
 
-  emitRecordingStarted() {
-    this.emit('obs:recording:on');
+  emitRecordingStarted(data: RecordingStartedEvent) {
+    this.emit('obs:recording:on', data);
   }
 
   emitRecordingStopped(data: RecordingStoppedEvent) {

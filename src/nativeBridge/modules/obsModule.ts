@@ -204,7 +204,10 @@ export class ObsModule extends NativeBridgeModule {
             break;
           case 'start':
             obsModuleState.recording = true;
-            bus.emitRecordingStarted();
+            bus.emitRecordingStarted({
+              type: BusEvents.RecordingStarted,
+              timestamp: new Date(),
+            });
             this.emitStateChange(mainWindow);
             break;
           case 'stop':
@@ -236,6 +239,7 @@ export class ObsModule extends NativeBridgeModule {
       type: BusEvents.RecordingStopped,
       video: noobs.GetLastRecording(),
       activityId: obsModuleState.currentActivityId,
+      timestamp: new Date(),
     });
 
     const lastRecording = noobs.GetLastRecording();
