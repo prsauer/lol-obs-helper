@@ -1,9 +1,10 @@
-import { BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
+import { BrowserWindow } from 'electron';
 import { nativeBridgeModule, NativeBridgeModule, moduleFunction } from '../module';
 import { openSync, readdirSync, statSync, readFileSync, createReadStream, ReadStream, writeFileSync } from 'fs-extra';
 import path from 'path';
 import { google } from 'googleapis';
-import { ActivityEndedEvent, ActivityStartedEvent, Events, RecordingWrittenEvent } from '../ipcEvents';
+import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent } from '../events';
+import { bus } from '../bus';
 
 async function insert(token: string, body: ReadStream, title: string, description: string) {
   const service = google.youtube('v3');
@@ -102,19 +103,16 @@ export class VodFilesModule extends NativeBridgeModule {
     super();
     this.activityEvents = [];
 
-    ipcMain.on(Events.ActivityStarted, (a, b, c) => {
-      console.log('VodFilesModule.ActivityStarted', { a, b, c });
-    });
-
-    ipcMain.on(Events.ActivityStarted, (data) => {
+    bus.onActivityStarted((data) => {
+      console.log('VodFilesModule.ActivityStarted', data);
       this.activityEvents.push(data);
     });
 
-    ipcMain.on(Events.ActivityEnded, (data) => {
+    bus.onActivityEnded((data) => {
       this.activityEvents.push(data);
     });
 
-    ipcMain.on(Events.RecordingWritten, (data) => {
+    bus.onRecordingWritten((data) => {
       console.log('VodFilesModule.writeActivityData', data);
       this.writeActivityData(data);
     });

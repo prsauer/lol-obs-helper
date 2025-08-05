@@ -15,7 +15,6 @@ type NativeApi = {
   links: { openExternalURL: OmitFirstArg<ExternalLinksModule['openExternalURL']> };
   vods: {
     scanFolderForMatches: OmitFirstArg<VodFilesModule['scanFolderForMatches']>;
-    configureVodsFolderProtocol: OmitFirstArg<VodFilesModule['configureVodsFolderProtocol']>;
     insertVod: OmitFirstArg<VodFilesModule['insertVod']>;
     getVodsInfo: OmitFirstArg<VodFilesModule['getVodsInfo']>;
   };

@@ -1,4 +1,4 @@
-export const Events = {
+export const BusEvents = {
   ActivityStarted: 'activity:started' as const,
   ActivityEnded: 'activity:ended' as const,
   RecordingStarted: 'obs:recording:on' as const,
@@ -7,7 +7,7 @@ export const Events = {
 };
 
 export type ActivityStartedEvent = {
-  type: (typeof Events)['ActivityStarted'];
+  type: (typeof BusEvents)['ActivityStarted'];
   game: string;
   activityId: string;
   metadata: Record<string, string>;
@@ -15,15 +15,21 @@ export type ActivityStartedEvent = {
 };
 
 export type ActivityEndedEvent = {
-  type: (typeof Events)['ActivityEnded'];
+  type: (typeof BusEvents)['ActivityEnded'];
   game: string;
   activityId: string;
   metadata: Record<string, string>;
   timestamp: Date;
 };
 
+export type RecordingStoppedEvent = {
+  type: (typeof BusEvents)['RecordingStopped'];
+  video: string;
+  activityId: string | null;
+};
+
 export type RecordingWrittenEvent = {
-  type: (typeof Events)['RecordingWritten'];
+  type: (typeof BusEvents)['RecordingWritten'];
   activityId: string;
   metadata: Record<string, string>;
   filename: string;

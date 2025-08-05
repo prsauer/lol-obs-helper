@@ -1,9 +1,10 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow } from 'electron';
 import { moduleEvent, moduleFunction, NativeBridgeModule, nativeBridgeModule } from '../module';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
-import { ActivityEndedEvent, ActivityStartedEvent, Events } from '../ipcEvents';
+import { ActivityEndedEvent, ActivityStartedEvent, BusEvents } from '../events';
+import { bus } from '../bus';
 import {
   AllGameData,
   ActivePlayer,
@@ -113,7 +114,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
       console.log(`League game ended: ${this.currentGameId}`);
       this.onGameEnded(_mainWindow, this.currentGameId);
       const activityEnded: ActivityEndedEvent = {
-        type: 'activity:ended',
+        type: BusEvents.ActivityEnded,
         game: 'league-of-legends',
         activityId: this.currentGameId,
         metadata: {
@@ -122,7 +123,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         timestamp: new Date(),
       };
       console.log('LeagueLiveClientModule.activity:ended', activityEnded);
-      ipcMain.emit(Events.ActivityEnded, activityEnded);
+      bus.emitActivityEnded(activityEnded);
       this.gameRunning = false;
       this.currentGameId = null;
     }
@@ -193,14 +194,14 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
             this.addGameIdToHistory(gameId);
             this.onNewGameDetected(_mainWindow, gameData);
             const activityStarted: ActivityStartedEvent = {
-              type: 'activity:started',
+              type: BusEvents.ActivityStarted,
               game: 'league-of-legends',
               activityId: gameId,
               metadata: {},
               timestamp: new Date(),
             };
             console.log('LeagueLiveClientModule.activity:started', activityStarted);
-            ipcMain.emit(Events.ActivityStarted, activityStarted);
+            bus.emitActivityStarted(activityStarted);
           }
 
           if (!this.gameRunning) {
