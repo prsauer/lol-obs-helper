@@ -16,6 +16,7 @@ type NativeApi = {
   vods: {
     scanFolderForMatches: OmitFirstArg<VodFilesModule['scanFolderForMatches']>;
     insertVod: OmitFirstArg<VodFilesModule['insertVod']>;
+    getActivitiesData: OmitFirstArg<VodFilesModule['getActivitiesData']>;
     getVodsInfo: OmitFirstArg<VodFilesModule['getVodsInfo']>;
   };
   trayIcon: { hideToSystemTray: OmitFirstArg<TrayIconModule['hideToSystemTray']> };

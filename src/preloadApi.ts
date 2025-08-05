@@ -6,6 +6,7 @@ export const modulesApi = {
   vods: {
     scanFolderForMatches: (...args: any[]) => ipcRenderer.invoke('native:vods:scanFolderForMatches', ...args),
     insertVod: (...args: any[]) => ipcRenderer.invoke('native:vods:insertVod', ...args),
+    getActivitiesData: (...args: any[]) => ipcRenderer.invoke('native:vods:getActivitiesData', ...args),
     getVodsInfo: (...args: any[]) => ipcRenderer.invoke('native:vods:getVodsInfo', ...args),
   },
   trayIcon: { hideToSystemTray: (...args: any[]) => ipcRenderer.invoke('native:trayIcon:hideToSystemTray', ...args) },

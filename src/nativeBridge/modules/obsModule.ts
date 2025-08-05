@@ -3,7 +3,6 @@ import { moduleEvent, moduleFunction, nativeBridgeModule, NativeBridgeModule } f
 import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
-import fs from 'fs-extra';
 import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent, BusEvents } from '../events';
 import { nativeBridgeRegistry } from '../registry';
 import { LeagueLiveClientModule } from './leagueLiveClientModule';
@@ -239,22 +238,13 @@ export class ObsModule extends NativeBridgeModule {
       activityId: obsModuleState.currentActivityId,
     });
 
-    // rename recording file to include activityId
     const lastRecording = noobs.GetLastRecording();
-    let newPath = lastRecording;
-    if (lastRecording) {
-      newPath = path.join(
-        obsModuleState.recordingPath,
-        `${obsModuleState.lastActivityEnded?.activityId}-${obsModuleState.lastActivityEnded?.metadata['riotGameId']}.mp4`,
-      );
-      fs.renameSync(lastRecording, newPath);
-    }
 
     const recordingWritten: RecordingWrittenEvent = {
       type: BusEvents.RecordingWritten,
       activityId: obsModuleState.currentActivityId || '',
       metadata: obsModuleState.lastActivityEnded?.metadata || {},
-      filename: newPath,
+      filename: lastRecording,
       timestamp: new Date(),
     };
     console.log('ObsModule.recording:written', recordingWritten);

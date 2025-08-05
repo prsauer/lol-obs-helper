@@ -23,6 +23,15 @@ export const IndexPage = () => {
     enabled: Boolean(config.appConfig.vodStoragePath),
   });
 
+  const activities = useQuery(
+    `activities`,
+    () => window.native.vods?.getActivitiesData(config.appConfig.vodStoragePath || ''),
+    {
+      enabled: Boolean(config.appConfig.vodStoragePath),
+    },
+  );
+  console.log({ activities });
+
   useEffect(() => {
     window.native.login.didLogin((_evt, token) => {
       console.log(token);

@@ -3,7 +3,7 @@ import { nativeBridgeModule, NativeBridgeModule, moduleFunction } from '../modul
 import { openSync, readdirSync, statSync, readFileSync, createReadStream, ReadStream, writeFileSync } from 'fs-extra';
 import path from 'path';
 import { google } from 'googleapis';
-import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent } from '../events';
+import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent, BusEvents } from '../events';
 import { bus } from '../bus';
 
 async function insert(token: string, body: ReadStream, title: string, description: string) {
@@ -89,6 +89,13 @@ type FolderInfo = {
   createdTime: number;
 };
 
+type ActivityRecord = {
+  timestamp: number;
+  start?: ActivityStartedEvent;
+  end?: ActivityEndedEvent;
+  recording: RecordingWrittenEvent;
+};
+
 const folderNamesCached: Record<string, boolean> = {};
 const folderInfoCache: FolderInfo[] = [];
 
@@ -120,10 +127,16 @@ export class VodFilesModule extends NativeBridgeModule {
 
   private writeActivityData(data: RecordingWrittenEvent) {
     console.log('VodFilesModule.RecordingWrittenEvent', data);
-    const activityStarted = this.activityEvents.find((event) => event.type === 'activity:started');
-    const activityEnded = this.activityEvents.find((event) => event.type === 'activity:ended');
 
-    const activityData = {
+    const activityStarted = this.activityEvents.find(
+      (event): event is ActivityStartedEvent => event.type === BusEvents.ActivityStarted,
+    );
+    const activityEnded = this.activityEvents.find(
+      (event): event is ActivityEndedEvent => event.type === BusEvents.ActivityEnded,
+    );
+
+    const activityData: ActivityRecord = {
+      timestamp: data.timestamp.getTime(),
       start: activityStarted,
       end: activityEnded,
       recording: data,
@@ -174,6 +187,18 @@ export class VodFilesModule extends NativeBridgeModule {
     console.log('reading', vodPath);
     const res = createReadStream(vodPath);
     await insert(token, res, title, description);
+  }
+
+  @moduleFunction()
+  public async getActivitiesData(_mainWindow: BrowserWindow, vodPath: string): Promise<ActivityRecord[]> {
+    // look for activity-*.json in the vodPath
+    const dir = readdirSync(vodPath);
+    const activityFiles = dir.filter((fn) => fn.startsWith('activity-') && fn.endsWith('.json'));
+    const activityData = activityFiles.map((fn) => {
+      const data = readFileSync(path.join(vodPath, fn));
+      return JSON.parse(data.toString()) as ActivityRecord;
+    });
+    return activityData.sort((a, b) => a.timestamp - b.timestamp);
   }
 
   @moduleFunction()
