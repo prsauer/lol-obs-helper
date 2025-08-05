@@ -253,6 +253,7 @@ export class ObsModule extends NativeBridgeModule {
       activityId: obsModuleState.currentActivityId,
       metadata: obsModuleState.lastActivityEnded?.metadata || {},
       filename: newPath,
+      timestamp: new Date(),
     });
     this.emitStateChange(mainWindow);
   }

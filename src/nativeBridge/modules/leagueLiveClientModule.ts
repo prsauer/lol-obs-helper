@@ -118,6 +118,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         metadata: {
           riotGameId: this.riotGameId?.toString() || '',
         },
+        timestamp: new Date(),
       });
       this.gameRunning = false;
       this.currentGameId = null;
@@ -191,6 +192,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
             ipcMain.emit(Events.ActivityStarted, {
               game: 'league-of-legends',
               activityId: gameId,
+              timestamp: new Date(),
             });
           }
 
