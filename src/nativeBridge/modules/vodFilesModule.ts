@@ -1,15 +1,6 @@
-import { BrowserWindow, protocol } from 'electron';
+import { BrowserWindow } from 'electron';
 import { nativeBridgeModule, NativeBridgeModule, moduleFunction } from '../module';
-import {
-  openSync,
-  readdirSync,
-  statSync,
-  readFileSync,
-  readSync,
-  closeSync,
-  createReadStream,
-  ReadStream,
-} from 'fs-extra';
+import { openSync, readdirSync, statSync, readFileSync, createReadStream, ReadStream } from 'fs-extra';
 import { google } from 'googleapis';
 
 async function insert(token: string, body: ReadStream, title: string, description: string) {
@@ -126,42 +117,6 @@ export class VodFilesModule extends NativeBridgeModule {
     folderInfoCache.sort((a, b) => b.createdTime - a.createdTime);
 
     return folderInfoCache;
-  }
-
-  @moduleFunction()
-  public async configureVodsFolderProtocol(_mainWindow: BrowserWindow, vodsFolder: string) {
-    if (protocol.isProtocolHandled('vod')) {
-      protocol.unhandle('vod');
-    }
-    protocol.handle('vod', async (request) => {
-      const filename = decodeURI(request.url).slice('vod://'.length, request.url.length - 3);
-
-      const localFilePath = `${vodsFolder}${fnSeparator}${filename}`;
-
-      const rangeReq = request.headers.get('Range') || 'bytes=0-';
-      const parts = rangeReq.split('=');
-      const numbers = parts[1].split('-').map((p) => parseInt(p));
-
-      const fp = openSync(localFilePath, 'r');
-      const size = 2500000; // ~2.5mb chunks
-      const start = numbers[0] || 0;
-      const buffer = Buffer.alloc(size);
-      readSync(fp, buffer, 0, size, start);
-
-      const stats = statSync(localFilePath);
-      const totalSize = stats.size;
-      closeSync(fp);
-
-      return new Response(buffer, {
-        status: 206,
-        statusText: 'Partial Content',
-        headers: {
-          'Content-Length': `${totalSize}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Range': `bytes ${start}-${totalSize}`,
-        },
-      });
-    });
   }
 
   @moduleFunction()

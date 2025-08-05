@@ -94,12 +94,6 @@ export const Root = () => {
     };
   }, [config.isValidConfig, config.appConfig.riotLogsPath]);
 
-  useEffect(() => {
-    if (config.appConfig.vodStoragePath) {
-      window.native.vods?.configureVodsFolderProtocol(config.appConfig.vodStoragePath);
-    }
-  }, [config.appConfig.vodStoragePath]);
-
   return (
     <div className="absolute top-0 left-0 right-0 bottom-0 p-3 text-gray-100 overflow-hidden flex flex-col">
       <div className="flex flex-row gap-3 mb-2">
