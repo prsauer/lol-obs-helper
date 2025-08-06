@@ -193,7 +193,7 @@ export class ObsModule extends NativeBridgeModule {
       logger.info('ObsInit');
 
       const signalHandler = (sig: Signal) => {
-        logger.info('Signal received:', sig);
+        logger.info(`Signal from OBS id=${sig.id} code=${sig.code}`);
         switch (sig.id) {
           case 'starting':
             break;

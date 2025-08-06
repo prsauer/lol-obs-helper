@@ -142,8 +142,8 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
 
       clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        console.error(`Error calling League Client API at ${endpoint}: ${response.statusText}`);
+      if (!response.ok && response.status !== 404) {
+        logger.error(`Error calling League Client API at ${endpoint}: ${response.statusText}`);
         return null;
       }
 
@@ -164,7 +164,6 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   @moduleFunction()
   public async startListeningForGame(_mainWindow: BrowserWindow): Promise<void> {
     if (this.gameListeningInterval) {
-      logger.info('Already listening for game data');
       return;
     }
 
@@ -182,10 +181,12 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
             gameData.activePlayer.riotIdGameName,
             gameData.activePlayer.riotIdTagLine,
           );
-          if (account.data) {
+          if (account.data && this.riotGameId == null) {
             const activePlayerGame = await getActiveGamesForSummoner(account.data.puuid);
-            logger.info('Active Game Id', { id: activePlayerGame.data?.gameId });
             this.riotGameId = activePlayerGame.data?.gameId || null;
+            if (this.riotGameId) {
+              logger.info('Active Game Id Found', { id: this.riotGameId });
+            }
           }
 
           if (!this.seenGameIds.has(gameId)) {
@@ -205,6 +206,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
           if (!this.gameRunning) {
             this.gameRunning = true;
             this.currentGameId = gameId;
+            logger.info(`Game Started id=${gameId}`);
           }
 
           _mainWindow.webContents.send('league-game-data', gameData);
