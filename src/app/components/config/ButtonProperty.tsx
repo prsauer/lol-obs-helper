@@ -6,7 +6,6 @@ export const ButtonProperty = ({ property }: { property: ObsProperty }) => {
     <div className="mb-4">
       <button
         onClick={() => {
-          console.log(`Button ${property.name} clicked`);
           alert(`${property.description} button clicked!`);
         }}
         disabled={!property.enabled}

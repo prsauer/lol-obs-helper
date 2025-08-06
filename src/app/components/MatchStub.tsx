@@ -16,7 +16,6 @@ export const MatchStub = ({
   }[];
 }) => {
   const gamesQuery = useQuery(['game-data', { match: matchId }], () => getGameData(matchId));
-  console.log({ gamesQuery });
   const myPart = gamesQuery.data?.data?.info?.participants?.find(
     (e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName,
   );

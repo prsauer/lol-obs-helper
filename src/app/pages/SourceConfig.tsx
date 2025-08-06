@@ -15,7 +15,6 @@ export const SourceConfig = () => {
   });
 
   const { propertiesBySource, settingsBySource } = sourcePropertiesQuery.data || {};
-  console.log({ propertiesBySource, settingsBySource, propertyValues });
 
   useEffect(() => {
     if (settingsBySource && Object.keys(settingsBySource).length > 0) {
@@ -62,7 +61,6 @@ export const SourceConfig = () => {
         [propertyName]: value,
       }));
 
-      console.log(`Updated ${actualPropertyName} to ${obsValue} for source ${sourceName}`);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       console.error(`Failed to update property ${actualPropertyName} for source ${sourceName}:`, error);
@@ -74,7 +72,6 @@ export const SourceConfig = () => {
     try {
       await window.native.obs.setScene(sceneName);
       setActiveScene(sceneName);
-      console.log(`Switched to scene: ${sceneName}`);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       console.error(`Failed to switch to scene ${sceneName}:`, error);
@@ -88,7 +85,6 @@ export const SourceConfig = () => {
     setLastUpdated(null);
     setActiveScene('');
     sourcePropertiesQuery.refetch();
-    console.log('Properties refreshed and local state reset');
   };
 
   const handleRefresh = () => {

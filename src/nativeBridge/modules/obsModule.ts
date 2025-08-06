@@ -4,9 +4,8 @@ import type { ObsData, ObsDataValue, ObsProperty, Signal } from 'noobs';
 import noobs from 'noobs';
 import path from 'path';
 import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent, BusEvents } from '../events';
-import { nativeBridgeRegistry } from '../registry';
-import { LeagueLiveClientModule } from './leagueLiveClientModule';
 import { bus } from '../bus';
+import { logger } from '../logger';
 
 type ObsModuleState = {
   libraryReady: boolean;
@@ -61,7 +60,6 @@ export class ObsModule extends NativeBridgeModule {
     for (const source of Object.keys(obsModuleState.sources)) {
       const properties = noobs.GetSourceProperties(source);
       settingsBySource[source] = noobs.GetSourceSettings(source);
-      console.log(JSON.stringify(properties, null, 2));
       propertiesBySource[source] = properties;
     }
     return { propertiesBySource, settingsBySource };
@@ -76,17 +74,17 @@ export class ObsModule extends NativeBridgeModule {
   ) {
     const settings = noobs.GetSourceSettings(sourceName);
     settings[propertyName] = value;
-    console.log(`Setting ${propertyName} to ${value} for ${sourceName}`);
+    logger.info(`Setting ${propertyName} to ${value} for ${sourceName}`);
     noobs.SetSourceSettings(sourceName, settings);
   }
 
   public shutdown() {
-    console.log('Shutting down OBS');
+    logger.info('Shutting down OBS');
     noobs.Shutdown();
   }
 
   private initializeWindowCapture() {
-    console.log('Initializing window capture');
+    logger.info('Initializing window capture');
     noobs.CreateSource('WinCap', 'window_capture');
     obsModuleState.sources['WinCap'] = { name: 'WinCap', type: 'window_capture' };
 
@@ -96,7 +94,6 @@ export class ObsModule extends NativeBridgeModule {
     let method = '';
     initSettings.forEach((prop) => {
       if (prop.type === 'list') {
-        // console.log(prop.items);
         // find monitor and priority values
         if (prop.name === 'window') {
           window = prop.items[1].value as string;
@@ -119,7 +116,7 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   public initializeMonitorCapture() {
-    console.log('Initializing monitor capture');
+    logger.info('Initializing monitor capture');
     noobs.CreateSource('MonCap', 'monitor_capture');
     obsModuleState.sources['MonCap'] = { name: 'MonCap', type: 'monitor_capture' };
 
@@ -146,7 +143,7 @@ export class ObsModule extends NativeBridgeModule {
   }
 
   public async initializeGameCapture() {
-    console.log('Initializing game capture');
+    logger.info('Initializing game capture');
     noobs.CreateSource('GameCap', 'game_capture');
     obsModuleState.sources['GameCap'] = { name: 'GameCap', type: 'game_capture' };
 
@@ -164,7 +161,7 @@ export class ObsModule extends NativeBridgeModule {
     this.initializeMonitorCapture();
     this.initializeGameCapture();
 
-    console.log('Adding source to scene');
+    logger.info('Adding source to scene');
     this.setScene(_mainWindow, 'GameCap');
   }
 
@@ -193,12 +190,10 @@ export class ObsModule extends NativeBridgeModule {
   @moduleFunction()
   public async startListening(mainWindow: BrowserWindow) {
     if (!obsModuleState.libraryReady) {
-      console.log('OBS state at start of listening');
-      console.log({ obsModuleState });
-      console.log('ObsInit');
+      logger.info('ObsInit');
 
       const signalHandler = (sig: Signal) => {
-        console.log('Signal received:', sig);
+        logger.info('Signal received:', sig);
         switch (sig.id) {
           case 'starting':
             break;
@@ -251,7 +246,6 @@ export class ObsModule extends NativeBridgeModule {
       filename: lastRecording,
       timestamp: new Date(),
     };
-    console.log('ObsModule.recording:written', recordingWritten);
     bus.emitRecordingWritten(recordingWritten);
 
     obsModuleState.currentActivityId = null;
@@ -263,15 +257,12 @@ export class ObsModule extends NativeBridgeModule {
       return;
     }
     obsModuleState.listeningForGame = true;
-    const leagueModule = nativeBridgeRegistry.getModule('LeagueLiveClientModule') as LeagueLiveClientModule;
-    await leagueModule.startListeningForGame(mainWindow);
+
     bus.onActivityStarted((activityData: ActivityStartedEvent) => {
       obsModuleState.lastActivityEnded = null;
-      console.log('[OBS] Activity started', activityData);
       this.startRecording(mainWindow, activityData.activityId);
     });
     bus.onActivityEnded((activityData) => {
-      console.log('[OBS] Activity ended', activityData);
       obsModuleState.lastActivityEnded = activityData;
       this.stopRecording(mainWindow);
     });
@@ -284,11 +275,6 @@ export class ObsModule extends NativeBridgeModule {
     }
     obsModuleState.recording = true;
 
-    const leagueModule = nativeBridgeRegistry.getModule('LeagueLiveClientModule') as LeagueLiveClientModule;
-    const activePlayerName = await leagueModule.getActivePlayerName(_mainWindow);
-    console.log({ activePlayerName });
-
-    console.log(`${new Date()} Starting recording`);
     noobs.StartRecording(0);
     obsModuleState.currentActivityId = activityId;
     this.emitStateChange(_mainWindow);

@@ -64,7 +64,7 @@ export const Root = () => {
     });
 
     window.native.obs?.onObsModuleStateChange((_evt, state) => {
-      console.log('new rec state', { state, recState });
+      console.log('onObsModuleStateChange', { state, recState });
       if (state.recording !== recordingActiveRef.current) {
         if (state.recording) {
           startSound.play();
@@ -87,6 +87,7 @@ export const Root = () => {
     const watchdogTimer = setInterval(() => {
       if (config.appConfig.riotLogsPath && config.isValidConfig) {
         window.native.obs?.startListening();
+        window.native.leagueLiveClient.startListeningForGame();
       }
     }, 1000);
     return () => {

@@ -6,29 +6,47 @@ import {
   RecordingStoppedEvent,
   RecordingWrittenEvent,
 } from './events';
+import { logger } from './logger';
 
 /**
  * Bus for communication between modules -- does not ipc to the render process
  */
 class InternalEventBus extends EventEmitter {
+  private loggedEmit(
+    eventName: string,
+    data:
+      | ActivityStartedEvent
+      | ActivityEndedEvent
+      | RecordingStartedEvent
+      | RecordingStoppedEvent
+      | RecordingWrittenEvent,
+  ) {
+    if ('activityId' in data) {
+      logger.info(`Emitting ${eventName} activity=${data.activityId}`);
+    } else {
+      logger.info(`Emitting ${eventName}`);
+    }
+    this.emit(eventName, data);
+  }
+
   emitActivityStarted(data: ActivityStartedEvent) {
-    this.emit('activity:started', data);
+    this.loggedEmit('activity:started', data);
   }
 
   emitActivityEnded(data: ActivityEndedEvent) {
-    this.emit('activity:ended', data);
+    this.loggedEmit('activity:ended', data);
   }
 
   emitRecordingStarted(data: RecordingStartedEvent) {
-    this.emit('obs:recording:on', data);
+    this.loggedEmit('obs:recording:on', data);
   }
 
   emitRecordingStopped(data: RecordingStoppedEvent) {
-    this.emit('obs:recording:off', data);
+    this.loggedEmit('obs:recording:off', data);
   }
 
   emitRecordingWritten(data: RecordingWrittenEvent) {
-    this.emit('obs:recording:written', data);
+    this.loggedEmit('obs:recording:written', data);
   }
 
   onActivityStarted(listener: (data: ActivityStartedEvent) => void) {

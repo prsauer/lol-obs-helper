@@ -4,10 +4,6 @@ import { moduleFunction, NativeBridgeModule, nativeBridgeModule } from '../modul
 
 @nativeBridgeModule('links')
 export class ExternalLinksModule extends NativeBridgeModule {
-  public test() {
-    console.log('links:test');
-  }
-
   @moduleFunction()
   public async openExternalURL(_mainWindow: BrowserWindow, url: string) {
     // Security ref: https://benjamin-altpeter.de/shell-openexternal-dangers/

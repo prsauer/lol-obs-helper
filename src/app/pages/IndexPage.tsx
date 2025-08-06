@@ -30,11 +30,11 @@ export const IndexPage = () => {
       enabled: Boolean(config.appConfig.vodStoragePath),
     },
   );
+
   console.log({ activities });
 
   useEffect(() => {
     window.native.login.didLogin((_evt, token) => {
-      console.log(token);
       config.updateAppConfig(() => ({
         ...config.appConfig,
         googleToken: token,
@@ -43,7 +43,6 @@ export const IndexPage = () => {
     return () => window.native.login.removeAll_didLogin_listeners();
   }, [config]);
 
-  console.log({ localMatches });
   return (
     <div className="h-full min-h-0 flex flex-col">
       <div className="mb-2 flex flex-row gap-2 items-center">
@@ -54,7 +53,7 @@ export const IndexPage = () => {
             try {
               await window.native.links.openExternalURL('http://localhost:3001/greet');
             } catch (error) {
-              console.log('login failed', error);
+              console.error(error);
             }
           }}
         >

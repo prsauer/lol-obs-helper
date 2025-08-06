@@ -20,6 +20,7 @@ import {
   TeamID,
 } from './leagueLiveClientTypes';
 import { getAccountByRiotId, getActiveGamesForSummoner } from '../../app/proxy/riotApi';
+import { logger } from '../logger';
 
 const LEAGUE_LIVE_CLIENT_API_ROOT = 'https://127.0.0.1:2999';
 const LEAGUE_LIVE_CLIENT_FILE_LOGGING = true;
@@ -111,7 +112,6 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
 
   private handleGameEnd(_mainWindow: BrowserWindow): void {
     if (this.gameRunning && this.currentGameId) {
-      console.log(`League game ended: ${this.currentGameId}`);
       this.onGameEnded(_mainWindow, this.currentGameId);
       const activityEnded: ActivityEndedEvent = {
         type: BusEvents.ActivityEnded,
@@ -122,7 +122,6 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         },
         timestamp: new Date(),
       };
-      console.log('LeagueLiveClientModule.activity:ended', activityEnded);
       bus.emitActivityEnded(activityEnded);
       this.gameRunning = false;
       this.currentGameId = null;
@@ -156,7 +155,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
       return result;
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
-        console.log(`Request to ${endpoint} timed out or was cancelled`);
+        logger.info(`Request to ${endpoint} timed out or was cancelled`);
       }
       return null;
     }
@@ -165,11 +164,11 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   @moduleFunction()
   public async startListeningForGame(_mainWindow: BrowserWindow): Promise<void> {
     if (this.gameListeningInterval) {
-      console.log('Already listening for game data');
+      logger.info('Already listening for game data');
       return;
     }
 
-    console.log('Starting to listen for League game data...');
+    logger.info('Starting to listen for League game data...');
 
     const pollGameData = async () => {
       try {
@@ -185,7 +184,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
           );
           if (account.data) {
             const activePlayerGame = await getActiveGamesForSummoner(account.data.puuid);
-            console.log('Active Game Id', { id: activePlayerGame.data?.gameId });
+            logger.info('Active Game Id', { id: activePlayerGame.data?.gameId });
             this.riotGameId = activePlayerGame.data?.gameId || null;
           }
 
@@ -200,7 +199,6 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
               metadata: {},
               timestamp: new Date(),
             };
-            console.log('LeagueLiveClientModule.activity:started', activityStarted);
             bus.emitActivityStarted(activityStarted);
           }
 
@@ -226,7 +224,7 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
 
   @moduleFunction()
   public async stopListeningForGame(_mainWindow: BrowserWindow): Promise<void> {
-    console.log('Stopping League game data listening...');
+    logger.info('Stopping League game data listening...');
 
     if (this.gameListeningInterval) {
       clearInterval(this.gameListeningInterval);

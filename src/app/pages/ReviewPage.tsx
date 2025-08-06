@@ -20,11 +20,9 @@ export const ReviewPage = () => {
   const videos = useQuery(`vod-list`, () => window.native.vods?.getVodsInfo('D:\\Video'));
 
   const gamesQuery = useQuery(`game-${id}`, () => getGameData(id || 'no-id'));
-  console.log({ videos, games: gamesQuery.data });
   const gameInfo = gamesQuery?.data?.data || null;
 
   const myPart = gameInfo?.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
-  console.log({ myPart, summonerName, gameInfo });
   const myParticipantId = myPart?.participantId;
 
   const myTeamId = gameInfo?.info.participants?.[myParticipantId || 0].teamId;
@@ -32,7 +30,6 @@ export const ReviewPage = () => {
   if (videos?.data && gameInfo) {
     vod = maybeGetVod(videos.data, gameInfo);
   }
-  console.log({ vod });
 
   const noVodExists = Boolean(!vod && gameInfo?.info.gameCreation);
 

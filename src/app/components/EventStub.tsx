@@ -19,7 +19,6 @@ export const EventStub = ({
   timeConverter: (ts: number) => number;
 }) => {
   if (event.type === 'CHAMPION_KILL' && event.killerId === myParticipantId) {
-    console.log({ event, participants });
     return (
       <div
         className="text-green-400 cursor-pointer flex flex-row gap-1"

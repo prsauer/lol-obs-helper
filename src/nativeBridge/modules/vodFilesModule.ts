@@ -111,7 +111,6 @@ export class VodFilesModule extends NativeBridgeModule {
     this.activityEvents = [];
 
     bus.onActivityStarted((data) => {
-      console.log('VodFilesModule.ActivityStarted', data);
       this.activityEvents.push(data);
     });
 
@@ -120,14 +119,11 @@ export class VodFilesModule extends NativeBridgeModule {
     });
 
     bus.onRecordingWritten((data) => {
-      console.log('VodFilesModule.writeActivityData', data);
       this.writeActivityData(data);
     });
   }
 
   private writeActivityData(data: RecordingWrittenEvent) {
-    console.log('VodFilesModule.RecordingWrittenEvent', data);
-
     const activityStarted = this.activityEvents.find(
       (event): event is ActivityStartedEvent => event.type === BusEvents.ActivityStarted,
     );
@@ -144,10 +140,8 @@ export class VodFilesModule extends NativeBridgeModule {
 
     const filename = `activity-${data.activityId}.json`;
     const filepath = path.join(this.vodsDir, filename);
-    console.log('VodFilesModule.writeActivityData');
-    console.log({ filepath, activityData });
+
     writeFileSync(filepath, JSON.stringify(activityData, null, 2));
-    console.log('VodFilesModule.written');
   }
 
   @moduleFunction()
@@ -184,7 +178,6 @@ export class VodFilesModule extends NativeBridgeModule {
     title: string,
     description: string,
   ) {
-    console.log('reading', vodPath);
     const res = createReadStream(vodPath);
     await insert(token, res, title, description);
   }

@@ -34,7 +34,7 @@ export function maybeGetVod(vods: VodInfo[], game: MatchDto) {
   const gameHash = generateGameHash(game);
 
   if (!gameHash) return undefined;
-  console.log({ game, gameHash, vods });
+
   for (const vod of vods) {
     if (vod.name.includes(gameHash)) {
       return vod;

@@ -13,14 +13,11 @@ export const App = () => {
             refetchOnWindowFocus: false,
             staleTime: 600,
             retry: (failureCount, error) => {
-              console.log('inner', { failureCount, error });
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               if ((error as Error)?.message === 'Fetch error 404') {
-                console.log('Skipping, 404');
                 return false;
               }
               if ((error as Error)?.message === 'Fetch error 403') {
-                console.log('Skipping, 403');
                 return false;
               }
               if ((error as Error)?.message === 'Could not find account data') {

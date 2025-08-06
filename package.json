@@ -62,7 +62,8 @@
     "react-dom": "^18.2.0",
     "react-query": "3.39.1",
     "react-router-dom": "^6.14.2",
-    "recharts": "^2.7.3"
+    "recharts": "^2.7.3",
+    "winston": "^3.17.0"
   },
   "prettier": {
     "endOfLine": "lf",

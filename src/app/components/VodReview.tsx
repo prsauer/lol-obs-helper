@@ -29,7 +29,6 @@ export const VodReview = ({
   const gameInfo = gamesQuery.data?.data?.info;
 
   const vodStartTime = created;
-  console.log({ created, ended });
   const vodEndTime = ended;
 
   if (!gameInfo || !vodEndTime || !vodStartTime) {
@@ -56,7 +55,6 @@ export const VodReview = ({
     return false;
   });
 
-  console.log({ importantEvents });
   const timeConvert = (eventTimestamp: number) => {
     return eventTimestamp / 1000;
   };
@@ -119,7 +117,7 @@ export const VodReview = ({
   }, [vidRef.current, progressBar.current]);
 
   const vodReferenceUri = `vod://vods/${btoa('D:\\Video\\' + vod || '')}`;
-  console.log('video src: ' + vodReferenceUri);
+
   return (
     <div className="flex-1 flex flex-row gap-2 overflow-auto" onKeyDown={setWhileHeld} onKeyUp={unsetHold}>
       <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto text-sm">

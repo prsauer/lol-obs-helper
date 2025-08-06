@@ -11,7 +11,7 @@ export const ListProperty = ({ property, value, onChange }: PropertyInputProps) 
     return null;
   }
   const listProp = property;
-  console.log({ property, value });
+
   return (
     <div className="mb-4">
       <label className="block text-gray-100 mb-1">{property.description}</label>
