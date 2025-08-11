@@ -7,6 +7,7 @@ import { SetupPage } from './pages/SetupPage';
 import { MatchInspectPage, matchLoader } from './pages/MatchInspectPage';
 import { SourceConfig } from './pages/SourceConfig';
 import { useQuery } from 'react-query';
+import { ActivitiesPage } from './pages/ActivitiesPage';
 
 type RecordingState = {
   recording: boolean;
@@ -37,6 +38,10 @@ const router = createHashRouter([
   {
     path: '/source-config',
     element: <SourceConfig />,
+  },
+  {
+    path: '/activities',
+    element: <ActivitiesPage />,
   },
 ]);
 

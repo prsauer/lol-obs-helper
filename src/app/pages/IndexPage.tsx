@@ -48,6 +48,7 @@ export const IndexPage = () => {
       <div className="mb-2 flex flex-row gap-2 items-center">
         <Button linkTo="/setup">Setup</Button>
         <Button linkTo="/source-config">Source Config</Button>
+        <Button linkTo="/activities">Activities</Button>
         <Button
           onClick={async () => {
             try {

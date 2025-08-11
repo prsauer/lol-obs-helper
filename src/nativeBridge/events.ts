@@ -1,9 +1,9 @@
 export const BusEvents = {
-  ActivityStarted: 'activity:started' as const,
-  ActivityEnded: 'activity:ended' as const,
-  RecordingStarted: 'obs:recording:on' as const,
-  RecordingStopped: 'obs:recording:off' as const,
-  RecordingWritten: 'obs:recording:written' as const,
+  ActivityStarted: 'activity:started' as const, // obs listens for these
+  ActivityEnded: 'activity:ended' as const, // obs listens for these
+  RecordingWritten: 'obs:recording:written' as const, // game modules listen for this
+  RecordingStarted: 'obs:recording:on' as const, // for native side ui calls
+  RecordingStopped: 'obs:recording:off' as const, //for native side ui calls
 };
 
 /** OBS module emits this when recording has started */
