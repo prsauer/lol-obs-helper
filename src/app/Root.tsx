@@ -1,6 +1,6 @@
 import { RouterProvider, createHashRouter } from 'react-router-dom';
 import { IndexPage } from './pages/IndexPage';
-import { ReviewPage, reviewLoader } from './pages/ReviewPage';
+import { ReviewPage, reviewLoader, activityReviewLoader } from './pages/ReviewPage';
 import { useEffect, useRef, useState } from 'react';
 import { useAppConfig } from './hooks/AppConfigContext';
 import { SetupPage } from './pages/SetupPage';
@@ -25,6 +25,11 @@ const router = createHashRouter([
     path: '/vod/:id/:summonerName',
     element: <ReviewPage />,
     loader: reviewLoader,
+  },
+  {
+    path: '/activities/league/:activityId',
+    element: <ReviewPage />,
+    loader: activityReviewLoader,
   },
   {
     path: '/setup',

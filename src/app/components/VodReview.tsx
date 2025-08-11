@@ -18,6 +18,7 @@ export const VodReview = ({
   created: Date | undefined;
   ended: Date | undefined;
 }) => {
+  // All hooks at the top level
   const vidRef = useRef<HTMLVideoElement>(null);
   const progressBar = useRef<HTMLProgressElement>(null);
   const gameTimelineQuery = useQuery({
@@ -25,42 +26,6 @@ export const VodReview = ({
     queryFn: () => getGameTimeline(matchId || 'no-id'),
   });
   const gamesQuery = useQuery({ queryKey: ['game', matchId], queryFn: () => getGameData(matchId || 'no-id') });
-  const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
-
-  const myParticipantId = gameTimelineQuery.data?.data?.info.participants.find((p) => p.puuid === myId)?.participantId;
-
-  const gameInfo = gamesQuery.data?.data?.info;
-
-  const vodStartTime = created;
-  const vodEndTime = ended;
-
-  if (!gameInfo || !vodEndTime || !vodStartTime) {
-    return <div>loading</div>;
-  }
-
-  const myTeamId = myParticipantId ? gameInfo.participants?.[myParticipantId]?.teamId : -1;
-
-  const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
-
-  const importantEvents = allEvts?.filter((evt) => {
-    if (evt.type === 'ELITE_MONSTER_KILL') {
-      return true;
-    }
-    if (evt.type === 'CHAMPION_KILL' && evt.killerId === myParticipantId) {
-      return true;
-    }
-    if (evt.type === 'CHAMPION_KILL' && evt.victimId === myParticipantId) {
-      return true;
-    }
-    if (evt.type === 'CHAMPION_KILL' && myParticipantId && evt.assistingParticipantIds?.includes(myParticipantId)) {
-      return true;
-    }
-    return false;
-  });
-
-  const timeConvert = (eventTimestamp: number) => {
-    return eventTimestamp / 1000;
-  };
 
   const setWhileHeld = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -118,6 +83,42 @@ export const VodReview = ({
       controller.abort();
     };
   }, [vidRef.current, progressBar.current]);
+
+  // Data calculations after all hooks
+  const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
+  const myParticipantId = gameTimelineQuery.data?.data?.info.participants?.find((p) => p.puuid === myId)?.participantId;
+  const gameInfo = gamesQuery.data?.data?.info;
+  const vodStartTime = created;
+  const vodEndTime = ended;
+
+  // Early return after all hooks
+  if (!gameInfo || !vodEndTime || !vodStartTime) {
+    return <div>loading</div>;
+  }
+
+  const myTeamId = myParticipantId ? gameInfo.participants?.[myParticipantId]?.teamId : -1;
+
+  const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
+
+  const importantEvents = allEvts?.filter((evt) => {
+    if (evt.type === 'ELITE_MONSTER_KILL') {
+      return true;
+    }
+    if (evt.type === 'CHAMPION_KILL' && evt.killerId === myParticipantId) {
+      return true;
+    }
+    if (evt.type === 'CHAMPION_KILL' && evt.victimId === myParticipantId) {
+      return true;
+    }
+    if (evt.type === 'CHAMPION_KILL' && myParticipantId && evt.assistingParticipantIds?.includes(myParticipantId)) {
+      return true;
+    }
+    return false;
+  });
+
+  const timeConvert = (eventTimestamp: number) => {
+    return eventTimestamp / 1000;
+  };
 
   const vodReferenceUri = `vod://vods/${btoa('D:\\Video\\' + vod || '')}`;
 

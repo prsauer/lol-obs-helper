@@ -76,7 +76,7 @@ export const IndexPage = () => {
           {localMatches.data &&
             localMatches.data.slice(0, 8).map((d, idx) => (
               <div key={`${d.matchId}${idx}`}>
-                <Button linkTo={`vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}>
+                <Button linkTo={`/vod/${d.platformId + '_' + d.matchId}/${encodeURIComponent(d.summonerName || '')}`}>
                   <MatchStub
                     matchId={d.platformId + '_' + d.matchId}
                     summonerName={d.summonerName}
