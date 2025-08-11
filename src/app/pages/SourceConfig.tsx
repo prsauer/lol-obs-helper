@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { Button } from '../components/Button';
 import { PropertyRenderer } from '../components/config';
@@ -10,7 +10,9 @@ export const SourceConfig = () => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [activeScene, setActiveScene] = useState<string>('');
 
-  const sourcePropertiesQuery = useQuery('source-properties', () => window.native.obs.discoverSourceProperties(), {
+  const sourcePropertiesQuery = useQuery({
+    queryKey: ['source-properties'],
+    queryFn: () => window.native.obs.discoverSourceProperties(),
     refetchOnMount: true,
   });
 

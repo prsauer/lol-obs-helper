@@ -6,7 +6,7 @@ import { useAppConfig } from './hooks/AppConfigContext';
 import { SetupPage } from './pages/SetupPage';
 import { MatchInspectPage, matchLoader } from './pages/MatchInspectPage';
 import { SourceConfig } from './pages/SourceConfig';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ActivitiesPage } from './pages/ActivitiesPage';
 
 type RecordingState = {
@@ -53,15 +53,11 @@ export const Root = () => {
   });
   const recordingActiveRef = useRef(false);
 
-  const localMatches = useQuery(
-    'local-matches',
-    async () => {
-      return window.native?.vods?.scanFolderForMatches(config.appConfig.riotLogsPath || '');
-    },
-    {
-      enabled: Boolean(config.appConfig.riotLogsPath),
-    },
-  );
+  const localMatches = useQuery({
+    queryKey: ['local-matches'],
+    queryFn: async () => window.native?.vods?.scanFolderForMatches(config.appConfig.riotLogsPath || ''),
+    enabled: Boolean(config.appConfig.riotLogsPath),
+  });
 
   useEffect(() => {
     window.native.obs?.logMessage((_evt, logline) => {

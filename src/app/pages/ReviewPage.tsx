@@ -1,6 +1,6 @@
 import { useLoaderData, LoaderFunctionArgs } from 'react-router-dom';
 import { VodReview } from '../components/VodReview';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
 import { Button } from '../components/Button';
 import { maybeGetVod } from '../utils/vod';
@@ -17,9 +17,9 @@ export const ReviewPage = () => {
   const { id, summonerName } = useLoaderData() as ReturnType<typeof reviewLoader>;
 
   const [focusSummonerId, setFocusSummonerId] = useState<string | null>(null);
-  const videos = useQuery(`vod-list`, () => window.native.vods?.getVodsInfo('D:\\Video'));
+  const videos = useQuery({ queryKey: ['vod-list'], queryFn: () => window.native.vods?.getVodsInfo('D:\\Video') });
 
-  const gamesQuery = useQuery(`game-${id}`, () => getGameData(id || 'no-id'));
+  const gamesQuery = useQuery({ queryKey: ['game', id], queryFn: () => getGameData(id || 'no-id') });
   const gameInfo = gamesQuery?.data?.data || null;
 
   const myPart = gameInfo?.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);

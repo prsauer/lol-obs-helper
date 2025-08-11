@@ -1,6 +1,6 @@
 import { KeyboardEvent, useCallback, useEffect, useRef } from 'react';
 import { getGameData, getGameTimeline } from '../proxy/riotApi';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { EventStub } from './EventStub';
 
 const KILL_UNDERCUT_TIME = 10;
@@ -20,8 +20,11 @@ export const VodReview = ({
 }) => {
   const vidRef = useRef<HTMLVideoElement>(null);
   const progressBar = useRef<HTMLProgressElement>(null);
-  const gameTimelineQuery = useQuery(`game-timeline-${matchId}`, () => getGameTimeline(matchId || 'no-id'));
-  const gamesQuery = useQuery(`game-${matchId}`, () => getGameData(matchId || 'no-id'));
+  const gameTimelineQuery = useQuery({
+    queryKey: ['game-timeline', matchId],
+    queryFn: () => getGameTimeline(matchId || 'no-id'),
+  });
+  const gamesQuery = useQuery({ queryKey: ['game', matchId], queryFn: () => getGameData(matchId || 'no-id') });
   const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
 
   const myParticipantId = gameTimelineQuery.data?.data?.info.participants.find((p) => p.puuid === myId)?.participantId;

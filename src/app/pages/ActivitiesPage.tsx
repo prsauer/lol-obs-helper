@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '../components/Button';
 import { useAppConfig } from '../hooks/AppConfigContext';
 
@@ -22,11 +22,11 @@ const formatDuration = (ms: number): string => {
 export const ActivitiesPage = () => {
   const config = useAppConfig();
 
-  const activities = useQuery(
-    'activities',
-    () => window.native.vods?.getActivitiesData(config.appConfig.vodStoragePath || ''),
-    { enabled: Boolean(config.appConfig.vodStoragePath) },
-  );
+  const activities = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => window.native.vods?.getActivitiesData(config.appConfig.vodStoragePath || ''),
+    enabled: Boolean(config.appConfig.vodStoragePath),
+  });
 
   const items = useMemo(() => {
     const data = activities.data || [];

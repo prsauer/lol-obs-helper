@@ -1,4 +1,4 @@
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
 import { maybeGetVod } from '../utils/vod';
 import { ChampIcon } from './ChampIcon';
@@ -15,7 +15,7 @@ export const MatchStub = ({
     ended: Date;
   }[];
 }) => {
-  const gamesQuery = useQuery(['game-data', { match: matchId }], () => getGameData(matchId));
+  const gamesQuery = useQuery({ queryKey: ['game-data', { match: matchId }], queryFn: () => getGameData(matchId) });
   const myPart = gamesQuery.data?.data?.info?.participants?.find(
     (e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName,
   );

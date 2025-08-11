@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../components/Button';
 import { MatchStub } from '../components/MatchStub';
 import { useAppConfig } from '../hooks/AppConfigContext';
@@ -9,27 +9,23 @@ export const IndexPage = () => {
   const config = useAppConfig();
   const queryClient = useQueryClient();
 
-  const localMatches = useQuery(
-    'local-matches',
-    async () => {
-      return window.native?.vods?.scanFolderForMatches(config.appConfig.riotLogsPath || '');
-    },
-    {
-      enabled: Boolean(config.appConfig.riotLogsPath),
-    },
-  );
+  const localMatches = useQuery({
+    queryKey: ['local-matches'],
+    queryFn: async () => window.native?.vods?.scanFolderForMatches(config.appConfig.riotLogsPath || ''),
+    enabled: Boolean(config.appConfig.riotLogsPath),
+  });
 
-  const videos = useQuery(`vod-list`, () => window.native.vods?.getVodsInfo(config.appConfig.vodStoragePath || ''), {
+  const videos = useQuery({
+    queryKey: ['vod-list'],
+    queryFn: () => window.native.vods?.getVodsInfo(config.appConfig.vodStoragePath || ''),
     enabled: Boolean(config.appConfig.vodStoragePath),
   });
 
-  const activities = useQuery(
-    `activities`,
-    () => window.native.vods?.getActivitiesData(config.appConfig.vodStoragePath || ''),
-    {
-      enabled: Boolean(config.appConfig.vodStoragePath),
-    },
-  );
+  const activities = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => window.native.vods?.getActivitiesData(config.appConfig.vodStoragePath || ''),
+    enabled: Boolean(config.appConfig.vodStoragePath),
+  });
 
   console.log({ activities });
 

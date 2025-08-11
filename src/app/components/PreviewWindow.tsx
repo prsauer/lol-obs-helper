@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export const PreviewWindow = () => {
   const ref = useRef<HTMLDivElement>(null);
 
-  const query = useQuery('obs-state', () => window.native.obs.readObsModuleState());
+  const query = useQuery({ queryKey: ['obs-state'], queryFn: () => window.native.obs.readObsModuleState() });
   useEffect(() => {
     window.native.obs.onObsModuleStateChange((_evt, _state) => {
       query.refetch(); // TODO: More clever strategy to merge the queried state with the listener state

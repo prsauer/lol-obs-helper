@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Root } from './Root';
 import { AppConfigContextProvider } from './hooks/AppConfigContext';
 
