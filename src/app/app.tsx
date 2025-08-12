@@ -3,6 +3,7 @@ import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Root } from './Root';
 import { AppConfigContextProvider } from './hooks/AppConfigContext';
+import { RecordingProvider } from './hooks/recordingContext';
 
 export const App = () => {
   const [queryClient] = useState(
@@ -33,7 +34,9 @@ export const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AppConfigContextProvider>
-        <Root />
+        <RecordingProvider>
+          <Root />
+        </RecordingProvider>
       </AppConfigContextProvider>
     </QueryClientProvider>
   );

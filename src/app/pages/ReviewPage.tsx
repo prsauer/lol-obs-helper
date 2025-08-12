@@ -1,5 +1,6 @@
-import { useLoaderData, LoaderFunctionArgs } from 'react-router-dom';
+import { useLoaderData, LoaderFunctionArgs, useNavigate } from 'react-router-dom';
 import { VodReview } from '../components/VodReview';
+import { ChampIcon } from '../league/ChampIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
 import { Button } from '../components/Button';
@@ -23,6 +24,7 @@ export function activityReviewLoader({ params }: LoaderFunctionArgs) {
 }
 
 export const ReviewPage = () => {
+  const navigate = useNavigate();
   const config = useAppConfig();
   const loaderData = useLoaderData() as ReturnType<typeof reviewLoader> | ReturnType<typeof activityReviewLoader>;
   const [focusSummonerId, setFocusSummonerId] = useState<string | null>(null);
@@ -136,9 +138,13 @@ export const ReviewPage = () => {
   });
   const gameInfo = gamesQuery?.data?.data || null;
 
-  const myPart = gameInfo?.info?.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
+  if (!gameInfo || 'httpStatus' in gameInfo) {
+    return <div>Match not found</div>;
+  }
+
+  const myPart = gameInfo.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
   const myParticipantId = myPart?.participantId;
-  const myTeamId = gameInfo?.info?.participants?.[myParticipantId || 0]?.teamId;
+  const myTeamId = gameInfo.info.participants?.[myParticipantId || 0]?.teamId;
 
   // Set the VOD based on the loading type
   let vod: ReturnType<typeof maybeGetVod> | null = null;
@@ -152,53 +158,50 @@ export const ReviewPage = () => {
 
   const noVodExists = Boolean(
     (loaderData.type === 'activity' ? !activityVod : !vod) &&
-      (loaderData.type === 'activity' ? activityInfo && activityInfo.recording?.filename : gameInfo?.info.gameCreation),
+      (loaderData.type === 'activity' ? activityInfo && activityInfo.recording?.filename : gameInfo.info.gameCreation),
   );
 
   return (
     <div className="h-full min-h-0 flex flex-col">
       <div className="flex flex-row gap-2 mb-2 items-center ">
-        <Button linkTo={loaderData.type === 'activity' ? '/' : '/'}>BACK</Button>
-        <div>{loaderData.type === 'activity' ? `Activity: ${loaderData.activityId}` : matchId}</div>
-
-        {loaderData.type === 'activity' && activityInfo && (
-          <>
-            {activityInfo.start?.timestamp && (
-              <div>started: {new Date(activityInfo.start.timestamp).toLocaleString()}</div>
-            )}
-            {activityInfo.recording?.filename && <div>file: {activityInfo.recording.filename}</div>}
-          </>
-        )}
-
-        {gameInfo && <div>created: {new Date(gameInfo?.info?.gameCreation).toLocaleString()}</div>}
-        {myPart && (
+        <Button onClick={() => navigate(-1)}>BACK</Button>
+        {gameInfo && <div>{new Date(gameInfo.info.gameCreation).toLocaleString()}</div>}
+        {matchId && <Button linkTo={`/inspect/${matchId}`}>Inspect</Button>}
+        {matchId && (
           <Button
             onClick={() => {
-              window.native.links.openExternalURL(
-                `https://u.gg/lol/profile/na1/${myPart?.riotIdGameName}-${myPart?.riotIdTagline}/overview`,
-              );
+              const cleanMatchId = matchId.replace(/^[A-Z]{2,3}\d*_/, '');
+              window.native.links.openExternalURL(`https://www.leagueofgraphs.com/match/na/${cleanMatchId}`);
             }}
           >
-            {summonerName} at u.gg
+            LeagueOfGraphs
           </Button>
         )}
-        {matchId && <Button linkTo={`/inspect/${matchId}`}>Inspect</Button>}
-        {gameInfo?.info?.participants?.map((p) => (
-          <div
-            key={p.puuid}
-            onClick={() => {
-              setFocusSummonerId(p.puuid);
-            }}
-          >
-            {p.championName}
-          </div>
-        ))}
+        <div className="flex flex-row gap-2">
+          {gameInfo.info.participants?.map((p) => (
+            <div
+              key={p.puuid}
+              className={
+                'flex flex-col items-center cursor-pointer ' +
+                (focusSummonerId === p.puuid ? 'border-green-100 border-2' : '')
+              }
+              onClick={() => {
+                setFocusSummonerId(p.puuid);
+              }}
+            >
+              <ChampIcon size={24} championId={p.championId} />
+              <div className={'text-xs ' + (p.teamId === 100 ? 'text-green-400' : 'text-red-400')}>
+                {p.riotIdGameName}
+              </div>
+            </div>
+          ))}
+        </div>
         <Button
           onClick={async () => {
-            const didWin = gameInfo?.info?.teams?.find((t) => t.teamId === myTeamId)?.win;
-            const title = `${gameInfo?.info?.participants?.[(myParticipantId || 0) - 1]?.championName} ${
+            const didWin = gameInfo.info.teams?.find((t) => t.teamId === myTeamId)?.win;
+            const title = `${gameInfo.info.participants?.[(myParticipantId || 0) - 1]?.championName} ${
               didWin ? 'W' : 'L'
-            } ${new Date(gameInfo?.info.gameCreation || '').toLocaleDateString()}`;
+            } ${new Date(gameInfo.info.gameCreation || '').toLocaleDateString()}`;
 
             if (config.appConfig.googleToken) {
               const vodPath =

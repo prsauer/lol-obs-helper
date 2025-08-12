@@ -1,7 +1,7 @@
 import { Event, MatchParticipant } from '../proxy/types';
 import { MONSTER_NAMES } from '../utils/static';
 import { secondsToMinutesString } from '../utils/vod';
-import { ChampIcon } from './ChampIcon';
+import { ChampIcon } from '../league/ChampIcon';
 
 export const EventStub = ({
   participants,

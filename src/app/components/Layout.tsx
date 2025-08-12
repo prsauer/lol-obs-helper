@@ -2,21 +2,12 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { useQuery } from '@tanstack/react-query';
 import { useAppConfig } from '../hooks/AppConfigContext';
-import { useEffect, useRef, useState } from 'react';
-
-type RecordingState = {
-  recording: boolean;
-};
-
-const startSound = new Audio('static://StartSound.wav');
-const stopSound = new Audio('static://StopSound.wav');
+import { useRecording } from '../hooks/recordingContext';
+import { useEffect } from 'react';
 
 export const Layout = () => {
   const config = useAppConfig();
-  const [recState, setRecState] = useState<RecordingState>({
-    recording: false,
-  });
-  const recordingActiveRef = useRef(false);
+  const { recording } = useRecording();
 
   const localMatches = useQuery({
     queryKey: ['local-matches'],
@@ -40,20 +31,6 @@ export const Layout = () => {
       console.log(`${new Date()} ${logline}`);
     });
 
-    window.native.obs?.onObsModuleStateChange((_evt, state) => {
-      console.log('onObsModuleStateChange', { state, recState });
-      if (state.recording !== recordingActiveRef.current) {
-        if (state.recording) {
-          startSound.play();
-        } else {
-          stopSound.play();
-          setTimeout(() => localMatches.refetch(), 5000);
-        }
-      }
-      recordingActiveRef.current = state.recording;
-      setRecState(state);
-    });
-
     return () => {
       window.native.obs?.removeAll_logMessage_listeners();
     };
@@ -73,7 +50,7 @@ export const Layout = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <Header recording={recState.recording} configValid={config.isValidConfig} onRefresh={handleRefresh} />
+      <Header recording={recording} configValid={config.isValidConfig} onRefresh={handleRefresh} />
       <div className="flex-1 min-h-0">
         <Outlet />
       </div>

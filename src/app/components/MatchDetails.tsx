@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGameQuery, useGameTimelineQuery } from '../hooks/games';
-import { ChampIcon } from './ChampIcon';
+import { ChampIcon } from '../league/ChampIcon';
 import {
   CartesianGrid,
   ComposedChart,
@@ -14,6 +15,7 @@ import {
   ZAxis,
 } from 'recharts';
 import { Event } from '../proxy/types';
+import { Button } from './Button';
 
 const calcParticipationType = (partIndex: number, evt: Event) => {
   if (evt.victimId === partIndex) return 'DEATH';
@@ -30,6 +32,7 @@ const KDACircle = (props: { cx?: number; cy?: number; type?: string }) => {
 };
 
 export const MatchDetails = ({ matchId }: { matchId: string }) => {
+  const navigate = useNavigate();
   const gameTimelineQuery = useGameTimelineQuery(matchId);
   const gameInfoQuery = useGameQuery(matchId);
   const [selectedChamp, setSelectedChamp] = useState(
@@ -39,8 +42,28 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
   const gameTimeline = gameTimelineQuery.data?.data;
 
   if (!gameTimeline) {
-    return <div>loading</div>;
+    return (
+      <div className="flex flex-col flex-1">
+        <div className="mb-2">
+          <Button onClick={() => navigate(-1)}>Back</Button>
+        </div>
+        <div>Loading...</div>
+      </div>
+    );
   }
+
+  if (!gameInfoQuery.data?.data || 'httpStatus' in gameInfoQuery.data.data) {
+    return (
+      <div className="flex flex-col flex-1">
+        <div className="mb-2">
+          <Button onClick={() => navigate(-1)}>Back</Button>
+        </div>
+        <div>Match not found</div>
+      </div>
+    );
+  }
+
+  const gameInfo = gameInfoQuery.data.data;
 
   const partIndex = gameTimeline.info.participants.findIndex((p) => p.puuid === selectedChamp) + 1;
 
@@ -78,9 +101,9 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
       timestamp: evt.timestamp / 60000,
     }));
 
-  const selectedInfo = gameInfoQuery.data?.data?.info.participants.find((p) => p.puuid === selectedChamp);
+  const selectedInfo = gameInfo.info.participants?.find((p) => p.puuid === selectedChamp);
 
-  const minsOfGame = (gameInfoQuery.data?.data?.info.gameDuration || 1) / 60;
+  const minsOfGame = (gameInfo.info.gameDuration || 1) / 60;
   const selectedTotalCS = (selectedInfo?.neutralMinionsKilled || 0) + (selectedInfo?.totalMinionsKilled || 0);
 
   const selectedAvgCSm = selectedTotalCS / minsOfGame;
@@ -88,7 +111,7 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
   return (
     <div className="flex flex-col flex-1">
       <div className="flex flex-row gap-2 ">
-        {gameInfoQuery.data?.data?.info.participants.map((p) => (
+        {gameInfo.info.participants?.map((p) => (
           <div
             key={p.puuid}
             className={'flex flex-col items-center ' + (selectedChamp === p.puuid ? 'border-green-100 border-2' : '')}
@@ -97,7 +120,9 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
             }}
           >
             <ChampIcon size={32} championId={p.championId} />
-            <div className={'text-sm ' + (p.teamId === 100 ? 'text-green-400' : 'text-red-400')}>{p.summonerName}</div>
+            <div className={'text-sm ' + (p.teamId === 100 ? 'text-green-400' : 'text-red-400')}>
+              {p.riotIdGameName}#{p.riotIdTagline}
+            </div>
           </div>
         ))}
       </div>

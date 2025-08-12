@@ -141,7 +141,6 @@ export interface MatchParticipant {
   summoner2Id: number;
   summonerId: string;
   summonerLevel: number;
-  summonerName: string;
   teamEarlySurrendered: boolean;
   teamId: number;
   teamPosition: string;

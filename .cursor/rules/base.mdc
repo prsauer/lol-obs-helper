@@ -4,3 +4,4 @@ alwaysApply: true
 
 Do not write comments ever, for any reason
 Don't use the typescript type `any` without explicit permission from the user
+Use implicit types as much as possible; do not add specified types on any expression that does not require it

@@ -1,7 +1,8 @@
-import { KeyboardEvent, useCallback, useEffect, useRef } from 'react';
+import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { getGameData, getGameTimeline } from '../proxy/riotApi';
 import { useQuery } from '@tanstack/react-query';
 import { EventStub } from './EventStub';
+import { ChampIcon } from '../league/ChampIcon';
 
 const KILL_UNDERCUT_TIME = 10;
 
@@ -18,6 +19,12 @@ export const VodReview = ({
   created: Date | undefined;
   ended: Date | undefined;
 }) => {
+  const [eventFilters, setEventFilters] = useState({
+    kills: true,
+    deaths: true,
+    assists: true,
+    objectives: true,
+  });
   // All hooks at the top level
   const vidRef = useRef<HTMLVideoElement>(null);
   const progressBar = useRef<HTMLProgressElement>(null);
@@ -30,6 +37,9 @@ export const VodReview = ({
   const setWhileHeld = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (!vidRef.current) return;
+      if (e.code === 'Digit1') {
+        vidRef.current.playbackRate = 0.5;
+      }
       if (e.code === 'Digit2') {
         vidRef.current.playbackRate = 2;
       }
@@ -88,11 +98,9 @@ export const VodReview = ({
   const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
   const myParticipantId = gameTimelineQuery.data?.data?.info?.participants?.find((p) => p.puuid === myId)
     ?.participantId;
-  const gameInfo = gamesQuery.data?.data?.info;
+  const gameInfo = gamesQuery.data?.data && 'info' in gamesQuery.data.data ? gamesQuery.data.data.info : undefined;
   const vodStartTime = created;
   const vodEndTime = ended;
-
-  // Handle case where we have video but no game data
   if (!vodEndTime || !vodStartTime) {
     return <div>Loading video data...</div>;
   }
@@ -131,16 +139,16 @@ export const VodReview = ({
 
   const importantEvents = allEvts?.filter((evt) => {
     if (evt.type === 'ELITE_MONSTER_KILL') {
-      return true;
+      return eventFilters.objectives;
     }
     if (evt.type === 'CHAMPION_KILL' && evt.killerId === myParticipantId) {
-      return true;
+      return eventFilters.kills;
     }
     if (evt.type === 'CHAMPION_KILL' && evt.victimId === myParticipantId) {
-      return true;
+      return eventFilters.deaths;
     }
     if (evt.type === 'CHAMPION_KILL' && myParticipantId && evt.assistingParticipantIds?.includes(myParticipantId)) {
-      return true;
+      return eventFilters.assists;
     }
     return false;
   });
@@ -148,7 +156,7 @@ export const VodReview = ({
   // Calculate offset between video start and game start
   const firstEventTimestamp = allEvts?.[0]?.timestamp || 0;
   const firstEventRealTimestamp = allEvts?.[0]?.realTimestamp;
-  console.log('First few events:', allEvts?.slice(0, 3));
+
   const gameStartTime = gameInfo?.gameCreation ? new Date(gameInfo.gameCreation) : null;
   let videoStartTime: Date | null = null;
   if (vodStartTime) {
@@ -166,34 +174,10 @@ export const VodReview = ({
     const gameStartMs = gameStartTime.getTime();
     const videoStartMs = videoStartTime.getTime();
     const offsetMs = videoStartMs - gameStartMs;
-    const offsetMinutes = offsetMs / 1000 / 60;
-
-    console.log('Timeline offset calculation (before adjustment):', {
-      gameStartTime: gameStartTime.toISOString(),
-      videoStartTime: videoStartTime.toISOString(),
-      firstEventTimestamp,
-      firstEventRealTimestamp,
-      offsetMs,
-      offsetMinutes: offsetMinutes.toFixed(2),
-      'Seems too high?': Math.abs(offsetMinutes) > 5,
-    });
-
-    // Try alternative calculation using realTimestamp if available
-    if (firstEventRealTimestamp && Math.abs(offsetMinutes) > 5) {
-      const realEventTime = new Date(firstEventRealTimestamp);
-      const realOffsetMs = videoStartTime.getTime() - realEventTime.getTime();
-      const realOffsetSeconds = realOffsetMs / 1000;
-      console.log('Alternative offset using realTimestamp:', {
-        realEventTime: realEventTime.toISOString(),
-        realOffsetMs,
-        realOffsetSeconds,
-      });
-    }
 
     // The automatic calculation using game vs video start times doesn't work reliably
     // Use a reasonable default offset instead
     if (firstEventRealTimestamp) {
-      console.log('Using realTimestamp for offset calculation');
       const realEventTime = new Date(firstEventRealTimestamp);
 
       // Calculate the actual offset using realTimestamp and observed data
@@ -205,17 +189,6 @@ export const VodReview = ({
 
       // The offset is: where in video does game time 0 appear
       const calculatedOffset = firstEventVideoTime - firstEventGameTime;
-
-      console.log('Calculated offset using realTimestamp:', {
-        'First event occurred at': realEventTime.toISOString(),
-        'Video started at': videoStartTime.toISOString(),
-        'First event appears at video time': `${Math.floor(firstEventVideoTime / 60)}:${String(
-          Math.floor(firstEventVideoTime % 60),
-        ).padStart(2, '0')}`,
-        'First event game time': firstEventGameTime,
-        'Calculated offset': calculatedOffset,
-        'This means': `game time X appears at video time X + ${calculatedOffset.toFixed(1)} seconds`,
-      });
 
       timeOffsetSeconds = calculatedOffset;
     } else {
@@ -242,9 +215,91 @@ export const VodReview = ({
 
   const vodReferenceUri = `vod://vods/${btoa('D:\\Video\\' + vod || '')}`;
 
+  const focusedParticipant = gameInfo?.participants?.[(myParticipantId || 1) - 1];
+  console.log({ gameInfo, focusedParticipant });
+
   return (
     <div className="flex-1 flex flex-row gap-2 overflow-auto" onKeyDown={setWhileHeld} onKeyUp={unsetHold}>
-      <div className="flex flex-col gap-1 min-w-[125px] overflow-y-auto text-sm">
+      <div id="focused-champ-info" className="flex flex-col gap-1 min-w-[255px] overflow-y-auto text-sm">
+        <div className="flex flex-col gap-1 mb-2">
+          {myParticipantId && gameInfo?.participants && (
+            <>
+              <div className="flex items-center gap-2">
+                <ChampIcon size={24} championId={focusedParticipant?.championId} />
+                <span className="font-semibold text-white">{focusedParticipant?.riotIdGameName || 'Unknown'}</span>
+                <span className="text-gray-400 ml-auto">
+                  {focusedParticipant?.kills || 0}/{focusedParticipant?.deaths || 0}/{focusedParticipant?.assists || 0}
+                </span>
+              </div>
+              {focusedParticipant?.riotIdGameName && focusedParticipant?.riotIdTagline && (
+                <div className="flex gap-2 ml-8">
+                  <button
+                    onClick={() => {
+                      window.native.links.openExternalURL(
+                        `https://u.gg/lol/profile/na1/${focusedParticipant.riotIdGameName}-${focusedParticipant.riotIdTagline}/overview`,
+                      );
+                    }}
+                    className="text-xs text-blue-400 hover:text-blue-300 underline"
+                  >
+                    View on u.gg
+                  </button>
+                  <button
+                    onClick={() => {
+                      window.native.links.openExternalURL(
+                        `https://xdx.gg/${focusedParticipant.riotIdGameName}-${focusedParticipant.riotIdTagline}`,
+                      );
+                    }}
+                    className="text-xs text-green-400 hover:text-green-300 underline"
+                  >
+                    View on lolalytics
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className="mb-2 p-2 bg-gray-800 rounded text-xs">
+          <div className="font-semibold mb-1">Event Filters:</div>
+          <div className="flex flex-wrap gap-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={eventFilters.kills}
+                onChange={(e) => setEventFilters((prev) => ({ ...prev, kills: e.target.checked }))}
+                className="w-3 h-3"
+              />
+              <span className="text-green-400">Kills</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={eventFilters.deaths}
+                onChange={(e) => setEventFilters((prev) => ({ ...prev, deaths: e.target.checked }))}
+                className="w-3 h-3"
+              />
+              <span className="text-red-400">Deaths</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={eventFilters.assists}
+                onChange={(e) => setEventFilters((prev) => ({ ...prev, assists: e.target.checked }))}
+                className="w-3 h-3"
+              />
+              <span className="text-yellow-400">Assists</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={eventFilters.objectives}
+                onChange={(e) => setEventFilters((prev) => ({ ...prev, objectives: e.target.checked }))}
+                className="w-3 h-3"
+              />
+              <span className="text-purple-400">Objectives</span>
+            </label>
+          </div>
+        </div>
+
         {importantEvents?.map((evt) => {
           return (
             <EventStub
@@ -278,33 +333,6 @@ export const VodReview = ({
               minHeight: 0,
             }}
           />
-          {/* <div id="video-controls" className="controls w-full" data-state="hidden">
-            <div className="progress w-full ">
-              <progress
-                ref={progressBar}
-                onClick={progressBarClick}
-                onMouseMove={progressBarDrag}
-                className="w-full"
-                id="progress"
-                value="0"
-              >
-                <span id="progress-bar"></span>
-              </progress>
-              <div className="flex flex-row relative mr-1 h-[41px]">
-                {importantEvents?.map((e) => {
-                  return (
-                    <EventTimelineIcon
-                      event={e}
-                      participants={gameInfo?.participants || []}
-                      myParticipantId={myParticipantId}
-                      key={e.timestamp}
-                      left={`${(100 * 1000 * timeConvert(e.timestamp)) / vodDuration}%`}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div> */}
         </figure>
       )}
     </div>

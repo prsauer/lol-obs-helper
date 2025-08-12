@@ -17,7 +17,15 @@ export const Header = ({ recording, configValid, onRefresh }: HeaderProps) => {
       </div>
       <div>Config OK: {configValid ? 'Yes' : 'No'} </div>
       <div className="flex flex-row gap-2 ml-4">
-        <Button linkTo="/">Home</Button>
+        <Button linkTo="/">Home</Button>{' '}
+        <Button
+          onClick={() => {
+            onRefresh?.();
+            queryClient.invalidateQueries();
+          }}
+        >
+          Refresh
+        </Button>
         <Button linkTo="/setup">Setup</Button>
         <Button linkTo="/source-config">Source Config</Button>
         <Button
@@ -29,20 +37,7 @@ export const Header = ({ recording, configValid, onRefresh }: HeaderProps) => {
             }
           }}
         >
-          Login Test
-        </Button>
-        <Button
-          onClick={() => {
-            onRefresh?.();
-            queryClient.invalidateQueries({ queryKey: ['game-data'] });
-          }}
-        >
-          Refresh
-        </Button>
-        <Button onClick={() => window.native.obs.startRecording('123')}>Start Recording</Button>
-        <Button onClick={() => window.native.obs.stopRecording()}>Stop Recording</Button>
-        <Button onClick={() => window.native.obs.discoverSourceProperties().then(console.log)}>
-          Discover Source Properties
+          Login with Google
         </Button>
       </div>
     </div>

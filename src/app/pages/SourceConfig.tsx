@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { PropertyRenderer } from '../components/config';
 import { PreviewWindow } from '../components/PreviewWindow';
 import type { ObsProperty } from 'noobs';
 
 export const SourceConfig = () => {
+  const navigate = useNavigate();
   const [propertyValues, setPropertyValues] = useState<Record<string, string | number | boolean | string[]>>({});
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [activeScene, setActiveScene] = useState<string>('');
@@ -113,7 +115,7 @@ export const SourceConfig = () => {
     <div className="flex flex-row h-full w-full">
       <div className="flex flex-col h-full w-full flex-1">
         <div className="mb-4 flex flex-row gap-2 items-center">
-          <Button linkTo="/">← Back</Button>
+          <Button onClick={() => navigate(-1)}>← Back</Button>
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-gray-100">OBS Source Configuration</h1>
             <p className="text-sm text-gray-400">Settings are applied to OBS immediately when changed</p>

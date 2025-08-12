@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '../components/Button';
 import { ActivityItem } from '../components/ActivityItem';
 import { useAppConfig } from '../hooks/AppConfigContext';
 
@@ -26,9 +25,6 @@ export const ActivitiesPage = () => {
 
   return (
     <div className="h-full min-h-0 flex flex-col">
-      <div className="mb-2 flex flex-row gap-2 items-center">
-        <Button onClick={() => activities.refetch()}>Refresh</Button>
-      </div>
       <div className="flex-1 overflow-y-auto minimal-scrollbar">
         {!config.appConfig.vodStoragePath && (
           <div className="text-gray-300">Set VODs directory in Setup to view activities</div>

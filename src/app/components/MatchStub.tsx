@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
-import { ChampIcon } from './ChampIcon';
+import { ChampIcon } from '../league/ChampIcon';
 
 export const MatchStub = ({ matchId, summonerName }: { matchId: string; summonerName?: string }) => {
   const gamesQuery = useQuery({ queryKey: ['game-data', { match: matchId }], queryFn: () => getGameData(matchId) });
