@@ -1,20 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
-import { maybeGetVod } from '../utils/vod';
 import { ChampIcon } from './ChampIcon';
 
-export const MatchStub = ({
-  matchId,
-  videos,
-  summonerName,
-}: {
-  matchId: string;
-  summonerName?: string;
-  videos?: {
-    name: string;
-    ended: Date;
-  }[];
-}) => {
+export const MatchStub = ({ matchId, summonerName }: { matchId: string; summonerName?: string }) => {
   const gamesQuery = useQuery({ queryKey: ['game-data', { match: matchId }], queryFn: () => getGameData(matchId) });
   const myPart = gamesQuery.data?.data?.info?.participants?.find(
     (e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName,
@@ -25,11 +13,6 @@ export const MatchStub = ({
 
   const winnerId = game?.info ? game?.info.teams.filter((e) => e.win)[0].teamId : null;
   const didWin = myPart?.teamId === winnerId;
-
-  let vod = null;
-  if (videos && game) {
-    vod = maybeGetVod(videos, game);
-  }
 
   return (
     <div className="flex flex-row gap-1 items-center">
@@ -60,8 +43,6 @@ export const MatchStub = ({
         <div>{summonerName}</div>
         <div className="text-gray-500">{new Date(game?.info?.gameCreation || 0).toLocaleString()}</div>
       </div>
-      {vod && <div className="text-[2em]">&#128249;</div>}
-      {!vod && <div className="text-[2em] opacity-10">&#128249;</div>}
     </div>
   );
 };
