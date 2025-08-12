@@ -122,7 +122,11 @@ export const getGamesForSummoner = async (puuid: string, start = 0, count = 20):
   }
 };
 
-export const getGameData = async (matchId: string): Promise<DataPacket<MatchDto>> => {
+type Match404Message = {
+  httpStatus: 404;
+};
+
+export const getGameData = async (matchId: string): Promise<DataPacket<MatchDto | Match404Message>> => {
   const result = await mimikFetch(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`, {
     headers: {
       'X-Actual': `https://americas.api.riotgames.com/lol/match/v5/matches/${matchId}`,

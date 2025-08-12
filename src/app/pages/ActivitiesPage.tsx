@@ -27,7 +27,6 @@ export const ActivitiesPage = () => {
   return (
     <div className="h-full min-h-0 flex flex-col">
       <div className="mb-2 flex flex-row gap-2 items-center">
-        <Button linkTo="/">Back</Button>
         <Button onClick={() => activities.refetch()}>Refresh</Button>
       </div>
       <div className="flex-1 overflow-y-auto minimal-scrollbar">

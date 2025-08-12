@@ -1,4 +1,3 @@
-import { Button } from './Button';
 import { MatchStub } from './MatchStub';
 
 type ActivityStartedEvent = {
@@ -128,21 +127,22 @@ export const ActivityItem = ({ record: rec, localMatches }: ActivityItemProps) =
   };
 
   return (
-    <div className="border border-gray-600 rounded p-3 bg-gray-800">
+    <a
+      href={`#/activities/league/${activityId}`}
+      className="block hover:bg-gray-700 transition-colors bg-gray-900 border border-brands p-2 rounded"
+    >
       <div className="flex flex-row gap-4 items-center">
         {getGameIcon(game)}
         <div className="flex-1">
-          {isLeague && activityId && (
-            <Button linkTo={`/activities/league/${activityId}`}>
-              {associated ? (
-                <MatchStub matchId={associated.matchKey} summonerName={associated.summonerName} />
-              ) : (
-                <div className="text-gray-300">View Activity</div>
-              )}
-            </Button>
-          )}
+          {isLeague &&
+            activityId &&
+            (associated ? (
+              <MatchStub matchId={associated.matchKey} summonerName={associated.summonerName} />
+            ) : (
+              <div className="text-gray-300">View Activity</div>
+            ))}
         </div>
       </div>
-    </div>
+    </a>
   );
 };

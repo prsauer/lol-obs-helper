@@ -136,9 +136,9 @@ export const ReviewPage = () => {
   });
   const gameInfo = gamesQuery?.data?.data || null;
 
-  const myPart = gameInfo?.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
+  const myPart = gameInfo?.info?.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
   const myParticipantId = myPart?.participantId;
-  const myTeamId = gameInfo?.info.participants?.[myParticipantId || 0].teamId;
+  const myTeamId = gameInfo?.info?.participants?.[myParticipantId || 0]?.teamId;
 
   // Set the VOD based on the loading type
   let vod: ReturnType<typeof maybeGetVod> | null = null;
@@ -158,7 +158,7 @@ export const ReviewPage = () => {
   return (
     <div className="h-full min-h-0 flex flex-col">
       <div className="flex flex-row gap-2 mb-2 items-center ">
-        <Button linkTo={loaderData.type === 'activity' ? '/activities' : '/'}>BACK</Button>
+        <Button linkTo={loaderData.type === 'activity' ? '/' : '/'}>BACK</Button>
         <div>{loaderData.type === 'activity' ? `Activity: ${loaderData.activityId}` : matchId}</div>
 
         {loaderData.type === 'activity' && activityInfo && (
@@ -183,7 +183,7 @@ export const ReviewPage = () => {
           </Button>
         )}
         {matchId && <Button linkTo={`/inspect/${matchId}`}>Inspect</Button>}
-        {gameInfo?.info.participants?.map((p) => (
+        {gameInfo?.info?.participants?.map((p) => (
           <div
             key={p.puuid}
             onClick={() => {
@@ -195,8 +195,8 @@ export const ReviewPage = () => {
         ))}
         <Button
           onClick={async () => {
-            const didWin = gameInfo?.info.teams.find((t) => t.teamId === myTeamId)?.win;
-            const title = `${gameInfo?.info.participants?.[(myParticipantId || 0) - 1].championName} ${
+            const didWin = gameInfo?.info?.teams?.find((t) => t.teamId === myTeamId)?.win;
+            const title = `${gameInfo?.info?.participants?.[(myParticipantId || 0) - 1]?.championName} ${
               didWin ? 'W' : 'L'
             } ${new Date(gameInfo?.info.gameCreation || '').toLocaleDateString()}`;
 

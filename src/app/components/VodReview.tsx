@@ -86,7 +86,8 @@ export const VodReview = ({
 
   // Data calculations after all hooks
   const myId = summonerPuuid; //summonerQuery.data?.data?.puuid;
-  const myParticipantId = gameTimelineQuery.data?.data?.info.participants?.find((p) => p.puuid === myId)?.participantId;
+  const myParticipantId = gameTimelineQuery.data?.data?.info?.participants?.find((p) => p.puuid === myId)
+    ?.participantId;
   const gameInfo = gamesQuery.data?.data?.info;
   const vodStartTime = created;
   const vodEndTime = ended;
@@ -124,9 +125,9 @@ export const VodReview = ({
     );
   }
 
-  const myTeamId = myParticipantId ? gameInfo.participants?.[myParticipantId]?.teamId : -1;
+  const myTeamId = myParticipantId && gameInfo?.participants ? gameInfo.participants[myParticipantId]?.teamId : -1;
 
-  const allEvts = gameTimelineQuery.data?.data?.info.frames.map((e) => e.events).flat();
+  const allEvts = gameTimelineQuery.data?.data?.info?.frames?.map((e) => e.events || []).flat();
 
   const importantEvents = allEvts?.filter((evt) => {
     if (evt.type === 'ELITE_MONSTER_KILL') {
@@ -248,7 +249,7 @@ export const VodReview = ({
           return (
             <EventStub
               key={evt.timestamp}
-              participants={gameInfo.participants || []}
+              participants={gameInfo?.participants || []}
               event={evt}
               myTeamId={myTeamId}
               myParticipantId={myParticipantId}
@@ -294,7 +295,7 @@ export const VodReview = ({
                   return (
                     <EventTimelineIcon
                       event={e}
-                      participants={gameInfo.participants}
+                      participants={gameInfo?.participants || []}
                       myParticipantId={myParticipantId}
                       key={e.timestamp}
                       left={`${(100 * 1000 * timeConvert(e.timestamp)) / vodDuration}%`}

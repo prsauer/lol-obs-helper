@@ -8,7 +8,7 @@ export const Button = (props: React.HTMLAttributes<HTMLButtonElement> & { linkTo
       {...others}
       onClick={props.linkTo ? () => nav(linkTo as string) : props.onClick}
       className={
-        'bg-transparent hover:bg-green-500 text-green-700 font-semibold hover:text-white py-1 px-7 border border-green-500 hover:border-transparent rounded ' +
+        'bg-transparent hover:bg-brandb text-brandb font-semibold hover:text-white py-1 px-7 border border-brands hover:border-transparent rounded ' +
         props.className
       }
     >
