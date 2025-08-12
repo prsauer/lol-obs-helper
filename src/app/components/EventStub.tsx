@@ -18,21 +18,21 @@ export const EventStub = ({
   onClick: (ts: number) => void;
   timeConverter: (ts: number) => number;
 }) => {
+  const gameTime = secondsToMinutesString(event.timestamp / 1000);
   if (event.type === 'CHAMPION_KILL' && event.killerId === myParticipantId) {
     return (
       <div
         className="text-green-400 cursor-pointer flex flex-row gap-1"
         onClick={() => onClick(timeConverter(event.timestamp))}
       >
-        Kill: {secondsToMinutesString(timeConverter(event.timestamp))}{' '}
-        <ChampIcon size={20} championId={participants[(event.victimId || 0) - 1].championId} />
+        Kill: {gameTime} <ChampIcon size={20} championId={participants[(event.victimId || 0) - 1].championId} />
       </div>
     );
   }
   if (event.type === 'CHAMPION_KILL' && event.victimId === myParticipantId) {
     return (
       <div className="text-purple-400 font-bold cursor-pointer" onClick={() => onClick(timeConverter(event.timestamp))}>
-        Death: {secondsToMinutesString(timeConverter(event.timestamp))}
+        Death: {gameTime}
       </div>
     );
   }
@@ -42,8 +42,7 @@ export const EventStub = ({
         className="text-green-400 cursor-pointer flex flex-row gap-1"
         onClick={() => onClick(timeConverter(event.timestamp))}
       >
-        Assist: {secondsToMinutesString(timeConverter(event.timestamp))}{' '}
-        <ChampIcon size={20} championId={participants[(event.victimId || 0) - 1].championId} />
+        Assist: {gameTime} <ChampIcon size={20} championId={participants[(event.victimId || 0) - 1].championId} />
       </div>
     );
   }
@@ -54,7 +53,7 @@ export const EventStub = ({
         onClick={() => onClick(timeConverter(event.timestamp))}
         className={myKill ? 'text-green-400 cursor-pointer' : 'text-purple-400 cursor-pointer'}
       >
-        {MONSTER_NAMES[event.monsterType || 'none']} {secondsToMinutesString(timeConverter(event.timestamp))}
+        {MONSTER_NAMES[event.monsterType || 'none']} {gameTime}
       </div>
     );
   }

@@ -66,30 +66,59 @@ export const ReviewPage = () => {
       activityInfo = activity;
       activityVodPath = activity.recording.filename;
 
-      // Resolve match data using same logic as ActivitiesPage
-      const game = activity.start?.game || activity.end?.game || activity.recording?.metadata?.game || '';
-      const isLeague = game === 'league-of-legends';
+      // Use riotGameId from metadata if available, otherwise fall back to time-based matching
+      const riotGameId = activity.end?.metadata?.riotGameId || activity.recording?.metadata?.riotGameId;
 
-      if (isLeague && localMatches.data && localMatches.data.length > 0) {
-        const startedAt = toDate(activity.start?.timestamp);
-        const endedAt = toDate(activity.end?.timestamp);
-        const startMs = startedAt?.getTime();
-        const endMs = endedAt?.getTime();
-        const anchor = (endMs ?? startMs ?? activity.timestamp) as number;
+      if (riotGameId) {
+        console.log('Found riotGameId in activity metadata:', riotGameId);
+        // Try to find matching game in localMatches by gameId
+        const matchingGame = localMatches.data?.find(
+          (match) =>
+            match.matchId === riotGameId ||
+            match.matchId === `NA1_${riotGameId}` ||
+            `${match.platformId}_${match.matchId}`.includes(riotGameId),
+        );
 
-        const windowMin = (startMs ?? anchor) - 30 * 60 * 1000;
-        const windowMax = (endMs ?? anchor) + 30 * 60 * 1000;
-
-        const candidates = localMatches.data.filter((m) => m.createdTime >= windowMin && m.createdTime <= windowMax);
-        const best = (candidates.length > 0 ? candidates : localMatches.data)
-          .map((m) => ({ m, d: Math.abs(m.createdTime - anchor) }))
-          .sort((a, b) => a.d - b.d)[0]?.m;
-
-        if (best?.platformId && best?.matchId) {
+        if (matchingGame) {
           resolvedMatch = {
-            matchKey: `${best.platformId}_${best.matchId}`,
-            summonerName: best.summonerName,
+            matchKey: `${matchingGame.platformId}_${matchingGame.matchId}`,
+            summonerName: matchingGame.summonerName,
           };
+          console.log('Resolved match using riotGameId:', resolvedMatch);
+        } else {
+          // Use the riotGameId directly with NA1 platform (most common)
+          resolvedMatch = {
+            matchKey: `NA1_${riotGameId}`,
+            summonerName: undefined,
+          };
+          console.log('Using riotGameId directly:', resolvedMatch);
+        }
+      } else {
+        // Fall back to time-based matching logic
+        const game = activity.start?.game || activity.end?.game || activity.recording?.metadata?.game || '';
+        const isLeague = game === 'league-of-legends';
+
+        if (isLeague && localMatches.data && localMatches.data.length > 0) {
+          const startedAt = toDate(activity.start?.timestamp);
+          const endedAt = toDate(activity.end?.timestamp);
+          const startMs = startedAt?.getTime();
+          const endMs = endedAt?.getTime();
+          const anchor = (endMs ?? startMs ?? activity.timestamp) as number;
+
+          const windowMin = (startMs ?? anchor) - 30 * 60 * 1000;
+          const windowMax = (endMs ?? anchor) + 30 * 60 * 1000;
+
+          const candidates = localMatches.data.filter((m) => m.createdTime >= windowMin && m.createdTime <= windowMax);
+          const best = (candidates.length > 0 ? candidates : localMatches.data)
+            .map((m) => ({ m, d: Math.abs(m.createdTime - anchor) }))
+            .sort((a, b) => a.d - b.d)[0]?.m;
+
+          if (best?.platformId && best?.matchId) {
+            resolvedMatch = {
+              matchKey: `${best.platformId}_${best.matchId}`,
+              summonerName: best.summonerName,
+            };
+          }
         }
       }
     }
