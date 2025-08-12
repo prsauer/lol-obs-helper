@@ -2,7 +2,8 @@ import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { getGameData, getGameTimeline } from '../proxy/riotApi';
 import { useQuery } from '@tanstack/react-query';
 import { EventStub } from './EventStub';
-import { ChampIcon } from '../league/ChampIcon';
+import { ChampIcon } from './ChampIcon';
+import { ChampSplash } from './ChampSplash';
 
 const KILL_UNDERCUT_TIME = 10;
 
@@ -225,7 +226,8 @@ export const VodReview = ({
           {myParticipantId && gameInfo?.participants && (
             <>
               <div className="flex items-center gap-2">
-                <ChampIcon size={24} championId={focusedParticipant?.championId} />
+                <ChampIcon size={64} championId={focusedParticipant?.championId} />
+                <ChampSplash championName={focusedParticipant?.championName} size={64} />
                 <span className="font-semibold text-white">{focusedParticipant?.riotIdGameName || 'Unknown'}</span>
                 <span className="text-gray-400 ml-auto">
                   {focusedParticipant?.kills || 0}/{focusedParticipant?.deaths || 0}/{focusedParticipant?.assists || 0}

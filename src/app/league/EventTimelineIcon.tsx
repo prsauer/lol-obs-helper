@@ -1,5 +1,5 @@
 import { Event, MatchParticipant } from '../proxy/types';
-import { ChampIcon } from '../league/ChampIcon';
+import { ChampIcon } from './ChampIcon';
 
 const ICON_SIZE = 24;
 

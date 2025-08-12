@@ -1,5 +1,5 @@
 import { useLoaderData, LoaderFunctionArgs, useNavigate } from 'react-router-dom';
-import { VodReview } from '../components/VodReview';
+import { VodReview } from '../league/VodReview';
 import { ChampIcon } from '../league/ChampIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
@@ -7,13 +7,7 @@ import { Button } from '../components/Button';
 import { maybeGetVod } from '../utils/vod';
 import { useState } from 'react';
 import { useAppConfig } from '../hooks/AppConfigContext';
-
-const toDate = (value: string | number | Date | undefined): Date | null => {
-  if (value === undefined) return null;
-  if (value instanceof Date) return value;
-  if (typeof value === 'number') return new Date(value);
-  return new Date(value);
-};
+import { associateMatchWithVod } from '../utils/matchAssociation';
 
 export function reviewLoader({ params }: LoaderFunctionArgs) {
   return { id: params.id, summonerName: params.summonerName, type: 'match' as const };
@@ -68,61 +62,8 @@ export const ReviewPage = () => {
       activityInfo = activity;
       activityVodPath = activity.recording.filename;
 
-      // Use riotGameId from metadata if available, otherwise fall back to time-based matching
-      const riotGameId = activity.end?.metadata?.riotGameId || activity.recording?.metadata?.riotGameId;
-
-      if (riotGameId) {
-        console.log('Found riotGameId in activity metadata:', riotGameId);
-        // Try to find matching game in localMatches by gameId
-        const matchingGame = localMatches.data?.find(
-          (match) =>
-            match.matchId === riotGameId ||
-            match.matchId === `NA1_${riotGameId}` ||
-            `${match.platformId}_${match.matchId}`.includes(riotGameId),
-        );
-
-        if (matchingGame) {
-          resolvedMatch = {
-            matchKey: `${matchingGame.platformId}_${matchingGame.matchId}`,
-            summonerName: matchingGame.summonerName,
-          };
-          console.log('Resolved match using riotGameId:', resolvedMatch);
-        } else {
-          // Use the riotGameId directly with NA1 platform (most common)
-          resolvedMatch = {
-            matchKey: `NA1_${riotGameId}`,
-            summonerName: undefined,
-          };
-          console.log('Using riotGameId directly:', resolvedMatch);
-        }
-      } else {
-        // Fall back to time-based matching logic
-        const game = activity.start?.game || activity.end?.game || activity.recording?.metadata?.game || '';
-        const isLeague = game === 'league-of-legends';
-
-        if (isLeague && localMatches.data && localMatches.data.length > 0) {
-          const startedAt = toDate(activity.start?.timestamp);
-          const endedAt = toDate(activity.end?.timestamp);
-          const startMs = startedAt?.getTime();
-          const endMs = endedAt?.getTime();
-          const anchor = (endMs ?? startMs ?? activity.timestamp) as number;
-
-          const windowMin = (startMs ?? anchor) - 30 * 60 * 1000;
-          const windowMax = (endMs ?? anchor) + 30 * 60 * 1000;
-
-          const candidates = localMatches.data.filter((m) => m.createdTime >= windowMin && m.createdTime <= windowMax);
-          const best = (candidates.length > 0 ? candidates : localMatches.data)
-            .map((m) => ({ m, d: Math.abs(m.createdTime - anchor) }))
-            .sort((a, b) => a.d - b.d)[0]?.m;
-
-          if (best?.platformId && best?.matchId) {
-            resolvedMatch = {
-              matchKey: `${best.platformId}_${best.matchId}`,
-              summonerName: best.summonerName,
-            };
-          }
-        }
-      }
+      // Use the utility function to associate match with VOD
+      resolvedMatch = associateMatchWithVod(activity, localMatches.data);
     }
   }
 
@@ -139,7 +80,16 @@ export const ReviewPage = () => {
   const gameInfo = gamesQuery?.data?.data || null;
 
   if (!gameInfo || 'httpStatus' in gameInfo) {
-    return <div>Match not found</div>;
+    return (
+      <div className="h-full min-h-0 flex flex-col">
+        <div className="flex flex-row gap-2 mb-2 items-center">
+          <Button onClick={() => navigate(-1)}>BACK</Button>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-300 text-lg">Match not found</div>
+        </div>
+      </div>
+    );
   }
 
   const myPart = gameInfo.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
@@ -182,8 +132,8 @@ export const ReviewPage = () => {
             <div
               key={p.puuid}
               className={
-                'flex flex-col items-center cursor-pointer ' +
-                (focusSummonerId === p.puuid ? 'border-green-100 border-2' : '')
+                'flex flex-col items-center cursor-pointer border ' +
+                (focusSummonerId === p.puuid ? 'border-green-500' : 'border-transparent')
               }
               onClick={() => {
                 setFocusSummonerId(p.puuid);

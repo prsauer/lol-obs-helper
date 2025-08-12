@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, useLoaderData, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
-import { MatchDetails } from '../components/MatchDetails';
+import { MatchDetails } from '../league/MatchDetails';
 
 export function matchLoader({ params }: LoaderFunctionArgs) {
   return { matchId: params.matchId };

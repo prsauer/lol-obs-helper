@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameQuery, useGameTimelineQuery } from '../hooks/games';
-import { ChampIcon } from '../league/ChampIcon';
+import { ChampIcon } from './ChampIcon';
 import {
   CartesianGrid,
   ComposedChart,
@@ -15,7 +15,7 @@ import {
   ZAxis,
 } from 'recharts';
 import { Event } from '../proxy/types';
-import { Button } from './Button';
+import { Button } from '../components/Button';
 
 const calcParticipationType = (partIndex: number, evt: Event) => {
   if (evt.victimId === partIndex) return 'DEATH';

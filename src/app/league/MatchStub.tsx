@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
-import { ChampIcon } from '../league/ChampIcon';
+import { ChampIcon } from './ChampIcon';
 
 export const MatchStub = ({ matchId, summonerName }: { matchId: string; summonerName?: string }) => {
   const gamesQuery = useQuery({ queryKey: ['game-data', { match: matchId }], queryFn: () => getGameData(matchId) });
@@ -58,7 +58,7 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
   const didWin = myPart?.teamId === winnerId;
 
   return (
-    <div className="flex flex-row gap-1 items-center">
+    <div className="flex flex-row gap-1 items-center bg-red-50">
       <ChampIcon championId={myPart?.championId} size={64} />
       <div>
         <div className="flex flex-row">

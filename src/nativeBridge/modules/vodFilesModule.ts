@@ -5,6 +5,7 @@ import path from 'path';
 import { google } from 'googleapis';
 import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent, BusEvents } from '../events';
 import { bus } from '../bus';
+import type { FolderInfo, ActivityRecord } from '../../types';
 
 async function insert(token: string, body: ReadStream, title: string, description: string) {
   const service = google.youtube('v3');
@@ -77,23 +78,6 @@ const scanLogFileForInfo = (lines: string[]) => {
     };
   }
   return null;
-};
-
-type FolderInfo = {
-  matchId?: string;
-  summonerName?: string;
-  summonerPuuid?: string;
-  platformId?: string;
-  region?: string;
-  logPath: string;
-  createdTime: number;
-};
-
-type ActivityRecord = {
-  timestamp: number;
-  start?: ActivityStartedEvent;
-  end?: ActivityEndedEvent;
-  recording: RecordingWrittenEvent;
 };
 
 const folderNamesCached: Record<string, boolean> = {};
