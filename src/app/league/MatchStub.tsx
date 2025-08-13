@@ -58,33 +58,31 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
   const didWin = myPart?.teamId === winnerId;
 
   return (
-    <div className="flex flex-row gap-1 items-center bg-red-50">
-      <ChampIcon championId={myPart?.championId} size={64} />
+    <div className="flex flex-row gap-1">
+      <ChampIcon championId={myPart?.championId} size={96} />
       <div>
         <div className="flex flex-row">
           {participants
             .filter((e) => e.teamId == 100)
             .map((e) => (
-              <ChampIcon key={e.puuid} championId={e?.championId} size={32} />
+              <ChampIcon key={e.puuid} championId={e?.championId} size={48} />
             ))}
         </div>
         <div className="flex flex-row">
           {participants
             .filter((e) => e.teamId == 200)
             .map((e) => (
-              <ChampIcon key={e.puuid} championId={e?.championId} size={32} />
+              <ChampIcon key={e.puuid} championId={e?.championId} size={48} />
             ))}
         </div>
       </div>
-
-      <div className="flex flex-col items-start">
+      <div className="flex flex-col">
         <div className="flex flex-row items-center gap-2">
           <div className="text-lg text-orange-500">
             {myPart?.kills}/{myPart?.deaths}/{myPart?.assists}
           </div>
           <div className={didWin ? 'text-green-400' : 'text-purple-700'}>{didWin ? 'WIN' : 'LOSS'}</div>
         </div>
-        <div>{summonerName}</div>
         <div className="text-gray-500">{new Date(game?.info?.gameCreation || 0).toLocaleString()}</div>
       </div>
     </div>

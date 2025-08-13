@@ -18,8 +18,8 @@ export const LeagueActivityItem = ({ record: rec, localMatches }: LeagueActivity
       className="block hover:bg-gray-700 transition-colors bg-gray-900 border border-brands rounded"
     >
       <div className="flex flex-row gap-4 items-center">
-        <div className="w-12 h-12 rounded flex items-center justify-center">
-          <img src="static/LEAGUE-256x256x32.png" alt="League of Legends" className="w-12 h-12 rounded" />
+        <div className="w-[96px] h-[96px] rounded flex items-center justify-center pl-4 pt-2 pb-2">
+          <img src="static/LEAGUE-256x256x32.png" alt="League of Legends" />
         </div>
         <div className="flex-1">
           {activityId &&
