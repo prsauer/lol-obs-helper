@@ -4,7 +4,6 @@ import { ChampIcon } from '../league/ChampIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
 import { Button } from '../components/Button';
-import { maybeGetVod } from '../utils/vod';
 import { useState } from 'react';
 import { useAppConfig } from '../hooks/AppConfigContext';
 import { associateMatchWithVod } from '../utils/matchAssociation';
@@ -48,8 +47,10 @@ export const ReviewPage = () => {
     end?: { timestamp: Date; game?: string };
     recording?: { filename: string; metadata?: { game?: string } };
   } | null = null;
-  let activityVodPath: string | undefined;
+  let _activityVodPath: string | undefined;
   let resolvedMatch: { matchKey: string; summonerName?: string } | undefined;
+  let vod: { name: string; ended: Date } | undefined;
+  let activityVod: { path: string } | undefined;
 
   if (loaderData.type === 'activity' && activities.data) {
     const activity = activities.data.find((rec) => {
@@ -60,7 +61,8 @@ export const ReviewPage = () => {
 
     if (activity && activity.recording?.filename) {
       activityInfo = activity;
-      activityVodPath = activity.recording.filename;
+      _activityVodPath = activity.recording.filename;
+      activityVod = { path: activity.recording.filename };
 
       // Use the utility function to associate match with VOD
       resolvedMatch = associateMatchWithVod(activity, localMatches.data);
@@ -79,6 +81,21 @@ export const ReviewPage = () => {
   });
   const gameInfo = gamesQuery?.data?.data || null;
 
+  // For match type, find corresponding vod from videos query
+  if (loaderData.type !== 'activity' && videos.data && gameInfo && 'info' in gameInfo) {
+    // Try to find a vod that matches this game's timeframe
+    const gameCreation = new Date(gameInfo.info.gameCreation);
+    const gameDuration = gameInfo.info.gameDuration * 1000; // Convert seconds to milliseconds
+    const gameEnd = new Date(gameCreation.getTime() + gameDuration);
+
+    vod = videos.data.find((v) => {
+      const vodTime = new Date(v.ended);
+      // Check if vod ended within a reasonable window after the game ended
+      const timeDiff = Math.abs(vodTime.getTime() - gameEnd.getTime());
+      return timeDiff < 30 * 60 * 1000; // Within 30 minutes
+    });
+  }
+
   if (!gameInfo || 'httpStatus' in gameInfo) {
     return (
       <div className="h-full min-h-0 flex flex-col">
@@ -95,16 +112,6 @@ export const ReviewPage = () => {
   const myPart = gameInfo.info.participants?.find((e) => `${e.riotIdGameName}#${e.riotIdTagline}` === summonerName);
   const myParticipantId = myPart?.participantId;
   const myTeamId = gameInfo.info.participants?.[myParticipantId || 0]?.teamId;
-
-  // Set the VOD based on the loading type
-  let vod: ReturnType<typeof maybeGetVod> | null = null;
-  let activityVod: { path: string } | null = null;
-
-  if (loaderData.type === 'activity') {
-    activityVod = activityVodPath ? { path: activityVodPath } : null;
-  } else if (videos?.data && gameInfo) {
-    vod = maybeGetVod(videos.data, gameInfo);
-  }
 
   const noVodExists = Boolean(
     (loaderData.type === 'activity' ? !activityVod : !vod) &&
@@ -166,7 +173,7 @@ export const ReviewPage = () => {
         </Button>
       </div>
       {noVodExists && <div>No video recorded for this match :( </div>}
-      {(vod || activityVod) && (
+      {activityVod && (
         <VodReview
           vod={loaderData.type === 'activity' ? activityVod?.path?.split('\\').pop() : vod?.name}
           created={loaderData.type === 'activity' ? activityInfo?.start?.timestamp : vod?.ended}

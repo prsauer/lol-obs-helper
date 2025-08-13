@@ -43,19 +43,6 @@ type NativeApi = {
   leagueLiveClient: {
     startListeningForGame: OmitFirstArg<LeagueLiveClientModule['startListeningForGame']>;
     stopListeningForGame: OmitFirstArg<LeagueLiveClientModule['stopListeningForGame']>;
-    getAllGameData: OmitFirstArg<LeagueLiveClientModule['getAllGameData']>;
-    getActivePlayer: OmitFirstArg<LeagueLiveClientModule['getActivePlayer']>;
-    getActivePlayerName: OmitFirstArg<LeagueLiveClientModule['getActivePlayerName']>;
-    getActivePlayerAbilities: OmitFirstArg<LeagueLiveClientModule['getActivePlayerAbilities']>;
-    getActivePlayerRunes: OmitFirstArg<LeagueLiveClientModule['getActivePlayerRunes']>;
-    getPlayerList: OmitFirstArg<LeagueLiveClientModule['getPlayerList']>;
-    getPlayerItems: OmitFirstArg<LeagueLiveClientModule['getPlayerItems']>;
-    getPlayerMainRunes: OmitFirstArg<LeagueLiveClientModule['getPlayerMainRunes']>;
-    getPlayerScores: OmitFirstArg<LeagueLiveClientModule['getPlayerScores']>;
-    getPlayerSummonerSpells: OmitFirstArg<LeagueLiveClientModule['getPlayerSummonerSpells']>;
-    getEventData: OmitFirstArg<LeagueLiveClientModule['getEventData']>;
-    getGameStats: OmitFirstArg<LeagueLiveClientModule['getGameStats']>;
-    isGameActive: OmitFirstArg<LeagueLiveClientModule['isGameActive']>;
     onNewGameDetected: (callback: AsEventFunction<LeagueLiveClientModule['onNewGameDetected']>) => void;
     removeAll_onNewGameDetected_listeners: () => void;
     onGameEnded: (callback: AsEventFunction<LeagueLiveClientModule['onGameEnded']>) => void;

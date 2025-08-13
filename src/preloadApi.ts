@@ -39,22 +39,6 @@ export const modulesApi = {
       ipcRenderer.invoke('native:leagueLiveClient:startListeningForGame', ...args),
     stopListeningForGame: (...args: any[]) =>
       ipcRenderer.invoke('native:leagueLiveClient:stopListeningForGame', ...args),
-    getAllGameData: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getAllGameData', ...args),
-    getActivePlayer: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getActivePlayer', ...args),
-    getActivePlayerName: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getActivePlayerName', ...args),
-    getActivePlayerAbilities: (...args: any[]) =>
-      ipcRenderer.invoke('native:leagueLiveClient:getActivePlayerAbilities', ...args),
-    getActivePlayerRunes: (...args: any[]) =>
-      ipcRenderer.invoke('native:leagueLiveClient:getActivePlayerRunes', ...args),
-    getPlayerList: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getPlayerList', ...args),
-    getPlayerItems: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getPlayerItems', ...args),
-    getPlayerMainRunes: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getPlayerMainRunes', ...args),
-    getPlayerScores: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getPlayerScores', ...args),
-    getPlayerSummonerSpells: (...args: any[]) =>
-      ipcRenderer.invoke('native:leagueLiveClient:getPlayerSummonerSpells', ...args),
-    getEventData: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getEventData', ...args),
-    getGameStats: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:getGameStats', ...args),
-    isGameActive: (...args: any[]) => ipcRenderer.invoke('native:leagueLiveClient:isGameActive', ...args),
     onNewGameDetected: (callback: (event: IpcRendererEvent, ...args: any[]) => void) =>
       ipcRenderer.on('native:leagueLiveClient:onNewGameDetected', callback),
     removeAll_onNewGameDetected_listeners: () =>

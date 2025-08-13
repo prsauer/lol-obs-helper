@@ -5,6 +5,12 @@ export type AllGameData = {
   gameData: GameData;
 };
 
+export type Client404Response = {
+  errorCode: 'RESOURCE_NOT_FOUND';
+  httpStatus: 404;
+  message: string;
+};
+
 export type ActivePlayer = {
   abilities: Abilities;
   championStats: ChampionStats;

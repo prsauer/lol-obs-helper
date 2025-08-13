@@ -5,20 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { ActivityEndedEvent, ActivityStartedEvent, BusEvents } from '../events';
 import { bus } from '../bus';
-import {
-  AllGameData,
-  ActivePlayer,
-  ActivePlayerAbilities,
-  ActivePlayerRunes,
-  PlayerItems,
-  PlayerList,
-  PlayerMainRunes,
-  PlayerScores,
-  PlayerSummonerSpells,
-  EventData,
-  GameStats,
-  TeamID,
-} from './leagueLiveClientTypes';
+import { AllGameData, Client404Response } from './leagueLiveClientTypes';
 import { getAccountByRiotId, getActiveGamesForSummoner } from '../../app/proxy/riotApi';
 import { logger } from '../logger';
 
@@ -57,7 +44,13 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     }
   }
 
-  private logApiResponse(endpoint: string, response: unknown): void {
+  private logApiResponse(
+    endpoint: string,
+    response: unknown,
+    responseTime: number,
+    status?: number,
+    timeout?: boolean,
+  ): void {
     if (!LEAGUE_LIVE_CLIENT_FILE_LOGGING) {
       return;
     }
@@ -68,6 +61,9 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
         timestamp,
         endpoint,
         response,
+        responseTime,
+        status,
+        timeout,
       };
 
       const logFileName = `league-api-${new Date().toISOString().split('T')[0]}.log`;
@@ -128,31 +124,62 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     }
   }
 
-  private async callClientApi<T>(endpoint: string, timeout = 5000): Promise<T | null> {
+  private async callClientApi<T>(
+    endpoint: string,
+    timeout = 5000,
+  ): Promise<{
+    responseTime: number;
+    status?: number;
+    timeout: boolean;
+    data: T | Client404Response | null;
+  } | null> {
     try {
       const fetch = (await import('node-fetch')).default;
+      let didAbort = false;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        didAbort = true;
+      }, timeout);
 
+      const startTime = process.hrtime();
       const response = await fetch(`${LEAGUE_LIVE_CLIENT_API_ROOT}${endpoint}`, {
         agent: this.httpsAgent,
         signal: controller.signal,
       });
 
+      const endTime = process.hrtime(startTime);
+      const responseTime = endTime[0] * 1000 + endTime[1] / 1000000;
       clearTimeout(timeoutId);
 
-      if (!response.ok && response.status !== 404) {
+      const result = (await response.json()) as T;
+
+      // Check if this is an error response (League API returns JSON errors even for 404s)
+      if (result && typeof result === 'object' && 'errorCode' in result) {
+        // This is an error response, return null data
+        return {
+          responseTime,
+          status: response.status,
+          timeout: didAbort,
+          data: null,
+        };
+      }
+
+      if (!response.ok) {
         logger.error(`Error calling League Client API at ${endpoint}: ${response.statusText}`);
         return null;
       }
-
-      const result = (await response.json()) as T;
       if (result !== null) {
-        this.logApiResponse(endpoint, result);
+        this.logApiResponse(endpoint, result, responseTime, response.status, didAbort);
       }
 
-      return result;
+      return {
+        responseTime,
+        status: response.status,
+        timeout: didAbort,
+        data: result,
+      };
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
         logger.info(`Request to ${endpoint} timed out or was cancelled`);
@@ -172,9 +199,14 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     const pollGameData = async () => {
       try {
         this.currentRequest = new AbortController();
-        const gameData = await this.callClientApi<AllGameData>('/liveclientdata/allgamedata', 100);
+        const result = await this.callClientApi<AllGameData>('/liveclientdata/allgamedata', 800);
+        const gameData = result?.data;
 
         if (gameData) {
+          if ('httpStatus' in gameData) {
+            // 404 case means the local server is starting up but hasnt connected to the game data yet
+            return;
+          }
           const gameId = this.generateGameId(gameData);
 
           const account = await getAccountByRiotId(
@@ -251,83 +283,5 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
   @moduleEvent('on')
   public onGameEnded(_mainWindow: BrowserWindow, _gameId: string): void {
     return;
-  }
-
-  @moduleFunction()
-  public async getAllGameData(_mainWindow: BrowserWindow, eventID?: number): Promise<AllGameData | null> {
-    const endpoint = eventID ? `/liveclientdata/allgamedata?eventID=${eventID}` : '/liveclientdata/allgamedata';
-    return this.callClientApi<AllGameData>(endpoint);
-  }
-
-  @moduleFunction()
-  public async getActivePlayer(_mainWindow: BrowserWindow): Promise<ActivePlayer | null> {
-    return this.callClientApi<ActivePlayer>('/liveclientdata/activeplayer');
-  }
-
-  @moduleFunction()
-  public async getActivePlayerName(_mainWindow: BrowserWindow): Promise<string | null> {
-    return this.callClientApi<string>('/liveclientdata/activeplayername');
-  }
-
-  @moduleFunction()
-  public async getActivePlayerAbilities(_mainWindow: BrowserWindow): Promise<ActivePlayerAbilities | null> {
-    return this.callClientApi<ActivePlayerAbilities>('/liveclientdata/activeplayerabilities');
-  }
-
-  @moduleFunction()
-  public async getActivePlayerRunes(_mainWindow: BrowserWindow): Promise<ActivePlayerRunes | null> {
-    return this.callClientApi<ActivePlayerRunes>('/liveclientdata/activeplayerrunes');
-  }
-
-  @moduleFunction()
-  public async getPlayerList(_mainWindow: BrowserWindow, teamID?: TeamID): Promise<PlayerList | null> {
-    const endpoint = teamID ? `/liveclientdata/playerlist?teamID=${teamID}` : '/liveclientdata/playerlist';
-    return this.callClientApi<PlayerList>(endpoint);
-  }
-
-  @moduleFunction()
-  public async getPlayerItems(_mainWindow: BrowserWindow, riotId: string): Promise<PlayerItems | null> {
-    return this.callClientApi<PlayerItems>(`/liveclientdata/playeritems?riotId=${encodeURIComponent(riotId)}`);
-  }
-
-  @moduleFunction()
-  public async getPlayerMainRunes(_mainWindow: BrowserWindow, riotId: string): Promise<PlayerMainRunes | null> {
-    return this.callClientApi<PlayerMainRunes>(`/liveclientdata/playermainrunes?riotId=${encodeURIComponent(riotId)}`);
-  }
-
-  @moduleFunction()
-  public async getPlayerScores(_mainWindow: BrowserWindow, riotId: string): Promise<PlayerScores | null> {
-    return this.callClientApi<PlayerScores>(`/liveclientdata/playerscores?riotId=${encodeURIComponent(riotId)}`);
-  }
-
-  @moduleFunction()
-  public async getPlayerSummonerSpells(
-    _mainWindow: BrowserWindow,
-    riotId: string,
-  ): Promise<PlayerSummonerSpells | null> {
-    return this.callClientApi<PlayerSummonerSpells>(
-      `/liveclientdata/playersummonerspells?riotId=${encodeURIComponent(riotId)}`,
-    );
-  }
-
-  @moduleFunction()
-  public async getEventData(_mainWindow: BrowserWindow, eventID?: number): Promise<EventData | null> {
-    const endpoint = eventID ? `/liveclientdata/eventdata?eventID=${eventID}` : '/liveclientdata/eventdata';
-    return this.callClientApi<EventData>(endpoint);
-  }
-
-  @moduleFunction()
-  public async getGameStats(_mainWindow: BrowserWindow): Promise<GameStats | null> {
-    return this.callClientApi<GameStats>('/liveclientdata/gamestats');
-  }
-
-  @moduleFunction()
-  public async isGameActive(_mainWindow: BrowserWindow): Promise<boolean> {
-    try {
-      const gameStats = await this.getGameStats(_mainWindow);
-      return gameStats !== null;
-    } catch {
-      return false;
-    }
   }
 }
