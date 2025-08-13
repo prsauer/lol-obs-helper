@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getGameData } from '../proxy/riotApi';
 import { ChampIcon } from './ChampIcon';
+import { SummonerSpellIcon } from './SummonerSpellIcon';
+import { RuneIcon } from './RuneIcon';
 
 export const MatchStub = ({ matchId, summonerName }: { matchId: string; summonerName?: string }) => {
   const gamesQuery = useQuery({ queryKey: ['game-data', { match: matchId }], queryFn: () => getGameData(matchId) });
@@ -60,6 +62,17 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
   return (
     <div className="flex flex-row gap-1">
       <ChampIcon championId={myPart?.championId} size={96} />
+      <div className="flex flex-col gap-1">
+        {myPart && (
+          <>
+            <SummonerSpellIcon spellId={myPart.summoner1Id} size={20} />
+            <SummonerSpellIcon spellId={myPart.summoner2Id} size={20} />
+          </>
+        )}
+        {myPart?.perks?.styles?.[0]?.selections?.[0] && (
+          <RuneIcon runeId={myPart.perks.styles[0].selections[0].perk} size={20} />
+        )}
+      </div>
       <div>
         <div className="flex flex-row">
           {participants

@@ -1,6 +1,7 @@
 node_modules
 .obs
 win-capture/
+ai_mocks/
 
 # Logs
 logs
