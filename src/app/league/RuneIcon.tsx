@@ -4,10 +4,12 @@ export const RuneIcon = ({
   runeId,
   size = 16,
   className = '',
+  showTitle = false,
 }: {
   runeId: number;
   size?: number;
   className?: string;
+  showTitle?: boolean;
 }) => {
   const { data: perks, isLoading, error } = usePerks();
 
@@ -54,6 +56,7 @@ export const RuneIcon = ({
     <img
       src={iconUrl}
       alt={`${perk.name} (${runeId})`}
+      title={showTitle ? perk.name : undefined}
       className={className}
       style={{ width: size, height: size, objectFit: 'contain', border: '1px solid #333' }}
       onError={(e) => {

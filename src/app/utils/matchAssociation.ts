@@ -18,7 +18,7 @@ export const associateMatchWithVod = (
   }
 
   // Extract riotGameId from metadata
-  const riotGameId = record.end?.metadata?.riotGameId || record.recording?.metadata?.riotGameId;
+  const riotGameId = record.recording?.metadata?.riotGameId || record.end?.metadata?.riotGameId;
 
   if (!riotGameId) {
     return undefined;

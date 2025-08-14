@@ -12,6 +12,35 @@ import { logger } from '../logger';
 const LEAGUE_LIVE_CLIENT_API_ROOT = 'https://127.0.0.1:2999';
 const LEAGUE_LIVE_CLIENT_FILE_LOGGING = true;
 
+/// Use the GameStart event's EventTime as the unique game identifier
+// This is much more reliable than calculating from potentially corrupted player data
+export function generateGameId(gameData: AllGameData): string | null {
+  // concat riotGameIds
+  const riotGameIds = gameData.allPlayers.map((p) => p.riotId).join(',');
+  // convert every character in the string to a number, multiply them mod some large prime:
+  const numbers = riotGameIds
+    .split('')
+    .map((char) => char.charCodeAt(0))
+    .sort();
+  const product = numbers.reduce((acc, num) => {
+    return (acc * num) % 1000000007;
+  }, 1);
+
+  // Look for the GameStart event
+  const gameStartEvent = gameData.events?.Events?.find((event) => event.EventName === 'GameStart');
+
+  if (!gameStartEvent) {
+    // No GameStart event found, skip processing this game data
+    return null;
+  }
+
+  // multiply and mod the gameStartTime and player products
+  const gameStartTime = parseInt(gameStartEvent.EventTime.toString().slice(2));
+  const gameId = (product * gameStartTime) % 1000000007;
+
+  return `${gameId}`;
+}
+
 @nativeBridgeModule('leagueLiveClient')
 export class LeagueLiveClientModule extends NativeBridgeModule {
   private readonly httpsAgent = new https.Agent({
@@ -74,25 +103,6 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
     } catch (error) {
       console.error('Failed to log API response:', error);
     }
-  }
-
-  /// generate a list of strings: all champ names, all summoner names, all summoner spells, all runes:
-  // sort this list by alphabetical order
-  // concatenate it to a single string
-  // convert all chars in the string to numbers
-  // multiply all the numbers
-  // mod by some large prime number
-  // return the result as a string
-  private generateGameId(gameData: AllGameData): string {
-    const champNames = gameData.allPlayers.map((player) => player.championName);
-    const summonerNames = gameData.allPlayers.map((player) => player.summonerName);
-    const allStrings = [...champNames, ...summonerNames];
-    const sortedStrings = allStrings.sort();
-    const string = sortedStrings.join('');
-    const numbers = string.split('').map((char) => char.charCodeAt(0));
-    const product = numbers.reduce((acc, num) => acc * num, 1);
-    const mod = product % 1000000007;
-    return mod.toString();
   }
 
   private addGameIdToHistory(gameId: string): void {
@@ -207,7 +217,12 @@ export class LeagueLiveClientModule extends NativeBridgeModule {
             // 404 case means the local server is starting up but hasnt connected to the game data yet
             return;
           }
-          const gameId = this.generateGameId(gameData);
+          const gameId = generateGameId(gameData);
+
+          // Skip processing if no GameStart event found
+          if (!gameId) {
+            return;
+          }
 
           const account = await getAccountByRiotId(
             gameData.activePlayer.riotIdGameName,
