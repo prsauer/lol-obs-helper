@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useGameQuery, useGameTimelineQuery } from '../hooks/games';
 import { ChampIcon } from './ChampIcon';
 import {
@@ -15,7 +14,6 @@ import {
   ZAxis,
 } from 'recharts';
 import { Event } from '../proxy/types';
-import { Button } from '../components/Button';
 
 const calcParticipationType = (partIndex: number, evt: Event) => {
   if (evt.victimId === partIndex) return 'DEATH';
@@ -32,21 +30,15 @@ const KDACircle = (props: { cx?: number; cy?: number; type?: string }) => {
 };
 
 export const MatchDetails = ({ matchId }: { matchId: string }) => {
-  const navigate = useNavigate();
   const gameTimelineQuery = useGameTimelineQuery(matchId);
   const gameInfoQuery = useGameQuery(matchId);
-  const [selectedChamp, setSelectedChamp] = useState(
-    'JgZkBcOvHZE4wJlSHgx-vfPPvtPAGnkyf9zqV96plrqRSArudY2Wep2h5X9pTVRk75QCyYTk9N75jw',
-  );
+  const [selectedChamp, setSelectedChamp] = useState<string | null>(null);
 
   const gameTimeline = gameTimelineQuery.data?.data;
 
   if (!gameTimeline) {
     return (
       <div className="flex flex-col flex-1">
-        <div className="mb-2">
-          <Button onClick={() => navigate(-1)}>Back</Button>
-        </div>
         <div>Loading...</div>
       </div>
     );
@@ -55,9 +47,6 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
   if (!gameInfoQuery.data?.data || 'httpStatus' in gameInfoQuery.data.data) {
     return (
       <div className="flex flex-col flex-1">
-        <div className="mb-2">
-          <Button onClick={() => navigate(-1)}>Back</Button>
-        </div>
         <div>Match not found</div>
       </div>
     );
@@ -65,21 +54,28 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
 
   const gameInfo = gameInfoQuery.data.data;
 
-  const partIndex = gameTimeline.info.participants.findIndex((p) => p.puuid === selectedChamp) + 1;
+  // Set default selected champion if none is selected
+  if (!selectedChamp && gameInfo.info.participants && gameInfo.info.participants.length > 0) {
+    setSelectedChamp(gameInfo.info.participants[0].puuid);
+    return <div>Loading...</div>; // Re-render with selected champion
+  }
+
+  const partIndexNum = gameTimeline.info.participants.findIndex((p) => p.puuid === selectedChamp) + 1;
+  const partIndex = partIndexNum.toString();
 
   const earlyGameFrames = gameTimeline.info.frames.slice(0, 25);
 
-  const min10Frame = earlyGameFrames[10].participantFrames[partIndex];
-  const min15Frame = earlyGameFrames[15].participantFrames[partIndex];
+  const min10Frame = earlyGameFrames[10]?.participantFrames[partIndex];
+  const min15Frame = earlyGameFrames[15]?.participantFrames[partIndex];
 
-  const csAt10 = min10Frame.minionsKilled + min10Frame.jungleMinionsKilled;
-  const csAt15 = min15Frame.minionsKilled + min15Frame.jungleMinionsKilled;
+  const csAt10 = (min10Frame?.minionsKilled || 0) + (min10Frame?.jungleMinionsKilled || 0);
+  const csAt15 = (min15Frame?.minionsKilled || 0) + (min15Frame?.jungleMinionsKilled || 0);
 
   const delta8Series = earlyGameFrames.map((f) => ({
     timestamp: Math.round(f.timestamp / 60000),
     minionsKilled: Math.round(
-      f.participantFrames[partIndex as unknown as '4'].minionsKilled +
-        f.participantFrames[partIndex as unknown as '4'].jungleMinionsKilled -
+      (f.participantFrames[partIndex]?.minionsKilled || 0) +
+        (f.participantFrames[partIndex]?.jungleMinionsKilled || 0) -
         8 * (f.timestamp / 60000),
     ),
   }));
@@ -89,14 +85,14 @@ export const MatchDetails = ({ matchId }: { matchId: string }) => {
       e.events.filter(
         (evt) =>
           evt.type === 'CHAMPION_KILL' &&
-          (evt.victimId === partIndex ||
-            evt.killerId === partIndex ||
-            evt.assistingParticipantIds?.includes(partIndex)),
+          (evt.victimId === partIndexNum ||
+            evt.killerId === partIndexNum ||
+            evt.assistingParticipantIds?.includes(partIndexNum)),
       ),
     )
     .flat()
     .map((evt) => ({
-      type: calcParticipationType(partIndex, evt),
+      type: calcParticipationType(partIndexNum, evt),
       value: 0,
       timestamp: evt.timestamp / 60000,
     }));

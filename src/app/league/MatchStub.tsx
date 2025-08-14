@@ -58,12 +58,15 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
 
   const winnerId = game.info ? game.info.teams.filter((e) => e.win)[0].teamId : null;
   const didWin = myPart?.teamId === winnerId;
+  const kda = ((myPart?.kills || 0) + (myPart?.assists || 0)) / Math.max(myPart?.deaths || 1, 1);
 
   return (
     <div className="flex flex-row gap-1">
       <div className="flex flex-col items-center justify-center text-sm px-2">
+        <div className={(didWin ? 'text-green-400' : 'text-purple-700') + ' text-lg font-bold'}>
+          {didWin ? 'WIN' : 'LOSS'}
+        </div>
         <div className="text-gray-500 text-xs">{new Date(game?.info?.gameCreation || 0).toLocaleString()}</div>
-        <div className={didWin ? 'text-green-400' : 'text-purple-700'}>{didWin ? 'WIN' : 'LOSS'}</div>
         <div>
           {Math.floor((game.info?.gameDuration || 0) / 60)}:
           {String((game.info?.gameDuration || 0) % 60).padStart(2, '0')}
@@ -80,9 +83,7 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
         {myPart?.perks?.styles?.[0]?.selections?.[0] && (
           <RuneIcon runeId={myPart.perks.styles[0].selections[0].perk} size={20} showTitle={true} />
         )}
-        {myPart?.perks?.styles?.[1]?.selections?.[0] && (
-          <RuneIcon runeId={myPart.perks.styles[1].selections[0].perk} size={20} showTitle={true} />
-        )}
+        {myPart?.perks?.styles?.[1] && <RuneIcon runeId={myPart.perks.styles[1].style} size={20} showTitle={true} />}
       </div>
       <div>
         <div className="flex flex-row">
@@ -103,13 +104,11 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
       <div className="flex flex-col" id="personal-stats">
         <div className="flex flex-row items-center gap-2">
           <div className="text-lg text-orange-500">
-            {myPart?.kills}/{myPart?.deaths}/{myPart?.assists}
+            {myPart?.kills}/{myPart?.deaths}/{myPart?.assists} <span className="text-gray-500">({kda.toFixed(1)})</span>
           </div>
-          <div className={didWin ? 'text-green-400' : 'text-purple-700'}>{didWin ? 'WIN' : 'LOSS'}</div>
         </div>
         {myPart && (
           <div className="flex flex-col text-sm text-gray-300 gap-1">
-            <div>{((myPart.kills + myPart.assists) / Math.max(myPart.deaths, 1)).toFixed(2)} KDA</div>
             <div>
               {(myPart.totalMinionsKilled || 0) + (myPart.neutralMinionsKilled || 0)} CS (
               {(

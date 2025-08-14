@@ -109,10 +109,12 @@ export class VodFilesModule extends NativeBridgeModule {
 
   private writeActivityData(data: RecordingWrittenEvent) {
     const activityStarted = this.activityEvents.find(
-      (event): event is ActivityStartedEvent => event.type === BusEvents.ActivityStarted,
+      (event): event is ActivityStartedEvent =>
+        event.type === BusEvents.ActivityStarted && event.activityId === data.activityId,
     );
     const activityEnded = this.activityEvents.find(
-      (event): event is ActivityEndedEvent => event.type === BusEvents.ActivityEnded,
+      (event): event is ActivityEndedEvent =>
+        event.type === BusEvents.ActivityEnded && event.activityId === data.activityId,
     );
 
     const activityData: ActivityRecord = {

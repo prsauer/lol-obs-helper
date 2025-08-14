@@ -164,9 +164,11 @@ export const VodReview = ({
   if (vodStartTime) {
     if (vodStartTime instanceof Date) {
       videoStartTime = vodStartTime;
+      console.log('vodStartTime is a date', vodStartTime);
     } else {
       const parsed = new Date(vodStartTime);
       videoStartTime = isNaN(parsed.getTime()) ? null : parsed;
+      console.log('vodStartTime is a string', vodStartTime, parsed, videoStartTime);
     }
   }
 

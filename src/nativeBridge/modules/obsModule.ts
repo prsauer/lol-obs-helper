@@ -260,10 +260,14 @@ export class ObsModule extends NativeBridgeModule {
 
     bus.onActivityStarted((activityData: ActivityStartedEvent) => {
       obsModuleState.lastActivityEnded = null;
+      obsModuleState.currentActivityId = activityData.activityId;
+      logger.info(`OBS received Activity Started id=${activityData.activityId}`);
       this.startRecording(mainWindow, activityData.activityId);
     });
     bus.onActivityEnded((activityData) => {
       obsModuleState.lastActivityEnded = activityData;
+      obsModuleState.currentActivityId = null;
+      logger.info(`OBS received Activity Ended id=${activityData.activityId}`);
       this.stopRecording(mainWindow);
     });
   }

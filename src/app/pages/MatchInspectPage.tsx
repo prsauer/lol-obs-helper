@@ -12,7 +12,7 @@ export const MatchInspectPage = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="mb-2 flex flex-row gap-2 items-center">
-        <Button onClick={() => navigate(-1)}>Back</Button>
+        <Button onClick={() => navigate(-1)}>BACK</Button>
       </div>
       {matchId !== undefined && <MatchDetails matchId={matchId} />}
     </div>

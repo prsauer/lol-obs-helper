@@ -11,7 +11,7 @@ export const RuneIcon = ({
   className?: string;
   showTitle?: boolean;
 }) => {
-  const { data: perks, isLoading, error } = usePerks();
+  const { data: perksData, isLoading, error } = usePerks();
 
   if (isLoading) {
     return (
@@ -22,7 +22,7 @@ export const RuneIcon = ({
     );
   }
 
-  if (error || !perks) {
+  if (error || !perksData) {
     return (
       <div
         className={className}
@@ -31,7 +31,29 @@ export const RuneIcon = ({
     );
   }
 
-  const perk = perks.find((p) => p.id === runeId);
+  const runeTree = perksData.styles.find((style) => style.id === runeId);
+
+  if (runeTree) {
+    const fileName = runeTree.iconPath.split('/').pop()?.toLowerCase();
+    const iconUrl = `https://raw.communitydragon.org/latest/game/assets/perks/styles/${fileName}`;
+
+    return (
+      <img
+        src={iconUrl}
+        alt={runeTree.name}
+        title={showTitle ? runeTree.name : undefined}
+        className={className}
+        style={{ width: size, height: size, objectFit: 'contain', border: '1px solid #333' }}
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          console.error(`Failed to load rune tree icon for ID: ${runeId}, name: ${runeTree.name}`);
+        }}
+      />
+    );
+  }
+
+  const perk = perksData.perks.find((p) => p.id === runeId);
 
   if (!perk) {
     console.error(`Perk not found for ID: ${runeId}`);
