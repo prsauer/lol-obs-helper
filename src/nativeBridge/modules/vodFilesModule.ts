@@ -1,6 +1,15 @@
 import { BrowserWindow } from 'electron';
 import { nativeBridgeModule, NativeBridgeModule, moduleFunction } from '../module';
-import { openSync, readdirSync, statSync, readFileSync, createReadStream, ReadStream, writeFileSync } from 'fs-extra';
+import {
+  openSync,
+  readdirSync,
+  statSync,
+  readFileSync,
+  createReadStream,
+  ReadStream,
+  writeFileSync,
+  closeSync,
+} from 'fs-extra';
 import path from 'path';
 import { google } from 'googleapis';
 import { ActivityEndedEvent, ActivityStartedEvent, RecordingWrittenEvent, BusEvents } from '../events';
@@ -140,6 +149,7 @@ export class VodFilesModule extends NativeBridgeModule {
       const fd = openSync(potentialLogFile, 'r');
       const stats = statSync(potentialLogFile);
       const data = readFileSync(fd);
+      closeSync(fd);
       const lines = data.toString().split('\n');
       const info = scanLogFileForInfo(lines);
       if (info === null) continue;

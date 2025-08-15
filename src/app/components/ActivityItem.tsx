@@ -44,7 +44,7 @@ const GenericActivityItem = ({ record }: { record: ActivityRecord }) => {
   return (
     <a
       href={`#/activities/${game}/${activityId}`}
-      className="block hover:bg-gray-700 transition-colors bg-gray-900 border border-brands rounded"
+      className="block hover:bg-gray-700 transition-colors bg-gray-900 border border-accent-200 rounded"
     >
       <div className="flex flex-row gap-4 items-center">
         {getGameIcon(game)}

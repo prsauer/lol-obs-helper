@@ -63,9 +63,7 @@ export const MatchStub = ({ matchId, summonerName }: { matchId: string; summoner
   return (
     <div className="flex flex-row gap-1">
       <div className="flex flex-col items-center justify-center text-sm px-2">
-        <div className={(didWin ? 'text-green-400' : 'text-purple-700') + ' text-lg font-bold'}>
-          {didWin ? 'WIN' : 'LOSS'}
-        </div>
+        <div className={(didWin ? 'text-win' : 'text-loss') + ' text-lg font-bold'}>{didWin ? 'WIN' : 'LOSS'}</div>
         <div className="text-gray-500 text-xs">{new Date(game?.info?.gameCreation || 0).toLocaleString()}</div>
         <div>
           {Math.floor((game.info?.gameDuration || 0) / 60)}:
