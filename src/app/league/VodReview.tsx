@@ -217,6 +217,25 @@ export const VodReview = ({
     return convertedTime;
   };
 
+  const handleVideoLoaded = () => {
+    if (vidRef.current && timeOffsetSeconds !== 0) {
+      const gameStartTime = timeConvert(1000);
+      console.log(`Jogging video to game start at VOD time: ${gameStartTime.toFixed(2)}s`);
+
+      if (gameStartTime > 0 && vidRef.current.duration > gameStartTime) {
+        vidRef.current.currentTime = gameStartTime;
+        console.log('Video jogged successfully to game start');
+      } else {
+        console.log('Video jog skipped - invalid time or duration check failed:', {
+          gameStartTime,
+          duration: vidRef.current.duration,
+          gameStartTimePositive: gameStartTime > 0,
+          durationCheck: vidRef.current.duration > gameStartTime,
+        });
+      }
+    }
+  };
+
   const vodReferenceUri = `vod://vods/${btoa('D:\\Video\\' + vod || '')}`;
 
   const focusedParticipant = gameInfo?.participants?.[(myParticipantId || 1) - 1];
@@ -342,6 +361,8 @@ export const VodReview = ({
             id="video"
             ref={vidRef}
             src={vodReferenceUri}
+            autoPlay
+            onLoadedData={handleVideoLoaded}
             style={{
               margin: 'auto',
               flex: 1,
