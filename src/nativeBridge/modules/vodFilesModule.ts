@@ -9,6 +9,7 @@ import {
   ReadStream,
   writeFileSync,
   closeSync,
+  unlinkSync,
 } from 'fs-extra';
 import path from 'path';
 import { google } from 'googleapis';
@@ -137,6 +138,13 @@ export class VodFilesModule extends NativeBridgeModule {
     const filepath = path.join(this.vodsDir, filename);
 
     writeFileSync(filepath, JSON.stringify(activityData, null, 2));
+  }
+
+  @moduleFunction()
+  public async deleteActivity(_mainWindow: BrowserWindow, activityId: string) {
+    const filename = `activity-${activityId}.json`;
+    const filepath = path.join(this.vodsDir, filename);
+    unlinkSync(filepath);
   }
 
   @moduleFunction()

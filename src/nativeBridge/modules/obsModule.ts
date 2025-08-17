@@ -18,6 +18,7 @@ type ObsModuleState = {
   sources: Record<string, { name: string; type: string }>;
   currentActivityId: string | null;
   lastActivityEnded: ActivityEndedEvent | null;
+  activeSource: string | null;
 };
 
 type ObsModuleStateDTO = {
@@ -29,6 +30,7 @@ type ObsModuleStateDTO = {
   recordingPath: string;
   logPath: string;
   currentActivityId: string | null;
+  activeSource: string | null;
 };
 
 const obsModuleState: ObsModuleState = {
@@ -44,6 +46,7 @@ const obsModuleState: ObsModuleState = {
   sources: {},
   currentActivityId: null,
   lastActivityEnded: null,
+  activeSource: null,
 };
 
 @nativeBridgeModule('obs')
@@ -62,7 +65,20 @@ export class ObsModule extends NativeBridgeModule {
       settingsBySource[source] = noobs.GetSourceSettings(source);
       propertiesBySource[source] = properties;
     }
-    return { propertiesBySource, settingsBySource };
+    return {
+      propertiesBySource,
+      settingsBySource,
+      encoders: noobs.ListVideoEncoders(),
+      activeSource: obsModuleState.activeSource,
+    };
+  }
+
+  @moduleFunction()
+  public async setEncoder(_mainWindow: BrowserWindow, encoder: string) {
+    logger.info(`Setting encoder to ${encoder}`);
+    noobs.SetVideoEncoder(encoder, {
+      encoder,
+    });
   }
 
   @moduleFunction()
@@ -170,6 +186,7 @@ export class ObsModule extends NativeBridgeModule {
     noobs.RemoveSourceFromScene('WinCap');
     noobs.RemoveSourceFromScene('MonCap');
     noobs.RemoveSourceFromScene('GameCap');
+    obsModuleState.activeSource = sceneName;
     noobs.AddSourceToScene(sceneName);
   }
 
@@ -178,7 +195,8 @@ export class ObsModule extends NativeBridgeModule {
     if (!obsModuleState.previewReady) {
       return;
     }
-    noobs.ShowPreview(x, y, width, height);
+    noobs.ConfigurePreview(x, y, width, height);
+    noobs.ShowPreview();
     noobs.GetSourcePos('WinCap');
   }
 
@@ -266,7 +284,6 @@ export class ObsModule extends NativeBridgeModule {
     });
     bus.onActivityEnded((activityData) => {
       obsModuleState.lastActivityEnded = activityData;
-      obsModuleState.currentActivityId = null;
       logger.info(`OBS received Activity Ended id=${activityData.activityId}`);
       this.stopRecording(mainWindow);
     });
@@ -311,6 +328,7 @@ export class ObsModule extends NativeBridgeModule {
       recordingPath: obsModuleState.recordingPath,
       logPath: obsModuleState.logPath,
       currentActivityId: obsModuleState.currentActivityId,
+      activeSource: obsModuleState.activeSource,
     };
   }
 
@@ -329,6 +347,7 @@ export class ObsModule extends NativeBridgeModule {
       recordingPath: obsModuleState.recordingPath,
       logPath: obsModuleState.logPath,
       currentActivityId: obsModuleState.currentActivityId,
+      activeSource: obsModuleState.activeSource,
     });
   }
 

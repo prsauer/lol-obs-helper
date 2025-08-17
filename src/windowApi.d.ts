@@ -14,6 +14,7 @@ type AsEventFunction<F> = F extends (x: any, ...args: infer P) => infer R
 type NativeApi = {
   links: { openExternalURL: OmitFirstArg<ExternalLinksModule['openExternalURL']> };
   vods: {
+    deleteActivity: OmitFirstArg<VodFilesModule['deleteActivity']>;
     scanFolderForMatches: OmitFirstArg<VodFilesModule['scanFolderForMatches']>;
     insertVod: OmitFirstArg<VodFilesModule['insertVod']>;
     getActivitiesData: OmitFirstArg<VodFilesModule['getActivitiesData']>;
@@ -22,6 +23,7 @@ type NativeApi = {
   trayIcon: { hideToSystemTray: OmitFirstArg<TrayIconModule['hideToSystemTray']> };
   obs: {
     discoverSourceProperties: OmitFirstArg<ObsModule['discoverSourceProperties']>;
+    setEncoder: OmitFirstArg<ObsModule['setEncoder']>;
     setSourceProperty: OmitFirstArg<ObsModule['setSourceProperty']>;
     configureSource: OmitFirstArg<ObsModule['configureSource']>;
     setScene: OmitFirstArg<ObsModule['setScene']>;

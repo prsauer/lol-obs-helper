@@ -11,6 +11,7 @@ export const SourceConfig = () => {
   const [propertyValues, setPropertyValues] = useState<Record<string, string | number | boolean | string[]>>({});
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [activeScene, setActiveScene] = useState<string>('');
+  const [selectedEncoder, setSelectedEncoder] = useState<string>('');
 
   const sourcePropertiesQuery = useQuery({
     queryKey: ['source-properties'],
@@ -18,7 +19,7 @@ export const SourceConfig = () => {
     refetchOnMount: true,
   });
 
-  const { propertiesBySource, settingsBySource } = sourcePropertiesQuery.data || {};
+  const { propertiesBySource, settingsBySource, encoders, activeSource } = sourcePropertiesQuery.data || {};
 
   useEffect(() => {
     if (settingsBySource && Object.keys(settingsBySource).length > 0) {
@@ -42,24 +43,25 @@ export const SourceConfig = () => {
     }
   }, [settingsBySource]);
 
+  useEffect(() => {
+    if (activeSource && activeSource !== activeScene) {
+      setActiveScene(activeSource);
+    }
+  }, [activeSource, activeScene]);
+
   const handlePropertyChange = async (propertyName: string, value: string | number | boolean | string[]) => {
-    // Parse the propertyName format: "sourceName.propertyName"
     const [sourceName, actualPropertyName] = propertyName.split('.');
 
     try {
-      // Convert string[] to format that OBS expects
       let obsValue: string | number | boolean | null;
       if (Array.isArray(value)) {
-        // For editable lists, OBS might expect a JSON string or specific format
         obsValue = JSON.stringify(value);
       } else {
         obsValue = value;
       }
 
-      // Update OBS settings immediately
       await window.native.obs.setSourceProperty(sourceName, actualPropertyName, obsValue);
 
-      // Update local state for UI
       setPropertyValues((prev) => ({
         ...prev,
         [propertyName]: value,
@@ -69,6 +71,17 @@ export const SourceConfig = () => {
     } catch (error) {
       console.error(`Failed to update property ${actualPropertyName} for source ${sourceName}:`, error);
       alert(`Failed to update property: ${error}`);
+    }
+  };
+
+  const handleEncoderChange = async (encoder: string) => {
+    try {
+      await window.native.obs.setEncoder(encoder);
+      setSelectedEncoder(encoder);
+      setLastUpdated(new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error(`Failed to set encoder ${encoder}:`, error);
+      alert(`Failed to set encoder: ${error}`);
     }
   };
 
@@ -84,10 +97,10 @@ export const SourceConfig = () => {
   };
 
   const handleRefreshAndReset = () => {
-    // Reset local state and refresh properties
     setPropertyValues({});
     setLastUpdated(null);
     setActiveScene('');
+    setSelectedEncoder('');
     sourcePropertiesQuery.refetch();
   };
 
@@ -113,8 +126,8 @@ export const SourceConfig = () => {
 
   return (
     <div className="flex flex-row h-full w-full">
-      <div className="flex flex-col h-full w-full flex-1">
-        <div className="mb-4 flex flex-row gap-2 items-center">
+      <div className="flex flex-col h-full w-full flex-1 overflow-hidden">
+        <div className="mb-4 flex flex-row gap-2 items-center flex-shrink-0">
           <Button onClick={() => navigate(-1)}>← Back</Button>
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-gray-100">OBS Source Configuration</h1>
@@ -127,28 +140,62 @@ export const SourceConfig = () => {
           </Button>
         </div>
 
-        <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
-          <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Scene Selection</h2>
-          <div className="space-y-3">
-            {Object.keys(propertiesBySource || {}).map((sceneName) => (
-              <label key={sceneName} className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={activeScene === sceneName}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      handleSceneChange(sceneName);
-                    }
-                  }}
-                  className="rounded"
-                />
-                <span className="text-gray-100">{sceneName}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
         <div className="flex-1 overflow-y-auto minimal-scrollbar">
+          <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
+            <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Video Encoder</h2>
+            <div className="space-y-3">
+              {encoders && encoders.length > 0 ? (
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Select Encoder</label>
+                    <select
+                      value={selectedEncoder}
+                      onChange={(e) => setSelectedEncoder(e.target.value)}
+                      className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Choose an encoder...</option>
+                      {encoders.map((encoder: string) => (
+                        <option key={encoder} value={encoder}>
+                          {encoder}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={() => handleEncoderChange(selectedEncoder)}
+                    disabled={!selectedEncoder}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed font-semibold py-2 px-4 rounded transition-all duration-150"
+                  >
+                    Set Encoder
+                  </button>
+                </div>
+              ) : (
+                <p className="text-gray-400">No encoders available</p>
+              )}
+            </div>
+          </div>
+
+          <div className="mb-6 bg-gray-800 rounded-lg p-6 border border-gray-600">
+            <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">Scene Selection</h2>
+            <div className="space-y-3">
+              {Object.keys(propertiesBySource || {}).map((sceneName) => (
+                <label key={sceneName} className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={activeScene === sceneName}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        handleSceneChange(sceneName);
+                      }
+                    }}
+                    className="rounded"
+                  />
+                  <span className="text-gray-100">{sceneName}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {!propertiesBySource || Object.keys(propertiesBySource).length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-400 text-lg">No sources found</p>
@@ -157,7 +204,7 @@ export const SourceConfig = () => {
           ) : (
             <div className="space-y-8">
               {Object.entries(propertiesBySource).map(([sourceName, properties]) => (
-                <div key={sourceName} className="bg-gray-800 rounded-lg p-6 border border-gray-600">
+                <div key={sourceName} className="bg-gray-800 rounded-lg p-6 bord  er border-gray-600">
                   <h2 className="text-lg font-semibold text-gray-100 mb-4 border-b border-gray-600 pb-2">
                     {sourceName}
                   </h2>

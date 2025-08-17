@@ -4,6 +4,7 @@ import { IpcRendererEvent, ipcRenderer } from 'electron';
 export const modulesApi = {
   links: { openExternalURL: (...args: any[]) => ipcRenderer.invoke('native:links:openExternalURL', ...args) },
   vods: {
+    deleteActivity: (...args: any[]) => ipcRenderer.invoke('native:vods:deleteActivity', ...args),
     scanFolderForMatches: (...args: any[]) => ipcRenderer.invoke('native:vods:scanFolderForMatches', ...args),
     insertVod: (...args: any[]) => ipcRenderer.invoke('native:vods:insertVod', ...args),
     getActivitiesData: (...args: any[]) => ipcRenderer.invoke('native:vods:getActivitiesData', ...args),
@@ -12,6 +13,7 @@ export const modulesApi = {
   trayIcon: { hideToSystemTray: (...args: any[]) => ipcRenderer.invoke('native:trayIcon:hideToSystemTray', ...args) },
   obs: {
     discoverSourceProperties: (...args: any[]) => ipcRenderer.invoke('native:obs:discoverSourceProperties', ...args),
+    setEncoder: (...args: any[]) => ipcRenderer.invoke('native:obs:setEncoder', ...args),
     setSourceProperty: (...args: any[]) => ipcRenderer.invoke('native:obs:setSourceProperty', ...args),
     configureSource: (...args: any[]) => ipcRenderer.invoke('native:obs:configureSource', ...args),
     setScene: (...args: any[]) => ipcRenderer.invoke('native:obs:setScene', ...args),
