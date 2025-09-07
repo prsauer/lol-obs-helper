@@ -1,5 +1,7 @@
 import { Button } from './Button';
 import { useQueryClient } from '@tanstack/react-query';
+import { genUploader } from 'uploadthing/client';
+export const { uploadFiles } = genUploader();
 
 type HeaderProps = {
   recording: boolean;
@@ -26,12 +28,22 @@ export const Header = ({ recording, configValid, onRefresh }: HeaderProps) => {
         >
           Refresh
         </Button>
+        <Button
+          onClick={async () => {
+            window.native.upload.uploadFile(
+              'D163078f58d18a3505dc2d670d96798ff',
+              'D:\\Video\\2025-09-01 16-52-27 - 3v3_cd0137fc10099def2d793d54266c3674.mp4',
+            );
+          }}
+        >
+          upload
+        </Button>
         <Button linkTo="/setup">Setup</Button>
         <Button linkTo="/source-config">Source Config</Button>
         <Button
           onClick={async () => {
             try {
-              await window.native.links.openExternalURL('http://localhost:3001/greet');
+              await window.native.links.openExternalURL('https://spires-lol.vercel.app/greet');
             } catch (error) {
               console.error(error);
             }

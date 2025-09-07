@@ -8,6 +8,7 @@ import { VodFilesModule } from './modules/vodFilesModule';
 import { ExternalLinksModule } from './modules/externalLinksModule';
 import { LoginModule } from './modules/loginModule';
 import { LeagueLiveClientModule } from './modules/leagueLiveClientModule';
+import { UploadModule } from './modules/uploadModule';
 
 export class NativeBridgeRegistry {
   private modules: Record<string, NativeBridgeModule> = {};
@@ -144,3 +145,4 @@ nativeBridgeRegistry.registerModule(TrayIconModule);
 nativeBridgeRegistry.registerModule(ObsModule);
 nativeBridgeRegistry.registerModule(LoginModule);
 nativeBridgeRegistry.registerModule(LeagueLiveClientModule);
+nativeBridgeRegistry.registerModule(UploadModule);

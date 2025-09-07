@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Root } from './Root';
@@ -30,6 +30,15 @@ export const App = () => {
         },
       }),
   );
+
+  useEffect(() => {
+    window.native.login.didLogin((_evt, token) => {
+      console.log('didLogin', token);
+    });
+    return () => {
+      window.native.login.removeAll_didLogin_listeners();
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

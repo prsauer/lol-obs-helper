@@ -5,6 +5,7 @@ import { TrayIconModule } from './nativeBridge/modules/trayIconModule';
 import { ObsModule } from './nativeBridge/modules/obsModule';
 import { LoginModule } from './nativeBridge/modules/loginModule';
 import { LeagueLiveClientModule } from './nativeBridge/modules/leagueLiveClientModule';
+import { UploadModule } from './nativeBridge/modules/uploadModule';
 
 type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
 type AsEventFunction<F> = F extends (x: any, ...args: infer P) => infer R
@@ -50,6 +51,7 @@ type NativeApi = {
     onGameEnded: (callback: AsEventFunction<LeagueLiveClientModule['onGameEnded']>) => void;
     removeAll_onGameEnded_listeners: () => void;
   };
+  upload: { uploadFile: OmitFirstArg<UploadModule['uploadFile']> };
 };
 
 declare global {

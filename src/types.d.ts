@@ -14,3 +14,14 @@ export type ActivityRecord = {
   end?: ActivityEndedEvent;
   recording: RecordingWrittenEvent;
 };
+
+export type TokenType = {
+  accessToken: string;
+  email: string;
+  exp: number;
+  expirestAt: number;
+  refreshToken: string;
+  refresh_token_expires_in: number;
+  scope: string;
+  idToken: string;
+};

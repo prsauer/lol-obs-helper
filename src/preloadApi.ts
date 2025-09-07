@@ -49,4 +49,5 @@ export const modulesApi = {
       ipcRenderer.on('native:leagueLiveClient:onGameEnded', callback),
     removeAll_onGameEnded_listeners: () => ipcRenderer.removeAllListeners('native:leagueLiveClient:onGameEnded'),
   },
+  upload: { uploadFile: (...args: any[]) => ipcRenderer.invoke('native:upload:uploadFile', ...args) },
 };
