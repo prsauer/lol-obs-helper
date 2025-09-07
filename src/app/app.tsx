@@ -4,6 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Root } from './Root';
 import { AppConfigContextProvider } from './hooks/AppConfigContext';
 import { RecordingProvider } from './hooks/recordingContext';
+import { ClerkProvider } from '@clerk/clerk-react';
+
+const CLERK_PKEY = 'pk_test_cmVuZXdlZC1tb2NjYXNpbi0zMy5jbGVyay5hY2NvdW50cy5kZXYk';
 
 export const App = () => {
   const [queryClient] = useState(
@@ -41,12 +44,14 @@ export const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppConfigContextProvider>
-        <RecordingProvider>
-          <Root />
-        </RecordingProvider>
-      </AppConfigContextProvider>
-    </QueryClientProvider>
+    <ClerkProvider publishableKey={CLERK_PKEY}>
+      <QueryClientProvider client={queryClient}>
+        <AppConfigContextProvider>
+          <RecordingProvider>
+            <Root />
+          </RecordingProvider>
+        </AppConfigContextProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 };

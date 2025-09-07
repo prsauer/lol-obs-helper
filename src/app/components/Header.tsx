@@ -1,3 +1,4 @@
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { Button } from './Button';
 import { useQueryClient } from '@tanstack/react-query';
 import { genUploader } from 'uploadthing/client';
@@ -28,6 +29,12 @@ export const Header = ({ recording, configValid, onRefresh }: HeaderProps) => {
         >
           Refresh
         </Button>
+        <SignedOut>
+          <SignInButton />
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
         <Button
           onClick={async () => {
             window.native.upload.uploadFile(

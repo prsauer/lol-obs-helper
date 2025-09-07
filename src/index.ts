@@ -70,7 +70,7 @@ const createWindow = () => {
       responseHeaders: {
         ...details.responseHeaders,
         'Content-Security-Policy': [
-          "default-src 'self' 'unsafe-inline' 'unsafe-eval'; media-src vod: static: pub-b2bc7807aeca400285eb65f4fdc11d77.r2.dev; connect-src *; img-src *",
+          "default-src 'self' 'unsafe-inline' 'unsafe-eval' *; media-src vod: static: pub-b2bc7807aeca400285eb65f4fdc11d77.r2.dev; connect-src *; img-src * data:; worker-src * blob:",
         ],
       },
     });
