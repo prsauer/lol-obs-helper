@@ -57,7 +57,7 @@ const config: ForgeConfig = {
                   electron: 'commonjs electron',
                 },
                 resolve: {
-                  extensions: ['.ts'],
+                  extensions: ['.ts', '.js'],
                 },
               },
             },
