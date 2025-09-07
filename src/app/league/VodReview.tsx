@@ -370,10 +370,7 @@ export const VodReview = ({
               minHeight: 0,
             }}
           >
-            <source
-              src="https://pub-b2bc7807aeca400285eb65f4fdc11d77.r2.dev/Fx6k1MHKMzBeRDE2MzA3OGY1OGQxOGEzNTA1ZGMyZDY3MGQ5Njc5OGZm.mp4"
-              type="video/mp4"
-            />
+            <source src={vodReferenceUri} type="video/mp4" />
           </video>
         </figure>
       )}
