@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, dialog } from 'electron';
 import { nativeBridgeModule, NativeBridgeModule, moduleFunction } from '../module';
 import {
   openSync,
@@ -196,6 +196,30 @@ export class VodFilesModule extends NativeBridgeModule {
       return JSON.parse(data.toString()) as ActivityRecord;
     });
     return activityData.sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  @moduleFunction()
+  public async selectVodFile(_mainWindow: BrowserWindow) {
+    return new Promise<string>((resolve, reject) => {
+      dialog
+        .showOpenDialog({
+          title: 'Select video to import',
+          buttonLabel: 'Confirm',
+          properties: ['openFile', 'multiSelections'],
+          filters: [
+            {
+              extensions: ['mp4'],
+              name: '*',
+            },
+          ],
+        })
+        .then((data) => {
+          resolve(data.filePaths[0]);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
   }
 
   @moduleFunction()

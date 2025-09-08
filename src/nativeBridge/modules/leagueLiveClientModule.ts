@@ -6,7 +6,7 @@ import path from 'path';
 import { ActivityEndedEvent, ActivityStartedEvent, BusEvents } from '../events';
 import { bus } from '../bus';
 import { AllGameData, Client404Response } from './leagueLiveClientTypes';
-import { getAccountByRiotId, getActiveGamesForSummoner } from '../../app/proxy/riotApi';
+import { getAccountByRiotId, getActiveGamesForSummoner } from '../../proxy/riotApi';
 import { logger } from '../logger';
 
 const LEAGUE_LIVE_CLIENT_API_ROOT = 'https://127.0.0.1:2999';
